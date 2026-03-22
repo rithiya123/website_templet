@@ -76,7 +76,7 @@ const AnnouncementSection = () => {
     <div className="relative group">
       {/* Main Card */}
       <div 
-        className="relative bg-white rounded-xl border border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
+        className="relative bg-white rounded-xl border border-[#4CAF50] border-opacity-20 hover:border-[#4CAF50] hover:shadow-lg transition-all duration-300 overflow-hidden"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -89,39 +89,39 @@ const AnnouncementSection = () => {
           />
           
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 via-gray-900/30 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
           
           {/* Close Button */}
           <button 
             onClick={() => setIsVisible(false)}
-            className="absolute top-3 right-3 p-1.5 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-lg transition-all duration-300 z-20 border border-white/20"
+            className="absolute top-3 right-3 p-1.5 bg-white/10 backdrop-blur-sm hover:bg-[#4CAF50] hover:bg-opacity-30 text-white rounded-lg transition-all duration-300 z-20 border border-white/20"
           >
             <X size={14} />
           </button>
 
           {/* Badge */}
           <div className="absolute top-3 left-3 z-20">
-            <span className="px-2.5 py-1 bg-white/10 backdrop-blur-sm text-white text-xs font-medium rounded-md border border-white/20 flex items-center space-x-1">
-              <Sparkles size={12} className="text-white/80" />
+            <span className="px-2.5 py-1 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white text-xs font-medium rounded-md flex items-center space-x-1 shadow-md">
+              <Sparkles size={12} className="text-white/90" />
               <span>{t.badge}</span>
             </span>
           </div>
 
           {/* Date and Views */}
           <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between z-20">
-            <div className="flex items-center space-x-1.5 text-white/90 text-xs bg-black/20 backdrop-blur-sm px-2 py-1 rounded-md">
+            <div className="flex items-center space-x-1.5 text-white/90 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-md">
               <Calendar size={12} />
               <span>{t.date}</span>
             </div>
             
-            <div className="flex items-center space-x-1.5 text-white/90 text-xs bg-black/20 backdrop-blur-sm px-2 py-1 rounded-md">
+            <div className="flex items-center space-x-1.5 text-white/90 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-md">
               <Eye size={12} />
               <span>{t.views}</span>
             </div>
           </div>
 
           {/* Accent Line */}
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-800"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50]"></div>
         </div>
 
         {/* Content Section */}
@@ -130,8 +130,8 @@ const AnnouncementSection = () => {
           <div className="flex items-start space-x-3 mb-3">
             {/* Icon */}
             <div className="flex-shrink-0">
-              <div className="p-2 bg-gray-100 rounded-lg border border-gray-200">
-                <FileText size={16} className="text-gray-600" />
+              <div className="p-2 bg-[#4CAF50] bg-opacity-10 rounded-lg border border-[#4CAF50] border-opacity-20">
+                <FileText size={16} className="text-[#2E7D32]" />
               </div>
             </div>
 
@@ -140,7 +140,7 @@ const AnnouncementSection = () => {
                 <h3 className="text-sm font-semibold text-gray-900 truncate">
                   {t.title}
                 </h3>
-                <span className="flex-shrink-0 ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-md">
+                <span className="flex-shrink-0 ml-2 px-2 py-0.5 bg-[#4CAF50] bg-opacity-10 text-[#2E7D32] text-[10px] rounded-md">
                   {t.time}
                 </span>
               </div>
@@ -148,7 +148,7 @@ const AnnouncementSection = () => {
               {/* Expiry */}
               <div className="flex items-center space-x-2 mt-1">
                 <span className="text-xs text-gray-500 flex items-center">
-                  <Clock size={10} className="mr-1 text-gray-400" />
+                  <Clock size={10} className="mr-1 text-[#4CAF50]" />
                   {t.expires}
                 </span>
               </div>
@@ -165,7 +165,7 @@ const AnnouncementSection = () => {
             {t.tags.map((tag, index) => (
               <span 
                 key={index} 
-                className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] rounded-md border border-gray-200"
+                className="px-2 py-1 bg-[#4CAF50] bg-opacity-10 text-[#2E7D32] text-[10px] rounded-md border border-[#4CAF50] border-opacity-20"
               >
                 #{tag}
               </span>
@@ -175,52 +175,28 @@ const AnnouncementSection = () => {
           {/* Action Buttons */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              {/* Download Button */}
-              <button className="group/btn flex items-center space-x-1.5 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-sm">
-                <Download size={12} className="group-hover/btn:translate-y-0.5 transition-transform" />
-                <span>{t.download}</span>
-              </button>
+            
               
               {/* View Button */}
-              <button className="group/btn flex items-center space-x-1.5 px-3 py-1.5 bg-gray-100 border border-gray-200 text-gray-700 text-xs rounded-lg hover:bg-gray-200 hover:border-gray-300 transition-all duration-300">
+              <button className="group/btn flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-[#4CAF50] text-[#2E7D32] text-xs rounded-lg hover:bg-[#4CAF50] hover:text-white hover:border-[#4CAF50] transition-all duration-300">
                 <ExternalLink size={12} className="group-hover/btn:rotate-12 transition-transform" />
                 <span>{t.view}</span>
               </button>
               
-              {/* Share Button - Icon only on mobile, text on desktop */}
-              <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100">
-                <Share2 size={16} />
-              </button>
+              
             </div>
 
             {/* Details Link */}
-            <button className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-900 transition-colors group/link">
+            <button className="flex items-center space-x-1 text-xs text-[#4CAF50] hover:text-[#2E7D32] transition-colors group/link">
               <span>{t.details}</span>
               <ChevronRight size={12} className="group-hover/link:translate-x-0.5 transition-transform" />
             </button>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mt-4 pt-3 border-t border-gray-100">
-            <div className="flex items-center justify-between text-[10px] text-gray-500 mb-1">
-              <span>Expires in {t.expires}</span>
-              <span>75%</span>
-            </div>
-            <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gray-800 rounded-full transition-all duration-500"
-                style={{ width: isHovered ? '85%' : '75%' }}
-              ></div>
-            </div>
-          </div>
+          
         </div>
 
-        {/* Status Indicator */}
-        <div className="absolute top-0 right-0 w-12 h-12 overflow-hidden">
-          <div className="absolute transform rotate-45 bg-gray-800 text-white text-[8px] font-medium py-1 right-[-24px] top-[8px] w-16 text-center">
-            ACTIVE
-          </div>
-        </div>
+       
       </div>
     </div>
   );

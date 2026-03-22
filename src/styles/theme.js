@@ -23,22 +23,22 @@ export const theme = {
     
     // Buttons
     button: {
-      primary: 'bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors',
+      primary: 'bg-[#4CAF50] text-white px-4 py-2 rounded-lg hover:bg-[#2E7D32] transition-colors',
       secondary: 'bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors',
       outline: 'border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors',
       ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-4 py-2 rounded-lg transition-colors',
     },
     
     // Inputs
-    input: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary-600 transition-colors',
-    select: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary-600 bg-white',
-    textarea: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary-600 resize-none',
+    input: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4CAF50] transition-colors',
+    select: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4CAF50] bg-white',
+    textarea: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4CAF50] resize-none',
     label: 'block text-sm font-medium text-gray-700 mb-1',
     
     // Badges
     badge: {
       default: 'px-2.5 py-1 text-xs font-medium rounded-full',
-      primary: 'bg-primary-100 text-primary-700 border border-primary-200',
+      primary: 'bg-[#4CAF50] bg-opacity-10 text-[#2E7D32] border border-[#4CAF50] border-opacity-20',
       gray: 'bg-gray-100 text-gray-700 border border-gray-200',
       success: 'bg-green-100 text-green-700 border border-green-200',
       warning: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
@@ -46,8 +46,8 @@ export const theme = {
     
     // Navigation
     navItem: 'flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all',
-    navItemActive: 'text-primary-700 bg-primary-50',
-    navItemInactive: 'text-gray-600 hover:text-primary-700 hover:bg-primary-50',
+    navItemActive: 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10',
+    navItemInactive: 'text-gray-600 hover:text-[#2E7D32] hover:bg-[#4CAF50] hover:bg-opacity-10',
     
     // Dividers
     divider: 'border-t border-gray-200',
@@ -55,7 +55,7 @@ export const theme = {
     
     // Alerts
     alert: {
-      success: 'bg-green-50 border border-green-200 text-green-700',
+      success: 'bg-[#4CAF50] bg-opacity-10 border border-[#4CAF50] border-opacity-20 text-[#2E7D32]',
       error: 'bg-red-50 border border-red-200 text-red-700',
       warning: 'bg-yellow-50 border border-yellow-200 text-yellow-700',
       info: 'bg-blue-50 border border-blue-200 text-blue-700',
@@ -66,7 +66,7 @@ export const theme = {
       wrapper: 'overflow-x-auto border border-gray-200 rounded-lg',
       header: 'bg-gray-50 border-b border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700',
       cell: 'px-4 py-3 text-sm text-gray-600 border-b border-gray-200',
-      row: 'hover:bg-gray-50 transition-colors',
+      row: 'hover:bg-[#4CAF50] hover:bg-opacity-5 transition-colors',
     },
   },
   

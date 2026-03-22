@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, ChevronDown, Home, Globe, ChevronRight, 
   Info, Users, Building2, FileText, Phone, Shield,
-  Award, Clock, MapPin, Mail, Star
+  Award, Clock, MapPin, Mail, Star, Menu
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../ui/Logo.jsx';
@@ -14,8 +14,6 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState({});
   const [currentLang, setCurrentLang] = useState('km');
-
-
 
   // Menu items configuration with corrected paths
   const menuItems = [
@@ -44,14 +42,10 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
       dropdown: true,
       subItems: {
         km: [
-          { label: 'ប្រវត្តិអគ្គនាយកដ្ឋាន', path: '/about/history' },
-          { label: 'ចក្ខុវិស័យ និងបេសកកម្ម', path: '/about/vision-mission' },
           { label: 'តួនាទី និងភារកិច្ច', path: '/about/roles' },
           { label: 'សារអគ្គនាយក', path: '/about/director-message' }
         ],
         en: [
-          { label: 'Department History', path: '/about/history' },
-          { label: 'Vision & Mission', path: '/about/vision-mission' },
           { label: 'Roles & Responsibilities', path: '/about/roles' },
           { label: "Director's Message", path: '/about/director-message' }
         ]
@@ -63,14 +57,6 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
       labelEn: 'MANAGEMENT STRUCTURE',
       path: '/management', 
       icon: Users,
-      dropdown: false
-    },
-    { 
-      id: 'leadership',
-      label: 'រចនាសម្ព័ន្ធស្ថាប័ន', 
-      labelEn: 'ORGANIZATIONAL STRUCTURE',
-      path: '/leadership', 
-      icon: Building2,
       dropdown: false
     },
     { 
@@ -115,6 +101,15 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     return item.labelEn;
   };
 
+  const getShortLabel = (item) => {
+    // For tablet view, show first 2-3 words or abbreviated version
+    if (currentLang === 'km') {
+      // For Khmer, keep full text but with smaller font
+      return item.label;
+    }
+    return item.labelEn;
+  };
+
   const handleNavigation = (path) => {
     navigate(path);
     if (setMobileMenuOpen) {
@@ -147,8 +142,8 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
 
   return (
     <>
-      {/* Desktop Navigation */}
-      <nav className="hidden md:flex items-center justify-between">
+      {/* Desktop Navigation - Large screens (lg and up) */}
+      <nav className="hidden lg:flex items-center justify-between">
         <div className="flex items-center space-x-1">
           {menuItems.map((item) => {
             const isActive = isItemActive(item);
@@ -164,27 +159,42 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                   onClick={() => {
                     if (!item.dropdown) {
                       handleNavigation(item.path);
+                    } else {
+                      setActiveDropdown(activeDropdown === item.id ? null : item.id);
                     }
                   }}
-                  className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
+                  className={`flex items-center px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium rounded-lg transition-all duration-300 whitespace-nowrap ${
                     isActive 
-                      ? 'text-primary-700 bg-primary-50' 
-                      : 'text-gray-600 hover:text-primary-700 hover:bg-primary-50'
+                      ? 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10' 
+                      : 'text-gray-600 hover:text-[#2E7D32] hover:bg-[#4CAF50] hover:bg-opacity-5'
                   }`}
                 >
-                  <item.icon size={18} className="mr-2" />
-                  <span>{getTranslatedLabel(item)}</span>
+                  <item.icon size={16} className="mr-1 lg:mr-2" />
+                  <span className="hidden lg:inline">{getTranslatedLabel(item)}</span>
+                  <span className="lg:hidden">{getTranslatedLabel(item)}</span>
                   {item.dropdown && (
-                    <ChevronDown size={14} className={`ml-1 transition-transform ${
-                      activeDropdown === item.id ? 'rotate-180' : ''
-                    }`} />
+                    <ChevronDown 
+                      size={12} 
+                      className={`ml-1 transition-all duration-300 ${
+                        activeDropdown === item.id ? 'rotate-180' : ''
+                      }`} 
+                    />
                   )}
                 </button>
                 
-                {/* Dropdown */}
-                {item.dropdown && activeDropdown === item.id && (
-                  <div className="absolute left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
-                    <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-gray-100 transform rotate-45"></div>
+                {/* Dropdown with smooth animation */}
+                {item.dropdown && (
+                  <div 
+                    className={`
+                      absolute left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-[#4CAF50] border-opacity-20 py-2 z-50
+                      transition-all duration-300 ease-out transform origin-top
+                      ${activeDropdown === item.id 
+                        ? 'opacity-100 scale-100 translate-y-0 visible' 
+                        : 'opacity-0 scale-95 -translate-y-2 invisible'
+                      }
+                    `}
+                  >
+                    <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-[#4CAF50] border-opacity-20 transform rotate-45"></div>
                     
                     {item.subItems[currentLang].map((subItem, i) => {
                       const isSubActive = subItem.path === location.pathname;
@@ -193,132 +203,256 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                         <button
                           key={i}
                           onClick={() => handleNavigation(subItem.path)}
-                          className={`block w-full text-left px-4 py-2.5 text-sm transition-all duration-200 hover:pl-6 ${
-                            isSubActive
-                              ? 'text-primary-700 bg-primary-50 font-medium'
-                              : 'text-gray-600 hover:text-primary-700 hover:bg-primary-50'
-                          }`}
+                          className={`
+                            block w-full text-left px-4 py-2.5 text-sm transition-all duration-200 
+                            hover:pl-6 hover:bg-[#4CAF50] hover:bg-opacity-5
+                            ${isSubActive
+                              ? 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10 font-medium'
+                              : 'text-gray-600 hover:text-[#2E7D32]'
+                            }
+                          `}
                         >
-                          {subItem.label}
+                          <div className="flex items-center">
+                            <ChevronRight 
+                              size={12} 
+                              className={`mr-2 transition-all duration-200 ${
+                                isSubActive ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+                              }`} 
+                            />
+                            {subItem.label}
+                          </div>
                         </button>
                       );
                     })}
-                    
-                    <div className="border-t border-gray-100 mt-2 pt-2 px-3">
-                      <button 
-                        onClick={() => handleNavigation(item.path)}
-                        className="block w-full text-xs text-center text-primary-600 hover:text-primary-700 py-1"
-                      >
-                        {currentLang === 'km' ? 'មើលទាំងអស់ →' : 'View All →'}
-                      </button>
-                    </div>
                   </div>
                 )}
               </div>
             );
           })}
         </div>
-
-        {/* Desktop right section - Removed Login button */}
       </nav>
 
+      {/* Tablet Navigation - Medium screens (md to lg) */}
+      <nav className="hidden md:flex lg:hidden items-center justify-between overflow-x-auto pb-2">
+        <div className="flex items-center space-x-1 min-w-max">
+          {menuItems.map((item) => {
+            const isActive = isItemActive(item);
+            
+            return (
+              <div key={item.id} className="relative">
+                <button
+                  onClick={() => {
+                    if (!item.dropdown) {
+                      handleNavigation(item.path);
+                    } else {
+                      setActiveDropdown(activeDropdown === item.id ? null : item.id);
+                    }
+                  }}
+                  className={`flex items-center px-2 py-1.5 text-xs font-medium rounded-lg transition-all duration-300 whitespace-nowrap ${
+                    isActive 
+                      ? 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10' 
+                      : 'text-gray-600 hover:text-[#2E7D32] hover:bg-[#4CAF50] hover:bg-opacity-5'
+                  }`}
+                >
+                  <item.icon size={14} className="mr-1" />
+                  <span className="truncate max-w-[100px]">{getTranslatedLabel(item)}</span>
+                  {item.dropdown && (
+                    <ChevronDown 
+                      size={10} 
+                      className={`ml-1 transition-all duration-300 ${
+                        activeDropdown === item.id ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  )}
+                </button>
+                
+                {/* Dropdown for tablet */}
+                {item.dropdown && activeDropdown === item.id && (
+                  <div className="absolute left-0 mt-1 w-56 bg-white rounded-xl shadow-xl border border-[#4CAF50] border-opacity-20 py-2 z-50">
+                    {item.subItems[currentLang].map((subItem, i) => {
+                      const isSubActive = subItem.path === location.pathname;
+                      
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => handleNavigation(subItem.path)}
+                          className={`
+                            block w-full text-left px-3 py-2 text-xs transition-all duration-200 
+                            hover:pl-4 hover:bg-[#4CAF50] hover:bg-opacity-5
+                            ${isSubActive
+                              ? 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10 font-medium'
+                              : 'text-gray-600 hover:text-[#2E7D32]'
+                            }
+                          `}
+                        >
+                          {subItem.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Mobile Navigation - Small screens (below md) */}
+      <div className="md:hidden flex items-center">
+        <button
+          onClick={() => setMobileMenuOpen && setMobileMenuOpen(true)}
+          className="p-2 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+      </div>
+
+      {/* Mobile Menu Panel - Slide from Right */}
       {mobileMenuOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop with fade animation */}
           <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 md:hidden"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-in fade-in duration-300"
             onClick={closeMobileMenu}
           />
 
-          {/* Menu Panel - Floating Card */}
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-2xl shadow-2xl z-50 overflow-hidden md:hidden">
+          {/* Menu Panel - Slide from Right Animation */}
+          <div className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-right duration-300">
             
-            {/* Header with Logo */}
-            <div className="p-5 border-b border-gray-100">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Logo variant="default" showText={false} className="w-8 h-8" />
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      {currentLang === 'km' ? 'អគ្គនាយកដ្ឋានពន្ធនាគារ' : 'GDP'}
+            {/* Header with Logo - Responsive title with 2 lines */}
+            <div className="sticky top-0 bg-white z-10 p-5 border-b border-[#4CAF50] border-opacity-10">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start space-x-3 flex-1 min-w-0">
+                  <Logo variant="default" showText={false} className="w-8 h-8 flex-shrink-0 mt-1" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-[#2E7D32] text-sm leading-tight line-clamp-2">
+                      {currentLang === 'km' 
+                        ? 'អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោង' 
+                        : 'General Department of Project Impact Resolution'
+                      }
                     </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-[#4CAF50] mt-1.5">
                       {currentLang === 'km' ? 'ម៉ឺនុយមេ' : 'Main Menu'}
                     </p>
                   </div>
                 </div>
                 <button 
                   onClick={closeMobileMenu}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-[#4CAF50] hover:bg-opacity-10 rounded-full transition-all duration-200 active:scale-95 flex-shrink-0 ml-2"
                 >
-                  <X size={18} className="text-gray-500" />
+                  <X size={20} className="text-gray-500" />
                 </button>
               </div>
             </div>
 
-            {/* Menu Items - Clean List */}
-            <div className="p-5 max-h-[60vh] overflow-y-auto">
+            {/* Menu Items with Smooth Animations */}
+            <div className="p-5 pb-20">
               <div className="space-y-1">
                 {menuItems.map((item) => {
                   const isActive = isItemActive(item);
                   
                   return (
-                    <div key={item.id}>
+                    <div key={item.id} className="transform transition-all duration-200">
                       {item.dropdown ? (
                         <>
                           <button
                             onClick={() => toggleMobileDropdown(item.id)}
-                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
-                              isActive ? 'text-primary-600 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'
-                            }`}
+                            className={`
+                              w-full flex items-center justify-between px-3 py-3 rounded-lg transition-all duration-200
+                              ${isActive 
+                                ? 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10' 
+                                : 'text-gray-700 hover:bg-[#4CAF50] hover:bg-opacity-5'
+                              }
+                              active:scale-98
+                            `}
                           >
-                            <div className="flex items-center">
-                              <item.icon size={18} className={`mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500'}`} />
-                              <span className="text-sm font-medium">{getTranslatedLabel(item)}</span>
+                            <div className="flex items-center flex-1 min-w-0">
+                              <item.icon 
+                                size={18} 
+                                className={`mr-3 flex-shrink-0 transition-all duration-200 ${
+                                  isActive ? 'text-[#4CAF50] scale-110' : 'text-gray-500'
+                                }`} 
+                              />
+                              <span className="text-sm font-medium break-words text-left">
+                                {getTranslatedLabel(item)}
+                              </span>
                             </div>
                             <ChevronDown 
                               size={16} 
-                              className={`transition-transform duration-200 ${
+                              className={`ml-2 flex-shrink-0 transition-all duration-300 ${
                                 mobileDropdownOpen[item.id] ? 'rotate-180' : ''
-                              } ${isActive ? 'text-primary-600' : 'text-gray-400'}`} 
+                              } ${isActive ? 'text-[#4CAF50]' : 'text-gray-400'}`} 
                             />
                           </button>
 
-                          {/* Submenu */}
-                          {mobileDropdownOpen[item.id] && (
-                            <div className="ml-9 mt-1 space-y-0.5">
-                              {item.subItems[currentLang].map((subItem, i) => {
-                                const isSubActive = subItem.path === location.pathname;
-                                
-                                return (
-                                  <button
-                                    key={i}
-                                    onClick={() => handleNavigation(subItem.path)}
-                                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                                      isSubActive
-                                        ? 'text-primary-600 bg-primary-50'
-                                        : 'text-gray-600 hover:bg-gray-50'
-                                    }`}
-                                  >
-                                    {subItem.label}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
+                          {/* Submenu with smooth expand/collapse */}
+                          <div 
+                            className={`
+                              ml-9 mt-1 space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out
+                              ${mobileDropdownOpen[item.id] 
+                                ? 'max-h-96 opacity-100' 
+                                : 'max-h-0 opacity-0'
+                              }
+                            `}
+                          >
+                            {item.subItems[currentLang].map((subItem, i) => {
+                              const isSubActive = subItem.path === location.pathname;
+                              
+                              return (
+                                <button
+                                  key={i}
+                                  onClick={() => handleNavigation(subItem.path)}
+                                  className={`
+                                    w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200
+                                    transform hover:translate-x-1
+                                    ${isSubActive
+                                      ? 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10'
+                                      : 'text-gray-600 hover:bg-[#4CAF50] hover:bg-opacity-5'
+                                    }
+                                  `}
+                                >
+                                  <div className="flex items-center">
+                                    <ChevronRight 
+                                      size={12} 
+                                      className={`mr-2 flex-shrink-0 transition-all duration-200 ${
+                                        isSubActive ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+                                      }`} 
+                                    />
+                                    <span className="break-words">{subItem.label}</span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </>
                       ) : (
                         <button
                           onClick={() => handleNavigation(item.path)}
-                          className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-colors ${
-                            isActive 
-                              ? 'text-primary-600 bg-primary-50' 
-                              : 'text-gray-700 hover:bg-gray-50'
-                          }`}
+                          className={`
+                            w-full flex items-center px-3 py-3 rounded-lg transition-all duration-200
+                            ${isActive 
+                              ? 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10' 
+                              : 'text-gray-700 hover:bg-[#4CAF50] hover:bg-opacity-5'
+                            }
+                            active:scale-98 hover:translate-x-1
+                          `}
                         >
-                          <item.icon size={18} className={`mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500'}`} />
-                          <span className="text-sm font-medium flex-1 text-left">{getTranslatedLabel(item)}</span>
-                          <ChevronRight size={14} className={isActive ? 'text-primary-600' : 'text-gray-400'} />
+                          <item.icon 
+                            size={18} 
+                            className={`mr-3 flex-shrink-0 transition-all duration-200 ${
+                              isActive ? 'text-[#4CAF50] scale-110' : 'text-gray-500'
+                            }`} 
+                          />
+                          <span className="text-sm font-medium flex-1 text-left break-words">
+                            {getTranslatedLabel(item)}
+                          </span>
+                          <ChevronRight 
+                            size={14} 
+                            className={`flex-shrink-0 transition-all duration-200 ${
+                              isActive ? 'text-[#4CAF50] translate-x-1' : 'text-gray-400'
+                            }`} 
+                          />
                         </button>
                       )}
                     </div>
@@ -326,17 +460,23 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                 })}
               </div>
 
-              {/* Contact Info - Simple */}
-              <div className="mt-6 pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-500 mb-3 px-3">Contact</p>
+              {/* Contact Info with hover effects */}
+              <div className="mt-6 pt-4 border-t border-[#4CAF50] border-opacity-10 animate-in fade-in duration-500 delay-100">
+                <p className="text-xs text-[#4CAF50] mb-3 px-3 font-medium">Contact</p>
                 <div className="space-y-2 px-3">
-                  <a href="tel:0712580896" className="flex items-center text-sm text-gray-600 hover:text-primary-600">
-                    <Phone size={14} className="mr-3 text-gray-400" />
-                    071 258 0896
+                  <a 
+                    href="tel:0712580896" 
+                    className="flex items-center text-sm text-gray-600 hover:text-[#2E7D32] transition-all duration-200 group hover:translate-x-1"
+                  >
+                    <Phone size={14} className="mr-3 text-[#4CAF50] flex-shrink-0 group-hover:text-[#2E7D32] group-hover:scale-110 transition-all duration-200" />
+                    <span className="group-hover:font-medium break-words">(+855) xx xxx xxxx</span>
                   </a>
-                  <a href="mailto:info@gdp.gov.kh" className="flex items-center text-sm text-gray-600 hover:text-primary-600">
-                    <Mail size={14} className="mr-3 text-gray-400" />
-                    info@gdp.gov.kh
+                  <a 
+                    href="mailto:info@gdpir.gov.kh" 
+                    className="flex items-center text-sm text-gray-600 hover:text-[#2E7D32] transition-all duration-200 group hover:translate-x-1"
+                  >
+                    <Mail size={14} className="mr-3 text-[#4CAF50] flex-shrink-0 group-hover:text-[#2E7D32] group-hover:scale-110 transition-all duration-200" />
+                    <span className="group-hover:font-medium break-words">info@gdpir.gov.kh</span>
                   </a>
                 </div>
               </div>
@@ -344,6 +484,64 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           </div>
         </>
       )}
+
+      {/* Add custom animations */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
+        @keyframes slide-in-from-right {
+          from {
+            transform: translateX(100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes slide-in-from-bottom {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-in {
+          animation-duration: 0.3s;
+          animation-fill-mode: both;
+        }
+        
+        .fade-in {
+          animation-name: fade-in;
+        }
+        
+        .slide-in-from-right {
+          animation-name: slide-in-from-right;
+        }
+        
+        .slide-in-from-bottom {
+          animation-name: slide-in-from-bottom;
+        }
+        
+        .active\\:scale-98:active {
+          transform: scale(0.98);
+        }
+        
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </>
   );
 };

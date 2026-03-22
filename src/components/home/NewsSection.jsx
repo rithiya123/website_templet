@@ -4,11 +4,45 @@ import {
   Calendar, ChevronRight, Eye, Star, TrendingUp, Clock, 
   Download, Share2, User, MessageCircle, Bookmark,
   FileText, Heart, ArrowLeft, Printer,
-  Facebook, Twitter, Linkedin, Link2, X, Filter,
+  Facebook, Twitter, Linkedin, Link2, X, Filter,ChevronLeft,ChevronRightIcon,
   Sparkles, Award, Zap, Globe
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import defaultImg from '../../images/defuat_img.jpg';
+
+// Import Post 1 images (14 images)
+import post1Img1 from '../../images/Post1/1.jpg';
+import post1Img2 from '../../images/Post1/2.jpg';
+import post1Img3 from '../../images/Post1/3.jpg';
+import post1Img4 from '../../images/Post1/4.jpg';
+import post1Img5 from '../../images/Post1/5.jpg';
+import post1Img6 from '../../images/Post1/6.jpg';
+import post1Img7 from '../../images/Post1/7.jpg';
+import post1Img8 from '../../images/Post1/8.jpg';
+import post1Img9 from '../../images/Post1/9.jpg';
+import post1Img10 from '../../images/Post1/10.jpg';
+import post1Img11 from '../../images/Post1/11.jpg';
+import post1Img12 from '../../images/Post1/12.jpg';
+import post1Img13 from '../../images/Post1/13.jpg';
+import post1Img14 from '../../images/Post1/14.jpg';
+
+// Import Post 2 images (16 images)
+import post2Img1 from '../../images/Post2/1.jpg';
+import post2Img2 from '../../images/Post2/2.jpg';
+import post2Img3 from '../../images/Post2/3.jpg';
+import post2Img4 from '../../images/Post2/4.jpg';
+import post2Img5 from '../../images/Post2/5.jpg';
+import post2Img6 from '../../images/Post2/6.jpg';
+import post2Img7 from '../../images/Post2/7.jpg';
+import post2Img8 from '../../images/Post2/8.jpg';
+import post2Img9 from '../../images/Post2/9.jpg';
+import post2Img10 from '../../images/Post2/10.jpg';
+import post2Img11 from '../../images/Post2/11.jpg';
+import post2Img12 from '../../images/Post2/12.jpg';
+import post2Img13 from '../../images/Post2/13.jpg';
+import post2Img14 from '../../images/Post2/14.jpg';
+import post2Img15 from '../../images/Post2/15.jpg';
+import post2Img16 from '../../images/Post2/16.jpg';
 
 const NewsSection = ({ onViewAll }) => {
   const navigate = useNavigate();
@@ -16,13 +50,28 @@ const NewsSection = ({ onViewAll }) => {
   const [currentLang, setCurrentLang] = useState('km');
   const [selectedNews, setSelectedNews] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [showLightbox, setShowLightbox] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [savedItems, setSavedItems] = useState([]);
   const [likedItems, setLikedItems] = useState([]);
   const [shareModal, setShareModal] = useState(false);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [hoveredCard, setHoveredCard] = useState(null);
 
-  // Listen for language changes
+  // Post 1 Images Array
+  const post1Images = [
+    post1Img1, post1Img2, post1Img3, post1Img4, post1Img5, post1Img6,
+    post1Img7, post1Img8, post1Img9, post1Img10, post1Img11, post1Img12,
+    post1Img13, post1Img14
+  ];
+
+  // Post 2 Images Array
+  const post2Images = [
+    post2Img1, post2Img2, post2Img3, post2Img4, post2Img5, post2Img6,
+    post2Img7, post2Img8, post2Img9, post2Img10, post2Img11, post2Img12,
+    post2Img13, post2Img14, post2Img15, post2Img16
+  ];
+
   useEffect(() => {
     const handleLanguageChange = (e) => {
       setCurrentLang(e.detail.language);
@@ -38,9 +87,8 @@ const NewsSection = ({ onViewAll }) => {
     return () => window.removeEventListener('languagechange', handleLanguageChange);
   }, []);
 
-  // Lock body scroll when detail is open
   useEffect(() => {
-    if (showDetail) {
+    if (showDetail || showLightbox) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -48,13 +96,11 @@ const NewsSection = ({ onViewAll }) => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showDetail]);
+  }, [showDetail, showLightbox]);
 
   const categories = [
-    { id: 'all', label: { km: 'ទាំងអស់', en: 'All News' }, icon: <Sparkles size={14} />, count: 12, color: 'from-gray-600 to-gray-700' },
-    { id: 'announcement', label: { km: 'សេចក្តីជូនដំណឹង', en: 'Announcements' }, icon: <Award size={14} />, count: 4, color: 'from-amber-500 to-orange-500' },
-    { id: 'event', label: { km: 'ព្រឹត្តិការណ៍', en: 'Events' }, icon: <Zap size={14} />, count: 3, color: 'from-green-500 to-emerald-500' },
-    { id: 'news', label: { km: 'ព័ត៌មាន', en: 'News' }, icon: <Globe size={14} />, count: 5, color: 'from-blue-500 to-indigo-500' }
+    { id: 'all', label: { km: 'ទាំងអស់', en: 'All News' }, icon: <Sparkles size={14} />, count: 2, color: 'from-green-500 to-emerald-500' },
+    { id: 'event', label: { km: 'ព្រឹត្តិការណ៍', en: 'Events' }, icon: <Zap size={14} />, count: 2, color: 'from-green-500 to-emerald-500' },
   ];
 
   const translations = {
@@ -67,7 +113,6 @@ const NewsSection = ({ onViewAll }) => {
       views: 'មើល',
       back: 'ត្រលប់ក្រោយ',
       related: 'ព័ត៌មានពាក់ព័ន្ធ',
-      comments: 'មតិយោបល់',
       likes: 'ចូលចិត្ត',
       save: 'រក្សាទុក',
       author: 'អ្នកនិពន្ធ',
@@ -77,7 +122,12 @@ const NewsSection = ({ onViewAll }) => {
       filter: 'តម្រង',
       loadMore: 'ផ្ទុកបន្ថែម',
       featured: 'ព័ត៌មានពិសេស',
-      featuredDesc: 'សូមតាមដានព័ត៌មានថ្មីៗ និងការផ្សព្វផ្សាយពីអគ្គនាយកដ្ឋានពន្ធនាគារ'
+      featuredDesc: 'សូមតាមដានព័ត៌មានថ្មីៗ និងការផ្សព្វផ្សាយពីអគ្គនាយកដ្ឋាន',
+      viewImages: 'មើលរូបភាពទាំងអស់',
+      close: 'បិទ',
+      sort: 'តម្រៀបតាម',
+      latest: 'ថ្មីបំផុត',
+      popular: 'ពេញនិយម'
     },
     en: {
       title: 'Latest News',
@@ -88,7 +138,6 @@ const NewsSection = ({ onViewAll }) => {
       views: 'views',
       back: 'Back',
       related: 'Related News',
-      comments: 'Comments',
       likes: 'Likes',
       save: 'Save',
       author: 'Author',
@@ -98,80 +147,116 @@ const NewsSection = ({ onViewAll }) => {
       filter: 'Filter',
       loadMore: 'Load More',
       featured: 'Featured News',
-      featuredDesc: 'Stay updated with the latest news and announcements from the General Department of Prisons'
+      featuredDesc: 'Stay updated with the latest news and announcements from the department',
+      viewImages: 'View All Images',
+      close: 'Close',
+      sort: 'Sort by',
+      latest: 'Latest',
+      popular: 'Most Popular'
     }
   };
 
   const t = translations[currentLang];
 
-  // Generate news items
-  const enhancedNews = Array.from({ length: 6 }, (_, index) => {
-    const categories_list = ['announcement', 'event', 'news'];
-    const category = categories_list[index % 3];
-    
-    return {
-      id: index + 1,
+  // News data matching AllNewsPage with full image arrays
+  const enhancedNews = [
+    {
+      id: 1,
       title: {
-        km: index % 2 === 0 
-          ? `សេចក្តីជូនដំណឹងស្តីពីការកែសម្រួលពន្ធ ${index + 1}`
-          : `អង្គភាពពន្ធនាគាររៀបចំសិក្ខាសាលាស្តីពីការគ្រប់គ្រង ${index + 1}`,
-        en: index % 2 === 0
-          ? `Notice on Tax Adjustment ${index + 1}`
-          : `Prison Department Organizes Management Workshop ${index + 1}`
+        km: "ឯកឧត្តម អ៊ឹម សិទ្ធីរ៉ា ជួបពិភាក្សាការងារជាមួយធនាគារអភិវឌ្ឍន៍អាស៊ី (ADB)",
+        en: "H.E. Im Sitthyra Meets with Asian Development Bank (ADB) for Work Discussion",
       },
-      date: new Date(2026, 2, 25 - index).toLocaleDateString(currentLang === 'km' ? 'km' : 'en', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      }),
-      category: category,
-      views: Math.floor(Math.random() * 5000) + 1000,
-      comments: Math.floor(Math.random() * 100) + 10,
-      likes: Math.floor(Math.random() * 500) + 100,
-      image: defaultImg,
+      date: "20 មករា 2026",
+      category: "event",
+      images: post1Images,
+      mainImage: post1Img1,
       summary: {
-        km: `ព័ត៌មានលម្អិតនៃសេចក្តីប្រកាសព័ត៌មានលេខ ${index + 1}...`,
-        en: `Details of press release No. ${index + 1}...`
+        km: "ឯកឧត្តម អ៊ឹម សិទ្ធីរ៉ា ប្រតិភូរាជរដ្ឋាភិបាលទទួលបន្ទុកជាអគ្គនាយក នៃអគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ បានអញ្ជើញជួបសម្តែងការគួរសម និងពិភាក្សាការងារជាមួយលោកស្រី Yasmin Siddiqi, Country Director នៃធនាគារអភិវឌ្ឍន៍អាស៊ីប្រចាំកម្ពុជា។",
+        en: "H.E. Im Sitthyra, Delegate of the Royal Government in charge as Director General of the General Department of Project Impact Resolution, paid a courtesy call and held work discussions with Ms. Yasmin Siddiqi, Country Director of the Asian Development Bank (ADB) in Cambodia.",
       },
       author: {
-        km: 'នាយកដ្ឋានព័ត៌មាន',
-        en: 'Information Department'
+        km: "នាយកដ្ឋានព័ត៌មាន",
+        en: "Information Department",
       },
-      hasAttachment: index % 2 === 0,
+      hasAttachment: true,
       content: {
         km: `
           <div class="space-y-4">
-            <p class="text-lg leading-relaxed">អគ្គនាយកដ្ឋានពន្ធនាគារបានចេញសេចក្តីជូនដំណឹងស្តីពីការងាររដ្ឋបាលពន្ធនាគារប្រចាំឆ្នាំ២០២៦។</p>
+            <p class="text-lg leading-relaxed">នៅព្រឹកថ្ងៃអង្គារ ២កើត ខែមាឃ ឆ្នាំម្សាញ់ សប្តស័ក ព.ស.២៥៦៩ ត្រូវនឹងថ្ងៃទី២០ ខែមករា ឆ្នាំ២០២៦ នៅទីស្តីការក្រសួងសេដ្ឋកិច្ច និងហិរញ្ញវត្ថុ៖</p>
             
-            <h3 class="text-xl font-bold mt-6 mb-3">ព័ត៌មានលម្អិត</h3>
-            <p>ការងារនេះធ្វើឡើងក្នុងគោលបំណងលើកកម្ពស់ប្រសិទ្ធភាពការងាររដ្ឋបាលពន្ធនាគារ។</p>
+            <p class="leading-relaxed">ឯកឧត្តម <strong>អ៊ឹម សិទ្ធីរ៉ា</strong> ប្រតិភូរាជរដ្ឋាភិបាលទទួលបន្ទុកជាអគ្គនាយក នៃអគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ បានអញ្ជើញជួបសម្តែងការគួរសម និងពិភាក្សាការងារជាមួយលោកស្រី <strong>Yasmin Siddiqi</strong>, Country Director នៃធនាគារអភិវឌ្ឍន៍អាស៊ីប្រចាំកម្ពុជា ។</p>
             
-            <h3 class="text-xl font-bold mt-6 mb-3">ចំណុចសំខាន់ៗ</h3>
-            <ul class="list-disc pl-5 space-y-2">
-              <li>ពង្រឹងប្រព័ន្ធគ្រប់គ្រងពន្ធនាគារ</li>
-              <li>បណ្តុះបណ្តាលមន្រ្តីជំនាញ</li>
-              <li>កែលម្អសេវាកម្មព័ត៌មាន</li>
-            </ul>
+            <p class="leading-relaxed">ក្នុងជំនួបនេះ ភាគីទាំងពីរបានពិភាក្សាអំពីកិច្ចសហប្រតិបត្តិការនាពេលខាងមុខ និងការពង្រឹងការងារដោះស្រាយផលប៉ះពាល់ពីគម្រោងអភិវឌ្ឍន៍នៅកម្ពុជា។</p>
+            
+            <p class="leading-relaxed">ការជួបពិភាក្សានេះបានប្រព្រឹត្តទៅក្នុងបរិយាកាសប្រកបដោយភាពស្និទ្ធស្នាល និងការយោគយល់គ្នាជាលក្ខណៈស្ថាបនា ដែលនឹងរួមចំណែកជំរុញការងារអភិវឌ្ឍន៍ប្រកបដោយចីរភាពនៅកម្ពុជា។</p>
+            
+            <p class="text-right mt-6">សូមគោរពអរគុណ!</p>
           </div>
         `,
         en: `
           <div class="space-y-4">
-            <p class="text-lg leading-relaxed">The General Department of Prisons has issued a notice regarding prison administration work for the year 2026.</p>
+            <p class="text-lg leading-relaxed">On Tuesday morning, January 20, 2026, at the Ministry of Economy and Finance:</p>
             
-            <h3 class="text-xl font-bold mt-6 mb-3">Details</h3>
-            <p>This initiative aims to improve the efficiency of prison administration work.</p>
+            <p class="leading-relaxed"><strong>H.E. Im Sitthyra</strong>, Delegate of the Royal Government in charge as Director General of the General Department of Project Impact Resolution, paid a courtesy call and held work discussions with <strong>Ms. Yasmin Siddiqi</strong>, Country Director of the Asian Development Bank (ADB) in Cambodia.</p>
             
-            <h3 class="text-xl font-bold mt-6 mb-3">Key Points</h3>
-            <ul class="list-disc pl-5 space-y-2">
-              <li>Strengthen prison management system</li>
-              <li>Train specialized officers</li>
-              <li>Improve information services</li>
-            </ul>
+            <p class="leading-relaxed">During this meeting, both parties discussed future cooperation and strengthening the work of addressing impacts from development projects in Cambodia.</p>
+            
+            <p class="leading-relaxed">This discussion took place in a friendly and constructive atmosphere, which will contribute to promoting sustainable development in Cambodia.</p>
+            
+            <p class="text-right mt-6">Thank you!</p>
           </div>
-        `
-      }
-    };
-  });
+        `,
+      },
+    },
+    {
+      id: 2,
+      title: {
+        km: "សិក្ខាសាលាស្តីពីការគ្រប់គ្រងលទ្ធកម្មដីធ្លី និងការរឹតបន្តឹងលើការប្រើប្រាស់ដីធ្លី",
+        en: "Workshop on Land Acquisition and Land Use Restriction Management",
+      },
+      date: "5 មីនា 2026",
+      category: "event",
+      images: post2Images,
+      mainImage: post2Img1,
+      summary: {
+        km: "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ សហការជាមួយធនាគារអភិវឌ្ឍន៍អាស៊ី (ADB) រៀបចំសិក្ខាសាលាស្តីពីការគ្រប់គ្រងលទ្ធកម្មដីធ្លី និងការរឹតបន្តឹងលើការប្រើប្រាស់ដីធ្លី។",
+        en: "The General Department of Project Impact Resolution, in cooperation with the Asian Development Bank (ADB), organized a workshop on Land Acquisition and Land Use Restriction Management.",
+      },
+      author: {
+        km: "នាយកដ្ឋានព័ត៌មាន",
+        en: "Information Department",
+      },
+      hasAttachment: true,
+      content: {
+        km: `
+          <div class="space-y-4">
+            <p class="text-lg leading-relaxed">នៅថ្ងៃព្រហស្បតិ៍ ២រោច ខែផល្គុន ឆ្នាំម្សាញ់ សប្តស័ក ព.ស.២៥៦៩ ត្រូវនឹងថ្ងៃទី៥ ខែមីនា គ.ស.២០២៦ នៅសណ្ឋាគារហៃយ៉ាត់ រីជេនស៊ី ភ្នំពេញ៖</p>
+            
+            <p class="leading-relaxed">អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ សហការជាមួយធនាគារអភិវឌ្ឍន៍អាស៊ី (ADB) រៀបចំសិក្ខាសាលាស្តីពីការគ្រប់គ្រងលទ្ធកម្មដីធ្លី និងការរឹតបន្តឹងលើការប្រើប្រាស់ដីធ្លី នៃគម្រោងដែលហិរញ្ញប្បទានដោយធនាគារអភិវឌ្ឍន៍អាស៊ី (ADB)។</p>
+            
+            <p class="leading-relaxed">សិក្ខាសាលានេះ ធ្វើឡើងក្រោមការដឹកនាំដ៏ខ្ពង់ខ្ពស់របស់ឯកឧត្តម <strong>អុឹម សិទ្ធីរ៉ា</strong> ប្រតិភូរាជរដ្ឋាភិបាល ទទួលបន្ទុកជាអគ្គនាយកនៃអគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍។</p>
+            
+            <p class="leading-relaxed">សិក្ខាសាលានេះ មានការអញ្ជើញចូលរួមវាគ្មិនមកពីការិយាល័យកណ្តាលរបស់ ADB, លោកស្រី <strong>Jocelyn Erlinda S. Munsayac</strong>, Director, Regional Operations Service 3, លោក <strong>Jose "Tito" Nicolas</strong>, Principal Safeguards Specialist Social Team Head, លោក <strong>Toby Nugent</strong>, Senior Safeguards Specialist (Social) និងមន្រ្តីជំនាញ Safeguard របស់ ADB ជាច្រើនទៀត ដើម្បីបណ្តុះបណ្តាល និងបញ្រ្ជាបការយល់ដឹងអំពីគោលនយោបាយ ESS5 ស្តីពីលទ្ធកម្មដីធ្លី និងការរឹតបន្តឹងលើការប្រើប្រាស់ដីធ្លី (Land Acquisition and Land Use Restriction) នៃក្របខ័ណ្ឌបរិស្ថាន និងសង្គម របស់ ADB ជូនដល់ថ្នាក់ដឹកនាំ និងមន្រ្តីក្រោមឱវាទអគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍។</p>
+            
+            <p class="text-right mt-6">សូមគោរពអរគុណ!</p>
+          </div>
+        `,
+        en: `
+          <div class="space-y-4">
+            <p class="text-lg leading-relaxed">On Thursday, March 5, 2026, at the Hyatt Regency Hotel, Phnom Penh:</p>
+            
+            <p class="leading-relaxed">The General Department of Project Impact Resolution, in cooperation with the Asian Development Bank (ADB), organized a workshop on Land Acquisition and Land Use Restriction Management for projects financed by the Asian Development Bank (ADB).</p>
+            
+            <p class="leading-relaxed">This workshop was held under the high leadership of <strong>H.E. Im Sitthyra</strong>, Delegate of the Royal Government in charge as Director General of the General Department of Project Impact Resolution.</p>
+            
+            <p class="leading-relaxed">The workshop featured speakers from ADB headquarters, including <strong>Ms. Jocelyn Erlinda S. Munsayac</strong>, Director, Regional Operations Service 3, <strong>Mr. Jose "Tito" Nicolas</strong>, Principal Safeguards Specialist Social Team Head, <strong>Mr. Toby Nugent</strong>, Senior Safeguards Specialist (Social), and other ADB Safeguards specialists to train and enhance understanding of ESS5 policy on Land Acquisition and Land Use Restriction under ADB's Environmental and Social Framework for the leadership and officials under the General Department of Project Impact Resolution.</p>
+            
+            <p class="text-right mt-6">Thank you!</p>
+          </div>
+        `,
+      },
+    },
+  ];
 
   const filteredNews = activeTab === 'all' 
     ? enhancedNews 
@@ -180,12 +265,36 @@ const NewsSection = ({ onViewAll }) => {
   const handleReadMore = (news) => {
     setSelectedNews(news);
     setShowDetail(true);
+    setSelectedImageIndex(null);
     window.scrollTo(0, 0);
   };
 
   const handleCloseDetail = () => {
     setShowDetail(false);
     setSelectedNews(null);
+    setSelectedImageIndex(null);
+  };
+
+  const handleOpenLightbox = (index) => {
+    setSelectedImageIndex(index);
+    setShowLightbox(true);
+  };
+
+  const handleCloseLightbox = () => {
+    setShowLightbox(false);
+    setSelectedImageIndex(null);
+  };
+
+  const handlePrevImage = () => {
+    if (selectedNews && selectedImageIndex > 0) {
+      setSelectedImageIndex(selectedImageIndex - 1);
+    }
+  };
+
+  const handleNextImage = () => {
+    if (selectedNews && selectedImageIndex < selectedNews.images.length - 1) {
+      setSelectedImageIndex(selectedImageIndex + 1);
+    }
   };
 
   const handleSave = (id) => {
@@ -213,32 +322,17 @@ const NewsSection = ({ onViewAll }) => {
     navigate('/news');
   };
 
-  const handleLoadMore = () => {
-    navigate('/news');
-  };
-
   const getCategoryColor = (category) => {
-    const colors = {
-      announcement: 'from-amber-500 to-orange-500',
-      event: 'from-green-500 to-emerald-500',
-      news: 'from-blue-500 to-indigo-500'
-    };
-    return colors[category] || 'from-gray-500 to-gray-600';
+    return 'from-green-500 to-emerald-500';
   };
 
   const getCategoryLabel = (category) => {
-    const labels = {
-      announcement: currentLang === 'km' ? 'សេចក្តីជូនដំណឹង' : 'Announcement',
-      event: currentLang === 'km' ? 'ព្រឹត្តិការណ៍' : 'Event',
-      news: currentLang === 'km' ? 'ព័ត៌មាន' : 'News'
-    };
-    return labels[category] || category;
+    return currentLang === 'km' ? 'ព្រឹត្តិការណ៍' : 'Event';
   };
 
-  // Related news (excluding current)
   const relatedNews = enhancedNews
     .filter(item => item.id !== selectedNews?.id)
-    .slice(0, 3);
+    .slice(0, 2);
 
   return (
     <div className="md:col-span-2 relative">
@@ -250,15 +344,15 @@ const NewsSection = ({ onViewAll }) => {
             <h2 className="text-2xl md:text-3xl font-light text-gray-900">
               {t.title}
             </h2>
-            <span className="bg-primary-100 text-primary-700 text-sm font-medium px-3 py-1.5 rounded-full">
-              {filteredNews.length}+
+            <span className="bg-[#4CAF50] bg-opacity-20 text-[#2E7D32] text-sm font-medium px-3 py-1.5 rounded-full">
+              {filteredNews.length}
             </span>
           </div>
           
           {/* Mobile Filter Button */}
           <button 
             onClick={() => setShowMobileFilter(!showMobileFilter)}
-            className="md:hidden flex items-center space-x-1 px-3 py-1.5 bg-gray-100 rounded-lg text-sm text-gray-600"
+            className="md:hidden flex items-center space-x-1 px-3 py-1.5 bg-[#4CAF50] bg-opacity-10 rounded-lg text-sm text-[#2E7D32]"
           >
             <Filter size={14} />
             <span>{t.filter}</span>
@@ -267,7 +361,7 @@ const NewsSection = ({ onViewAll }) => {
           {/* Desktop View All */}
           <button 
             onClick={handleViewAll}
-            className="hidden md:flex items-center text-sm text-gray-500 hover:text-primary-600 transition-colors group"
+            className="hidden md:flex items-center text-sm text-[#2E7D32] hover:text-[#4CAF50] transition-colors group"
           >
             {t.viewAll}
             <ChevronRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
@@ -278,7 +372,6 @@ const NewsSection = ({ onViewAll }) => {
         <div className="hidden md:flex flex-wrap items-center gap-2 mb-6">
           {categories.map((cat) => {
             const isActive = activeTab === cat.id;
-            const gradient = cat.color;
             
             return (
               <button
@@ -286,17 +379,17 @@ const NewsSection = ({ onViewAll }) => {
                 onClick={() => setActiveTab(cat.id)}
                 className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 overflow-hidden group ${
                   isActive
-                    ? `bg-gradient-to-r ${gradient} text-white shadow-md`
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white shadow-md'
+                    : 'bg-[#4CAF50] bg-opacity-10 text-[#2E7D32] hover:bg-[#4CAF50] hover:bg-opacity-20'
                 }`}
               >
                 <div className="flex items-center space-x-1.5">
-                  <span className={isActive ? 'text-white' : 'text-gray-500'}>
+                  <span className={isActive ? 'text-white' : 'text-[#2E7D32]'}>
                     {cat.icon}
                   </span>
                   <span>{cat.label[currentLang]}</span>
                   <span className={`ml-1 text-xs ${
-                    isActive ? 'text-white/80' : 'text-gray-400'
+                    isActive ? 'text-white/80' : 'text-[#2E7D32]/60'
                   }`}>
                     ({cat.count})
                   </span>
@@ -308,11 +401,10 @@ const NewsSection = ({ onViewAll }) => {
 
         {/* Category Tabs - Mobile Dropdown */}
         {showMobileFilter && (
-          <div className="md:hidden mb-4 p-3 bg-white border border-gray-200 rounded-lg shadow-lg animate-fadeIn">
+          <div className="md:hidden mb-4 p-3 bg-white border border-[#4CAF50] border-opacity-20 rounded-lg shadow-lg animate-fadeIn">
             <div className="space-y-1">
               {categories.map((cat) => {
                 const isActive = activeTab === cat.id;
-                const gradient = cat.color;
                 
                 return (
                   <button
@@ -323,28 +415,28 @@ const NewsSection = ({ onViewAll }) => {
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
                       isActive
-                        ? `bg-gradient-to-r ${gradient} text-white`
-                        : 'hover:bg-gray-100 text-gray-700'
+                        ? 'bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white'
+                        : 'hover:bg-[#4CAF50] hover:bg-opacity-10 text-gray-700'
                     }`}
                   >
                     <div className="flex items-center space-x-2">
-                      <span className={isActive ? 'text-white' : 'text-gray-500'}>
+                      <span className={isActive ? 'text-white' : 'text-[#2E7D32]'}>
                         {cat.icon}
                       </span>
                       <span>{cat.label[currentLang]}</span>
                     </div>
                     <span className={`text-xs ${
-                      isActive ? 'text-white/80' : 'text-gray-400'
+                      isActive ? 'text-white/80' : 'text-[#2E7D32]/60'
                     }`}>
                       {cat.count}
                     </span>
                   </button>
                 );
               })}
-              <div className="border-t border-gray-100 my-2 pt-2">
+              <div className="border-t border-[#4CAF50] border-opacity-20 my-2 pt-2">
                 <button 
                   onClick={handleViewAll}
-                  className="flex items-center justify-center text-primary-600 text-sm font-medium py-2 w-full hover:bg-primary-50 rounded-lg transition-colors"
+                  className="flex items-center justify-center text-[#2E7D32] text-sm font-medium py-2 w-full hover:bg-[#4CAF50] hover:bg-opacity-10 rounded-lg transition-colors"
                 >
                   {t.viewAll}
                   <ChevronRight size={14} className="ml-1" />
@@ -356,8 +448,7 @@ const NewsSection = ({ onViewAll }) => {
 
         {/* News Grid */}
         <div className="grid md:grid-cols-2 gap-6">
-          {filteredNews.slice(0, 4).map((item, index) => {
-            const gradient = getCategoryColor(item.category);
+          {filteredNews.map((item, index) => {
             const isHovered = hoveredCard === item.id;
             
             return (
@@ -371,7 +462,7 @@ const NewsSection = ({ onViewAll }) => {
                 {/* Image Container */}
                 <div className="relative h-48 overflow-hidden">
                   <img 
-                    src={item.image} 
+                    src={item.mainImage} 
                     alt={item.title[currentLang]}
                     className={`w-full h-full object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
                   />
@@ -381,43 +472,34 @@ const NewsSection = ({ onViewAll }) => {
                   
                   {/* Category Badge */}
                   <div className="absolute top-4 left-4">
-                    <span className={`px-3 py-1.5 bg-gradient-to-r ${gradient} text-white text-xs font-medium rounded-full shadow-lg flex items-center space-x-1`}>
+                    <span className="px-3 py-1.5 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white text-xs font-medium rounded-full shadow-lg flex items-center space-x-1">
                       <Award size={10} />
                       <span>{getCategoryLabel(item.category)}</span>
                     </span>
                   </div>
 
-                  {/* Save Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSave(item.id);
-                    }}
-                    className={`absolute top-4 right-4 p-2 rounded-full transition-all duration-300 ${
-                      savedItems.includes(item.id)
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-white/20 backdrop-blur-sm text-white hover:bg-primary-600'
-                    }`}
-                  >
-                    <Bookmark size={14} fill={savedItems.includes(item.id) ? 'currentColor' : 'none'} />
-                  </button>
+                  {/* Image Count Badge */}
+                  {item.images && item.images.length > 1 && (
+                    <div className="absolute top-4 right-4">
+                      <span className="px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-xs rounded-lg flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {item.images.length}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Date */}
                   <div className="absolute bottom-4 left-4 flex items-center space-x-2 text-white/90 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
                     <Calendar size={12} />
                     <span>{item.date}</span>
                   </div>
-
-                  {/* View Count */}
-                  <div className="absolute bottom-4 right-4 flex items-center space-x-1 text-white/90 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
-                    <Eye size={12} />
-                    <span>{item.views}</span>
-                  </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-5">
-                  <h3 className="text-base font-medium text-gray-900 mb-2 leading-relaxed line-clamp-2 group-hover:text-primary-700 transition-colors">
+                  <h3 className="text-base font-medium text-gray-900 mb-2 leading-relaxed line-clamp-2 group-hover:text-[#2E7D32] transition-colors">
                     {item.title[currentLang]}
                   </h3>
                   
@@ -427,47 +509,22 @@ const NewsSection = ({ onViewAll }) => {
 
                   {/* Footer with actions */}
                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <div className="flex items-center space-x-3">
-                      <button 
-                        className="flex items-center space-x-1 text-xs text-primary-600 hover:text-primary-700 font-medium group/btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleReadMore(item);
-                        }}
-                      >
-                        <span>{t.readMore}</span>
-                        <ChevronRight size={12} className="group/btn:hover:translate-x-1 transition-transform" />
-                      </button>
-                      
-                      {item.hasAttachment && (
-                        <button 
-                          className="text-gray-400 hover:text-primary-600 transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Download size={14} />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="flex items-center space-x-2 text-xs text-gray-400">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLike(item.id);
-                        }}
-                        className="flex items-center space-x-1 hover:text-red-500 transition-colors"
-                      >
-                        <Heart size={12} fill={likedItems.includes(item.id) ? 'currentColor' : 'none'} />
-                        <span>{item.likes}</span>
-                      </button>
-                      <span>•</span>
-                      <MessageCircle size={12} />
-                      <span>{item.comments}</span>
-                    </div>
+                    <button 
+                      className="flex items-center space-x-1 text-xs text-[#4CAF50] hover:text-[#2E7D32] font-medium group/btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReadMore(item);
+                      }}
+                    >
+                      <span>{t.readMore}</span>
+                      <ChevronRight size={12} className="group/btn:hover:translate-x-1 transition-transform" />
+                    </button>
+                    
+                    
                   </div>
 
                   {/* Hover Progress Indicator */}
-                  <div className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r ${gradient} transition-all duration-500`} 
+                  <div className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] transition-all duration-500" 
                        style={{ width: isHovered ? '100%' : '0%' }}></div>
                 </div>
               </div>
@@ -475,22 +532,8 @@ const NewsSection = ({ onViewAll }) => {
           })}
         </div>
 
-        {/* Load More Button */}
-        {filteredNews.length > 4 && (
-          <div className="mt-8 text-center">
-            <button 
-              onClick={handleLoadMore}
-              className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:border-primary-300 hover:text-primary-600 transition-all duration-300 inline-flex items-center space-x-2 group shadow-sm hover:shadow"
-            >
-              <span>{t.loadMore}</span>
-              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-        )}
-
         {/* Featured News Banner */}
-        <div className="mt-8 bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
-          {/* Decorative Elements */}
+        {/* <div className="mt-8 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute -right-10 -top-10 w-40 h-40 bg-white rounded-full blur-3xl"></div>
             <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-white rounded-full blur-3xl"></div>
@@ -505,20 +548,20 @@ const NewsSection = ({ onViewAll }) => {
                 <h4 className="text-lg font-semibold mb-1">
                   {t.featured}
                 </h4>
-                <p className="text-sm text-primary-100 max-w-xl">
+                <p className="text-sm text-green-100 max-w-xl">
                   {t.featuredDesc}
                 </p>
               </div>
             </div>
             <button 
               onClick={handleViewAll}
-              className="mt-4 md:mt-0 px-6 py-2.5 bg-white text-primary-700 rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-lg flex items-center justify-center space-x-2 group"
+              className="mt-4 md:mt-0 px-6 py-2.5 bg-white text-[#2E7D32] rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-lg flex items-center justify-center space-x-2 group"
             >
               <span className="font-medium">{t.viewAll}</span>
               <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* News Detail Modal */}
@@ -530,28 +573,12 @@ const NewsSection = ({ onViewAll }) => {
               <div className="flex items-center justify-between">
                 <button 
                   onClick={handleCloseDetail}
-                  className="flex items-center space-x-2 text-gray-500 hover:text-primary-600 transition-colors group"
+                  className="flex items-center space-x-2 text-gray-500 hover:text-[#2E7D32] transition-colors group"
                 >
                   <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                   <span className="text-sm">{t.back}</span>
                 </button>
                 <div className="flex items-center space-x-2">
-                  <button 
-                    onClick={() => handleSave(selectedNews.id)}
-                    className={`p-2 rounded-lg transition-colors ${
-                      savedItems.includes(selectedNews.id) 
-                        ? 'bg-primary-100 text-primary-600' 
-                        : 'hover:bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    <Bookmark size={16} fill={savedItems.includes(selectedNews.id) ? 'currentColor' : 'none'} />
-                  </button>
-                  <button 
-                    onClick={() => window.print()}
-                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors"
-                  >
-                    <Printer size={16} />
-                  </button>
                   <button 
                     onClick={() => setShareModal(true)}
                     className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors"
@@ -568,7 +595,7 @@ const NewsSection = ({ onViewAll }) => {
             {/* Hero Image */}
             <div className="relative h-[400px] rounded-xl overflow-hidden mb-8">
               <img 
-                src={selectedNews.image} 
+                src={selectedNews.mainImage} 
                 alt={selectedNews.title[currentLang]}
                 className="w-full h-full object-cover"
               />
@@ -576,10 +603,22 @@ const NewsSection = ({ onViewAll }) => {
               
               {/* Category Badge */}
               <div className="absolute top-6 left-6">
-                <span className={`px-4 py-2 bg-gradient-to-r ${getCategoryColor(selectedNews.category)} text-white text-sm font-medium rounded-lg shadow-lg`}>
+                <span className="px-4 py-2 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white text-sm font-medium rounded-lg shadow-lg">
                   {getCategoryLabel(selectedNews.category)}
                 </span>
               </div>
+
+              {/* Image Count Badge */}
+              {selectedNews.images && selectedNews.images.length > 1 && (
+                <div className="absolute top-6 right-6">
+                  <span className="px-3 py-1.5 bg-black/60 backdrop-blur-sm text-white text-xs rounded-lg flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {selectedNews.images.length}
+                  </span>
+                </div>
+              )}
 
               {/* Title on Image */}
               <div className="absolute bottom-6 left-6 right-6">
@@ -592,28 +631,9 @@ const NewsSection = ({ onViewAll }) => {
             {/* Meta Information */}
             <div className="flex flex-wrap items-center gap-6 mb-8 pb-6 border-b border-gray-100">
               <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <User size={14} className="text-primary-500" />
-                <span>{selectedNews.author[currentLang]}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Calendar size={14} className="text-primary-500" />
+                <Calendar size={14} className="text-[#4CAF50]" />
                 <span>{selectedNews.date}</span>
               </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Eye size={14} className="text-primary-500" />
-                <span>{selectedNews.views} {t.views}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <MessageCircle size={14} className="text-primary-500" />
-                <span>{selectedNews.comments}</span>
-              </div>
-              <button 
-                onClick={() => handleLike(selectedNews.id)}
-                className="flex items-center space-x-1 text-sm text-gray-500 hover:text-red-500 transition-colors"
-              >
-                <Heart size={14} fill={likedItems.includes(selectedNews.id) ? 'currentColor' : 'none'} />
-                <span>{selectedNews.likes}</span>
-              </button>
             </div>
 
             {/* Main Content */}
@@ -622,26 +642,33 @@ const NewsSection = ({ onViewAll }) => {
               dangerouslySetInnerHTML={{ __html: selectedNews.content[currentLang] }}
             />
 
-            {/* Attachments */}
-            {selectedNews.hasAttachment && (
-              <div className="mb-8 p-5 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                  <Download size={14} className="mr-2 text-primary-500" />
-                  {currentLang === 'km' ? 'ឯកសារភ្ជាប់' : 'Attachments'}
+            {/* Gallery Section */}
+            {selectedNews.images && selectedNews.images.length > 1 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {t.viewImages}
                 </h3>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-primary-200 transition-colors">
-                    <div className="flex items-center space-x-3">
-                      <FileText size={16} className="text-primary-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-700">Document.pdf</p>
-                        <p className="text-xs text-gray-400">2.5 MB</p>
-                      </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {selectedNews.images.slice(0, 8).map((img, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => handleOpenLightbox(idx)}
+                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group bg-gray-100"
+                    >
+                      <img
+                        src={img}
+                        alt={`${selectedNews.title[currentLang]} - ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                      {idx === 7 && selectedNews.images.length > 8 && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white font-medium">
+                            +{selectedNews.images.length - 8}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <button className="p-2 hover:bg-primary-50 rounded-lg transition-colors">
-                      <Download size={14} className="text-primary-500" />
-                    </button>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -669,34 +696,81 @@ const NewsSection = ({ onViewAll }) => {
             </div>
 
             {/* Related News */}
-            <div className="border-t border-gray-100 pt-8">
-              <h3 className="text-sm font-medium text-gray-700 mb-4">{t.related}</h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                {relatedNews.map((item) => (
-                  <div 
-                    key={item.id}
-                    className="group cursor-pointer border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all"
-                    onClick={() => handleReadMore(item)}
-                  >
-                    <div className="relative h-32 overflow-hidden">
-                      <img 
-                        src={item.image} 
-                        alt={item.title[currentLang]}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+            {relatedNews.length > 0 && (
+              <div className="border-t border-gray-100 pt-8">
+                <h3 className="text-sm font-medium text-gray-700 mb-4">{t.related}</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {relatedNews.map((item) => (
+                    <div 
+                      key={item.id}
+                      className="group cursor-pointer border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all"
+                      onClick={() => handleReadMore(item)}
+                    >
+                      <div className="relative h-32 overflow-hidden">
+                        <img 
+                          src={item.mainImage} 
+                          alt={item.title[currentLang]}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <h4 className="text-xs font-medium text-gray-900 group-hover:text-[#2E7D32] line-clamp-2 mb-1">
+                          {item.title[currentLang]}
+                        </h4>
+                        <p className="text-[10px] text-gray-400 flex items-center">
+                          <Calendar size={8} className="mr-1" />
+                          {item.date}
+                        </p>
+                      </div>
                     </div>
-                    <div className="p-3">
-                      <h4 className="text-xs font-medium text-gray-900 group-hover:text-primary-600 line-clamp-2 mb-1">
-                        {item.title[currentLang]}
-                      </h4>
-                      <p className="text-[10px] text-gray-400 flex items-center">
-                        <Calendar size={8} className="mr-1" />
-                        {item.date}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {showLightbox && selectedNews && selectedImageIndex !== null && (
+        <div className="fixed inset-0 bg-black/95 z-[60] flex items-center justify-center">
+          <button
+            onClick={handleCloseLightbox}
+            className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors"
+          >
+            <X size={32} />
+          </button>
+
+          <button
+            onClick={handlePrevImage}
+            disabled={selectedImageIndex === 0}
+            className={`absolute left-4 z-10 text-white hover:text-gray-300 transition-colors ${
+              selectedImageIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            <ChevronLeft size={48} />
+          </button>
+
+          <button
+            onClick={handleNextImage}
+            disabled={selectedImageIndex === selectedNews.images.length - 1}
+            className={`absolute right-4 z-10 text-white hover:text-gray-300 transition-colors ${
+              selectedImageIndex === selectedNews.images.length - 1
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+          >
+            <ChevronRightIcon size={48} />
+          </button>
+
+          <div className="max-w-[90vw] max-h-[90vh]">
+            <img
+              src={selectedNews.images[selectedImageIndex]}
+              alt={`${selectedNews.title[currentLang]} - ${selectedImageIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+              {selectedImageIndex + 1} / {selectedNews.images.length}
             </div>
           </div>
         </div>
