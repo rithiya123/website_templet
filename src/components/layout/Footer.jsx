@@ -18,7 +18,7 @@ import {
   Info,
   Users,
   FileText,
-  Building2
+  Building2,
 } from "lucide-react";
 import Container from "../ui/Container";
 import logoImage from "../../images/logo.png";
@@ -50,7 +50,7 @@ const Footer = () => {
 
   const translations = {
     km: {
-      brand: "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោង",
+      brand: "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
       address: "អាសយដ្ឋាន",
       phone: "ទូរស័ព្ទ",
       email: "អ៊ីមែល",
@@ -123,9 +123,17 @@ const Footer = () => {
 
   // About sub-links (dropdown items without main About page)
   const aboutSubLinks = [
-    { label: t.aboutSub1, path: "/about/history", icon: <Building2 size={12} /> },
+    {
+      label: t.aboutSub1,
+      path: "/about/history",
+      icon: <Building2 size={12} />,
+    },
     { label: t.aboutSub2, path: "/about/roles", icon: <Shield size={12} /> },
-    { label: t.aboutSub3, path: "/about/director-message", icon: <Info size={12} /> },
+    {
+      label: t.aboutSub3,
+      path: "/about/director-message",
+      icon: <Info size={12} />,
+    },
   ];
 
   const contactInfo = {
@@ -367,14 +375,15 @@ const Footer = () => {
 
             <div className="bg-white/10 rounded-lg overflow-hidden">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.773015555563!2d104.88098731462015!3d11.56584759178617!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31095173761d4a53%3A0x2d9b4a5c7b5d3c0!2sPhnom%20Penh!5e0!3m2!1sen!2skh!4v1620000000000!5m2!1sen!2skh"
+                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3908.6539446787106!2d104.920614!3d11.576647!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310951434d493e03%3A0xb1a605e9a569ec8b!2sMinistry%20of%20Economy%20and%20Finance%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1774153266478!5m2!1sen!2skh"
                 width="100%"
                 height="150"
-                style={{ border: 0, filter: "grayscale(50%)" }}
-                allowFullScreen=""
+                style={{ border: 0 }}
+                allowFullScreen
                 loading="lazy"
-                title="GDPIR Location"
-                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Ministry of Economy and Finance Location Map"
+                className="w-full h-full"
               ></iframe>
             </div>
 

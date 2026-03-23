@@ -19,10 +19,10 @@ const Header = () => {
     if (element) {
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
-      
+
       window.scrollTo({
         top: offsetPosition,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     }
   };
@@ -30,38 +30,38 @@ const Header = () => {
   // Add hash link smooth scroll handler
   useEffect(() => {
     const handleHashLinkClick = (e) => {
-      const target = e.target.closest('a');
-      if (target && target.hash && target.hash.startsWith('#')) {
+      const target = e.target.closest("a");
+      if (target && target.hash && target.hash.startsWith("#")) {
         const elementId = target.hash.substring(1);
         const element = document.getElementById(elementId);
-        
+
         if (element) {
           e.preventDefault();
-          const header = document.querySelector('header');
+          const header = document.querySelector("header");
           const headerHeight = header ? header.offsetHeight : 80;
           smoothScrollTo(elementId, headerHeight);
-          
+
           // Update URL without jumping - using window.history instead of history
           window.history.pushState(null, null, target.hash);
         }
       }
     };
 
-    document.addEventListener('click', handleHashLinkClick);
-    
+    document.addEventListener("click", handleHashLinkClick);
+
     // Handle initial hash on page load
     if (window.location.hash) {
       setTimeout(() => {
         const elementId = window.location.hash.substring(1);
         if (document.getElementById(elementId)) {
-          const header = document.querySelector('header');
+          const header = document.querySelector("header");
           const headerHeight = header ? header.offsetHeight : 80;
           smoothScrollTo(elementId, headerHeight);
         }
       }, 100);
     }
-    
-    return () => document.removeEventListener('click', handleHashLinkClick);
+
+    return () => document.removeEventListener("click", handleHashLinkClick);
   }, []);
 
   // Listen for language changes
@@ -121,9 +121,9 @@ const Header = () => {
     km: {
       hotline: "ទូរស័ព្ទបន្ទាន់",
       welcome:
-        "សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោង",
-      department: "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោង",
-      departmentShort: "អ.ដ.គ",
+        "សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
+      department: "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
+      departmentShort: "អ.ដ.ភ",
       phone: "(+855) xx xxx xxxx",
       quickLinks: "តំណភ្ជាប់រហ័ស",
       contactUs: "ទំនាក់ទំនងយើងខ្ញុំ",
@@ -136,7 +136,7 @@ const Header = () => {
       welcome:
         "Welcome to the official website of the General Department of Project Impact Resolution!",
       department: "General Department of Project Impact Resolution",
-      departmentShort: "GDPIR",
+      departmentShort: "អ.ដ.ភ",
       phone: "(+855) xx xxx xxxx",
       quickLinks: "Quick Links",
       contactUs: "Contact Us",

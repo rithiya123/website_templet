@@ -216,73 +216,87 @@ const ManagementStructure = () => {
     }
   };
 
-  // Deputy Directors with detailed information
-  const deputyDirectors = [
+   const deputyDirectors = [
     {
-      id: 'deputy1',
-      name: { km: 'លោក លី ហៃម៉ីន', en: 'Mr. Ly Haimen' },
-      position: { km: 'អគ្គនាយករង', en: 'Deputy Director General' },
-      email: 'xxx@mef.gov.kh',
-      phone: '(+855) xx xxx xxxx',
+      id: "deputy1",
+      name: { km: "លោក លី ហ្សេមីន", en: "លោក លី ហ្សេមីន" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
       image: logo,
-      department: { km: 'នាយកដ្ឋានកិច្ចការទូទៅ', en: 'Department of General Affairs' },
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានកិច្ចការទូទៅ",
+        en: "Department of General Affairs",
+      },
       responsibilities: {
-        km: 'ទទួលបន្ទុកគ្រប់គ្រងផ្នែករដ្ឋបាល បុគ្គលិក ហិរញ្ញវត្ថុ និងកិច្ចការច្បាប់ទាំងអស់របស់អគ្គនាយកដ្ឋាន',
-        en: 'Responsible for managing all administrative, personnel, financial, and legal affairs of the General Department'
-      }
+        km: "ទទួលបន្ទុកគ្រប់គ្រងផ្នែករដ្ឋបាល បុគ្គលិក ហិរញ្ញវត្ថុ និងកិច្ចការច្បាប់ទាំងអស់របស់អគ្គនាយកដ្ឋាន",
+        en: "Responsible for managing all administrative, personnel, financial, and legal affairs of the General Department",
+      },
     },
     {
-      id: 'deputy2',
-      name: { km: 'លោក យ៉េន សុភ័ណ', en: 'Mr. Yen Sophorn' },
-      position: { km: 'អគ្គនាយករង', en: 'Deputy Director General' },
-      email: 'xxx@mef.gov.kh',
-      phone: '(+855) xx xxx xxxx',
+      id: "deputy2",
+      name: { km: "លោក យ៉េន សុភ័ណ", en: "Mr. Yen Sophorn" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
       image: logo,
-      department: { km: 'នាយកដ្ឋានត្រួតពិនិត្យផ្ទៃក្នុង និងគ្រប់គ្រងទិន្នន័យ', en: 'Department of Internal Inspection and Data Management' },
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានត្រួតពិនិត្យផ្ទៃក្នុង និងគ្រប់គ្រងទិន្នន័យ",
+        en: "Department of Internal Inspection and Data Management",
+      },
       responsibilities: {
-        km: 'ទទួលបន្ទុកត្រួតពិនិត្យ និងតាមដានការអនុវត្តការងាររបស់នាយកដ្ឋានទាំងអស់ និងគ្រប់គ្រងប្រព័ន្ធទិន្នន័យ',
-        en: 'Responsible for monitoring and tracking the implementation of all departments and managing the data system'
-      }
+        km: "ទទួលបន្ទុកត្រួតពិនិត្យ និងតាមដានការអនុវត្តការងាររបស់នាយកដ្ឋានទាំងអស់ និងគ្រប់គ្រងប្រព័ន្ធទិន្នន័យ",
+        en: "Responsible for monitoring and tracking the implementation of all departments and managing the data system",
+      },
     },
     {
-      id: 'deputy3',
-      name: { km: 'លោក ប៊ុត សង្វារ', en: 'Mr. But Sangvar' },
-      position: { km: 'អគ្គនាយករង', en: 'Deputy Director General' },
-      email: 'xxx@mef.gov.kh',
-      phone: '(+855) xx xxx xxxx',
+      id: "deputy3",
+      name: { km: "លោក ប៊ុត សង្វារ", en: "Mr. But Sangvar" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
       image: logo,
-      department: { km: 'នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ១', en: 'Impact Resolution Department 1' },
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ១",
+        en: "Impact Resolution Department 1",
+      },
       responsibilities: {
-        km: 'ទទួលបន្ទុកគម្រោងដែលប្រើប្រាស់ថវិកាជាតិ និងគម្រោងរបស់ធនាគារពិភពលោក (WB)',
-        en: 'Responsible for projects using national budget and World Bank (WB) projects'
-      }
+        km: "ទទួលបន្ទុកគម្រោងដែលប្រើប្រាស់ថវិកាជាតិ និងគម្រោងរបស់ធនាគារពិភពលោក (WB)",
+        en: "Responsible for projects using national budget and World Bank (WB) projects",
+      },
     },
     {
-      id: 'deputy4',
-      name: { km: 'លោក ចាន់ ថង់', en: 'Mr. Chan Thong' },
-      position: { km: 'អគ្គនាយករង', en: 'Deputy Director General' },
-      email: 'xxx@mef.gov.kh',
-      phone: '(+855) xx xxx xxxx',
+      id: "deputy4",
+      name: { km: "លោក ចាន់ ធន់", en: "លោក ចាន់ ធន់" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
       image: logo,
-      department: { km: 'នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ២', en: 'Impact Resolution Department 2' },
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ២",
+        en: "Impact Resolution Department 2",
+      },
       responsibilities: {
-        km: 'ទទួលបន្ទុកគម្រោងរបស់ធនាគារអភិវឌ្ឍន៍អាស៊ី (ADB)',
-        en: 'Responsible for Asian Development Bank (ADB) projects'
-      }
+        km: "ទទួលបន្ទុកគម្រោងរបស់ធនាគារអភិវឌ្ឍន៍អាស៊ី (ADB)",
+        en: "Responsible for Asian Development Bank (ADB) projects",
+      },
     },
     {
-      id: 'deputy5',
-      name: { km: 'លោក ស្រ៊ាង លឹមស្រូយ', en: 'Mr. Sreng Limsroy' },
-      position: { km: 'អគ្គនាយករង', en: 'Deputy Director General' },
-      email: 'xxx@mef.gov.kh',
-      phone: '(+855) xx xxx xxxx',
-      image: directorImg,
-      department: { km: 'នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ៣', en: 'Impact Resolution Department 3' },
+      id: "deputy5",
+      name: { km: "លោក ស្រ៊ាង លឹមស្រូយ", en: "Mr. Sreng Limsroy" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ៣",
+        en: "Impact Resolution Department 3",
+      },
       responsibilities: {
-        km: 'ទទួលបន្ទុកគម្រោងដែលប្រើប្រាស់ទុនវិនិយោគពីប្រទេសចិន និងដៃគូទ្វេភាគី',
-        en: 'Responsible for projects using investment capital from China and bilateral partners'
-      }
-    }
+        km: "ទទួលបន្ទុកគម្រោងដែលប្រើប្រាស់ទុនវិនិយោគពីប្រទេសចិន និងដៃគូទ្វេភាគី",
+        en: "Responsible for projects using investment capital from China and bilateral partners",
+      },
+    },
   ];
 
   // Departments
