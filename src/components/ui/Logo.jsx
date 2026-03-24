@@ -54,8 +54,8 @@ const Logo = ({
     departmentShort || (variant === "hero" ? "GDPIR" : "អ.ដ.ផ");
   const englishName =
     variant === "hero"
-      ? "GENERAL DEPARTMENT OF PROJECT IMPACT RESOLUTION"
-      : "General Department of Project Impact Resolution";
+      ? "General Department of Resettlement"
+      : "General Department of Resettlement";
 
   // Responsive text truncation for mobile
   const getTruncatedTitle = () => {
