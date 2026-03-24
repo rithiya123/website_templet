@@ -123,7 +123,7 @@ const Header = () => {
       welcome:
         "សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
       department: "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
-      departmentShort: "អ.ដ.ភ",
+      departmentShort: "អ.ដ.ផ",
       phone: "(+855) xx xxx xxxx",
       quickLinks: "តំណភ្ជាប់រហ័ស",
       contactUs: "ទំនាក់ទំនងយើងខ្ញុំ",
@@ -134,9 +134,9 @@ const Header = () => {
     en: {
       hotline: "Hotline",
       welcome:
-        "Welcome to the official website of the General Department of Project Impact Resolution!",
-      department: "General Department of Project Impact Resolution",
-      departmentShort: "អ.ដ.ភ",
+        "Welcome to the official website of the General Department of Resettlement!",
+      department: "General Department of Resettlement",
+      departmentShort: "អ.ដ.ផ",
       phone: "(+855) xx xxx xxxx",
       quickLinks: "Quick Links",
       contactUs: "Contact Us",
