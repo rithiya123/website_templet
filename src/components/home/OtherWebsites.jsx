@@ -97,7 +97,7 @@ const OtherWebsites = () => {
         en: "Social Security Regulator" 
       }, 
       href: "#", 
-      category: "social" 
+        category: "social" 
     },
     { 
       name: { 
@@ -155,25 +155,25 @@ const OtherWebsites = () => {
       href: "#", 
       category: "bank" 
     }
-];
+  ];
 
   return (
     <div className="mt-16">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-2">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#2E7D32] mb-2">
             {t.title}
           </h2>
           <p className="text-sm text-gray-500 flex items-center">
-            <Globe size={14} className="mr-1 text-blue-500" />
+            <Globe size={14} className="mr-1 text-[#4CAF50]" />
             {t.subtitle}
           </p>
         </div>
         
         <a 
           href="#" 
-          className="group flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-800 font-medium mt-2 sm:mt-0"
+          className="group flex items-center space-x-2 text-sm text-[#4CAF50] hover:text-[#2E7D32] font-medium mt-2 sm:mt-0"
         >
           <span>{t.all}</span>
           <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -186,82 +186,60 @@ const OtherWebsites = () => {
           <a
             key={index}
             href={site.href}
-            className="group relative bg-white rounded-xl border border-gray-200 hover:border-blue-200 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
+            className="group relative bg-white rounded-xl border border-[#4CAF50] border-opacity-20 hover:border-[#4CAF50] shadow-sm hover:shadow-lg hover:shadow-[#4CAF50]/10 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
-            {/* Blue hover background */}
-            <div className="absolute inset-0 bg-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            {/* Light green hover background */}
+            <div className="absolute inset-0 bg-[#4CAF50] bg-opacity-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
             <div className="p-5 relative">
               <div className="flex items-start justify-between">
                 {/* Icon and Name */}
                 <div className="flex items-center space-x-3">
                   {/* Icon Container */}
-                  <div className="bg-gray-100 group-hover:bg-blue-100 p-2.5 rounded-xl transition-colors duration-300">
-                    <div className="text-gray-600 group-hover:text-blue-600 transition-colors duration-300">
+                  <div className="bg-[#4CAF50] bg-opacity-10 group-hover:bg-[#4CAF50] group-hover:bg-opacity-20 p-2.5 rounded-xl transition-colors duration-300">
+                    <div className="text-[#2E7D32] group-hover:text-[#2E7D32] transition-colors duration-300">
                       {getIcon(site.name, index)}
                     </div>
                   </div>
 
                   {/* Website Name */}
                   <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-900 transition-colors line-clamp-2 max-w-[180px]">
+                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-[#2E7D32] transition-colors line-clamp-2 max-w-[180px]">
                       {currentLang === 'km' ? site.name.km : site.name.en}
                     </h3>
                     
                     {/* Category Tag */}
-                    <span className="inline-block mt-1 text-[10px] text-gray-500 bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-700 px-2 py-0.5 rounded-full transition-colors duration-300">
+                    <span className="inline-block mt-1 text-[10px] text-gray-500 bg-[#4CAF50] bg-opacity-10 group-hover:bg-[#4CAF50] group-hover:bg-opacity-20 group-hover:text-[#2E7D32] px-2 py-0.5 rounded-full transition-colors duration-300">
                       {site.category}
                     </span>
                   </div>
                 </div>
 
                 {/* External Link Icon */}
-                <div className={`w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center transition-all duration-300 ${
-                  hoveredIndex === index ? 'bg-blue-600 scale-110' : ''
+                <div className={`w-8 h-8 rounded-full bg-[#4CAF50] bg-opacity-10 flex items-center justify-center transition-all duration-300 ${
+                  hoveredIndex === index ? 'bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] scale-110 shadow-md' : ''
                 }`}>
                   <ArrowUpRight size={14} className={`transition-colors duration-300 ${
-                    hoveredIndex === index ? 'text-white' : 'text-gray-500'
+                    hoveredIndex === index ? 'text-white' : 'text-[#2E7D32]'
                   }`} />
                 </div>
               </div>
 
               {/* Visit Link */}
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-xs text-gray-400 group-hover:text-blue-600 transition-colors">
+                <span className="text-xs text-gray-400 group-hover:text-[#4CAF50] transition-colors">
                   {t.visit}
                 </span>
-                <ExternalLink size={12} className="text-gray-300 group-hover:text-blue-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
+                <ExternalLink size={12} className="text-gray-300 group-hover:text-[#4CAF50] group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
               </div>
             </div>
           </a>
         ))}
       </div>
 
-      {/* Bottom Banner - Single Color */}
-      <div className="mt-8 bg-blue-50 rounded-xl p-6 border border-blue-100">
-        <div className="flex flex-col sm:flex-row items-center justify-between">
-          <div className="flex items-center space-x-3 mb-3 sm:mb-0">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Globe size={20} className="text-blue-600" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 text-sm">
-                {t.government}
-              </h4>
-              <p className="text-xs text-gray-500">
-                {t.description}
-              </p>
-            </div>
-          </div>
-          
-          <button className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-sm hover:shadow flex items-center space-x-2">
-            <span>{t.explore}</span>
-            <ChevronRight size={14} />
-          </button>
-        </div>
-      </div>
+      
 
       {/* Animation Styles */}
       <style jsx>{`

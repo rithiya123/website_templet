@@ -1,6 +1,6 @@
 // src/pages/RolesResponsibilitiesPage.jsx
-import React, { useState, useEffect } from 'react';
-import { 
+import React, { useState, useEffect } from "react";
+import {
   Home,
   ChevronRight,
   Shield,
@@ -9,7 +9,6 @@ import {
   Scale,
   FileText,
   BookOpen,
-  Award,
   Target,
   Eye,
   Heart,
@@ -21,330 +20,381 @@ import {
   Printer,
   Briefcase,
   Gavel,
-  HandshakeIcon,
   Clock,
   Globe,
   TrendingUp,
   UserCheck,
-  Lock,
-  Key,
   Phone,
   Mail,
-  MapPin,
-  RefreshCw
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import Container from '../components/ui/Container.jsx';
-
+  RefreshCw,
+  Ruler,
+  DollarSign,
+  MessageCircle,
+  Landmark,
+  FileSignature,
+  ClipboardList,
+  LineChart,
+  Award,
+  Construction,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import Container from "../components/ui/Container.jsx";
+import GlobalBanner from "../components/ui/GlobalBanner.jsx";
+import Image from "../images/logo_white.png";
 const RolesResponsibilitiesPage = () => {
-  const [currentLang, setCurrentLang] = useState('km');
+  const [currentLang, setCurrentLang] = useState("km");
 
   useEffect(() => {
     const handleLanguageChange = (e) => {
       setCurrentLang(e.detail.language);
     };
 
-    window.addEventListener('languagechange', handleLanguageChange);
-    
-    const savedLang = localStorage.getItem('language');
+    window.addEventListener("languagechange", handleLanguageChange);
+
+    const savedLang = localStorage.getItem("language");
     if (savedLang) {
       setCurrentLang(savedLang);
     }
 
-    return () => window.removeEventListener('languagechange', handleLanguageChange);
+    return () =>
+      window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
 
   const translations = {
     km: {
-      title: 'តួនាទី និងភារកិច្ច',
-      home: 'ទំព័រដើម',
-      download: 'ទាញយក',
-      share: 'ចែករំលែក',
-      print: 'បោះពុម្ព',
-      overview: 'ទិដ្ឋភាពទូទៅ',
-      coreFunctions: 'មុខងារស្នូល',
-      departments: 'នាយកដ្ឋាន',
-      leadership: 'ថ្នាក់ដឹកនាំ',
-      responsibilities: 'ភារកិច្ចចម្បង',
-      keyResponsibilities: 'ភារកិច្ចសំខាន់ៗ',
-      organizationalStructure: 'រចនាសម្ព័ន្ធអង្គភាព',
-      readMore: 'អានបន្ត',
-      viewDetails: 'មើលលម្អិត',
-      
-      // Overview
-      overviewDesc: 'អគ្គនាយកដ្ឋានពន្ធនាគារ គឺជាស្ថាប័នរដ្ឋាភិបាលដែលមានតួនាទីគ្រប់គ្រង និងអភិបាលកិច្ចពន្ធនាគារទូទាំងប្រទេសកម្ពុជា។ យើងខ្ញុំទទួលខុសត្រូវលើការឃុំខ្លួន អប់រំកែប្រែ និងស្តារនីតិសម្បទាអ្នកទោស ដោយឈរលើគោលការណ៍យុត្តិធម៌ សុវត្ថិភាព និងការគោរពសិទ្ធិមនុស្ស។',
-      
-      // Core Functions
-      function1: 'ការគ្រប់គ្រងពន្ធនាគារ',
-      function1Desc: 'គ្រប់គ្រង និងត្រួតពិនិត្យពន្ធនាគារទូទាំងប្រទេស ធានាសុវត្ថិភាព និងសណ្តាប់ធ្នាប់',
-      function2: 'ការអប់រំកែប្រែ',
-      function2Desc: 'ផ្តល់កម្មវិធីអប់រំ និងបណ្តុះបណ្តាលវិជ្ជាជីវៈដល់អ្នកទោស',
-      function3: 'ការស្តារនីតិសម្បទា',
-      function3Desc: 'រៀបចំអ្នកទោសឱ្យរួមបញ្ចូលក្នុងសង្គមឡើងវិញ',
-      function4: 'ការអនុវត្តច្បាប់',
-      function4Desc: 'អនុវត្តតាមច្បាប់ និងបទប្បញ្ញត្តិពាក់ព័ន្ធនឹងពន្ធនាគារ',
-      function5: 'ការការពារសិទ្ធិ',
-      function5Desc: 'ការពារ និងគោរពសិទ្ធិមនុស្សរបស់អ្នកទោស',
-      function6: 'ការអភិវឌ្ឍបុគ្គលិក',
-      function6Desc: 'បណ្តុះបណ្តាល និងអភិវឌ្ឍន៍មន្រ្តីពន្ធនាគារ',
-      
+      title: "តួនាទី និងការទទួលខុសត្រូវ",
+      home: "ទំព័រដើម",
+      download: "ទាញយក",
+      share: "ចែករំលែក",
+      print: "បោះពុម្ព",
+      overview: "ទិដ្ឋភាពទូទៅ",
+      coreFunctions: "តួនាទីស្នូល (Key Roles)",
+      departments: "រចនាសម្ព័ន្ធនាយកដ្ឋាន",
+      leadership: "ឋានានុក្រមគ្រប់គ្រង",
+      responsibilities: "ភារកិច្ចតាមដំណាក់កាល",
+      keyResponsibilities: "ភារកិច្ចសំខាន់ៗ",
+      organizationalStructure: "រចនាសម្ព័ន្ធអង្គភាព",
+      readMore: "អានបន្ត",
+      viewDetails: "មើលលម្អិត",
+      comingSoon: "កំពុងអភិវឌ្ឍ",
+      underMaintenance: "កំពុងថែទាំ",
+      comingSoonDesc: "កំពុងអភិវឌ្ឍបច្ចុប្បន្នភាពទិន្នន័យ។",
+      runningText:
+        "សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ • WELCOME TO THE OFFICIAL WEBSITE •",
+
       // Department Responsibilities
-      dept1: 'នាយកដ្ឋានគ្រប់គ្រងពន្ធនាគារ',
-      dept1Desc: 'ទទួលខុសត្រូវលើការគ្រប់គ្រងប្រចាំថ្ងៃនៃពន្ធនាគារ សន្តិសុខ និងសណ្តាប់ធ្នាប់',
-      dept2: 'នាយកដ្ឋានអប់រំកែប្រែ',
-      dept2Desc: 'ទទួលខុសត្រូវលើកម្មវិធីអប់រំ បណ្តុះបណ្តាល និងកែប្រែអ្នកទោស',
-      dept3: 'នាយកដ្ឋានហិរញ្ញវត្ថុ',
-      dept3Desc: 'ទទួលខុសត្រូវលើការគ្រប់គ្រងថវិកា ហិរញ្ញវត្ថុ និងសម្ភារៈ',
-      dept4: 'នាយកដ្ឋានធនធានមនុស្ស',
-      dept4Desc: 'ទទួលខុសត្រូវលើការគ្រប់គ្រងបុគ្គលិក ការបណ្តុះបណ្តាល និងអភិវឌ្ឍន៍',
-      dept5: 'នាយកដ្ឋានច្បាប់',
-      dept5Desc: 'ទទួលខុសត្រូវលើការអនុវត្តច្បាប់ និងផ្តល់យោបល់ផ្នែកច្បាប់',
-      
+      dept1: "នាយកដ្ឋានកិច្ចការទូទៅ",
+      dept1Desc:
+        "ទទួលបន្ទុករដ្ឋបាល បុគ្គលិក ហិរញ្ញវត្ថុ ភស្តុភារ និងការបណ្តុះបណ្តាល។",
+      dept2: "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ១",
+      dept2Desc: "អនុវត្តការដោះស្រាយផលប៉ះពាល់សម្រាប់គម្រោងថវិកាជាតិ។",
+      dept3: "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ២",
+      dept3Desc:
+        "អនុវត្តការដោះស្រាយផលប៉ះពាល់សម្រាប់គម្រោងហិរញ្ញប្បទានដោយ ADB ។",
+      dept4: "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ៣",
+      dept4Desc:
+        "អនុវត្តការដោះស្រាយផលប៉ះពាល់សម្រាប់គម្រោងហិរញ្ញប្បទានដោយ World Bank ។",
+      dept5: "នាយកដ្ឋានត្រួតពិនិត្យផ្ទៃក្នុង និងគ្រប់គ្រងទិន្នន័យ",
+      dept5Desc:
+        "តាមដានការអនុវត្តការងារ ធានាតម្លាភាព និងរៀបចំប្រព័ន្ធព័ត៌មានវិទ្យាសម្រាប់រក្សាទុកទិន្នន័យ។",
+
       // Leadership Responsibilities
-      director: 'អគ្គនាយក',
-      directorDesc: 'ដឹកនាំ និងគ្រប់គ្រងអគ្គនាយកដ្ឋានទាំងមូល កំណត់គោលនយោបាយ និងយុទ្ធសាស្ត្រ',
-      deputy1: 'អគ្គនាយករងផ្នែករដ្ឋបាល',
-      deputy1Desc: 'ទទួលខុសត្រូវលើការងាររដ្ឋបាល ហិរញ្ញវត្ថុ និងធនធានមនុស្ស',
-      deputy2: 'អគ្គនាយករងផ្នែកប្រតិបត្តិការ',
-      deputy2Desc: 'ទទួលខុសត្រូវលើការងារប្រតិបត្តិការ សន្តិសុខ និងអប់រំកែប្រែ',
-      deputy3: 'អគ្គនាយករងផ្នែកផែនការ',
-      deputy3Desc: 'ទទួលខុសត្រូវលើការរៀបចំផែនការ គម្រោង និងកិច្ចសហប្រតិបត្តិការអន្តរជាតិ',
-      
+      director: "អគ្គនាយក",
+      directorDesc:
+        "ដឹកនាំ និងសម្រេចចិត្តលើគោលការណ៍រួម និងចុះហត្ថលេខាលើឯកសារសំណងសំខាន់ៗ។",
+      deputy1: "អគ្គនាយករង",
+      deputy1Desc:
+        "ជួយអគ្គនាយកក្នុងការត្រួតពិនិត្យនាយកដ្ឋាននីមួយៗតាមជំនាញ និងតំបន់ភូមិសាស្ត្រ។",
+      deputy2: "ប្រធាននាយកដ្ឋាន",
+      deputy2Desc:
+        "ដឹកនាំមន្រ្តីបច្ចេកទេសចុះអនុវត្តការងារផ្ទាល់នៅតាមការដ្ឋាន និងធ្វើរបាយការណ៍វឌ្ឍនភាព។",
+
       // Statistics
-      stat1: 'ពន្ធនាគារ',
-      stat2: 'មន្រ្តីជំនាញ',
-      stat3: 'អ្នកទោសក្នុងបន្ទុក',
-      stat4: 'កម្មវិធីអប់រំ',
-      
-      contact: 'ទំនាក់ទំនងបន្ថែម',
-      contactDesc: 'សម្រាប់ព័ត៌មានបន្ថែមអំពីតួនាទី និងភារកិច្ច សូមទំនាក់ទំនង',
-      email: 'info@prison.gov.kh',
-      phone: '023 123 456'
+      stat1: "នាយកដ្ឋាន",
+      stat2: "មន្រ្តីជំនាញ",
+      stat3: "គម្រោងដែលបានដោះស្រាយ",
+      stat4: "គ្រួសារទទួលសំណង",
+
+      contact: "ទំនាក់ទំនងបន្ថែម",
+      contactDesc:
+        "សម្រាប់ព័ត៌មានបន្ថែមអំពីតួនាទី និងការទទួលខុសត្រូវ សូមទំនាក់ទំនង",
+      email: "info@gdpir.gov.kh",
+      phone: "071 258 0896",
     },
     en: {
-      title: 'Roles & Responsibilities',
-      home: 'Home',
-      download: 'Download',
-      share: 'Share',
-      print: 'Print',
-      overview: 'Overview',
-      coreFunctions: 'Core Functions',
-      departments: 'Departments',
-      leadership: 'Leadership',
-      responsibilities: 'Main Responsibilities',
-      keyResponsibilities: 'Key Responsibilities',
-      organizationalStructure: 'Organizational Structure',
-      readMore: 'Read More',
-      viewDetails: 'View Details',
-      
-      // Overview
-      overviewDesc: 'The General Department of Prisons is a government institution responsible for managing and governing prisons throughout Cambodia. We are responsible for the detention, rehabilitation, and reintegration of prisoners, based on the principles of justice, security, and respect for human rights.',
-      
-      // Core Functions
-      function1: 'Prison Management',
-      function1Desc: 'Manage and supervise prisons nationwide, ensuring safety and order',
-      function2: 'Rehabilitation Education',
-      function2Desc: 'Provide education and vocational training programs to prisoners',
-      function3: 'Reintegration',
-      function3Desc: 'Prepare prisoners for reintegration into society',
-      function4: 'Law Enforcement',
-      function4Desc: 'Comply with laws and regulations related to prisons',
-      function5: 'Rights Protection',
-      function5Desc: 'Protect and respect the human rights of prisoners',
-      function6: 'Staff Development',
-      function6Desc: 'Train and develop prison officers',
-      
+      title: "Roles & Responsibilities",
+      home: "Home",
+      download: "Download",
+      share: "Share",
+      print: "Print",
+      overview: "Overview",
+      coreFunctions: "Key Roles",
+      departments: "Department Structure",
+      leadership: "Management Hierarchy",
+      responsibilities: "Phase Responsibilities",
+      keyResponsibilities: "Key Responsibilities",
+      organizationalStructure: "Organizational Structure",
+      readMore: "Read More",
+      viewDetails: "View Details",
+      comingSoon: "Coming Soon",
+      underMaintenance: "Under Maintenance",
+      comingSoonDesc:
+        "This content is being prepared. We apologize for the inconvenience.",
+      runningText:
+        "WELCOME TO THE OFFICIAL WEBSITE OF THE GENERAL DEPARTMENT OF PROJECT IMPACT RESOLUTION • សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ •",
+
       // Department Responsibilities
-      dept1: 'Prison Management Department',
-      dept1Desc: 'Responsible for daily prison management, security, and order',
-      dept2: 'Rehabilitation Department',
-      dept2Desc: 'Responsible for education, training, and rehabilitation programs',
-      dept3: 'Finance Department',
-      dept3Desc: 'Responsible for budget, financial, and material management',
-      dept4: 'Human Resources Department',
-      dept4Desc: 'Responsible for personnel management, training, and development',
-      dept5: 'Legal Department',
-      dept5Desc: 'Responsible for legal compliance and legal advice',
-      
+      dept1: "Department of General Affairs",
+      dept1Desc:
+        "Responsible for administration, personnel, finance, logistics, and training.",
+      dept2: "Impact Resolution Department 1",
+      dept2Desc: "Implement impact resolution for national budget projects.",
+      dept3: "Impact Resolution Department 2",
+      dept3Desc: "Implement impact resolution for ADB-funded projects.",
+      dept4: "Impact Resolution Department 3",
+      dept4Desc: "Implement impact resolution for World Bank-funded projects.",
+      dept5: "Department of Internal Inspection and Data Management",
+      dept5Desc:
+        "Monitor work implementation, ensure transparency, and organize IT systems for data storage.",
+
       // Leadership Responsibilities
-      director: 'Director General',
-      directorDesc: 'Lead and manage the entire department, set policies and strategies',
-      deputy1: 'Deputy Director for Administration',
-      deputy1Desc: 'Responsible for administration, finance, and human resources',
-      deputy2: 'Deputy Director for Operations',
-      deputy2Desc: 'Responsible for operations, security, and rehabilitation',
-      deputy3: 'Deputy Director for Planning',
-      deputy3Desc: 'Responsible for planning, projects, and international cooperation',
-      
+      director: "Director General",
+      directorDesc:
+        "Lead and make decisions on overall policies and sign important compensation documents.",
+      deputy1: "Deputy Director General",
+      deputy1Desc:
+        "Assist the Director General in supervising departments according to expertise and geographical areas.",
+      deputy2: "Department Director",
+      deputy2Desc:
+        "Lead technical officers to implement work on-site and prepare progress reports.",
+
       // Statistics
-      stat1: 'Prisons',
-      stat2: 'Expert Staff',
-      stat3: 'Prisoners',
-      stat4: 'Education Programs',
-      
-      contact: 'Further Contact',
-      contactDesc: 'For more information about roles and responsibilities, please contact',
-      email: 'info@prison.gov.kh',
-      phone: '023 123 456'
-    }
+      stat1: "Departments",
+      stat2: "Expert Staff",
+      stat3: "Projects Resolved",
+      stat4: "Families Compensated",
+
+      contact: "Further Contact",
+      contactDesc:
+        "For more information about roles and responsibilities, please contact",
+      email: "info@gdpir.gov.kh",
+      phone: "071 258 0896",
+    },
   };
 
   const t = translations[currentLang];
 
-  const coreFunctions = [
-    { icon: <Building2 size={24} />, title: t.function1, desc: t.function1Desc },
-    { icon: <BookOpen size={24} />, title: t.function2, desc: t.function2Desc },
-    { icon: <RefreshCw size={24} />, title: t.function3, desc: t.function3Desc }, // Changed from Handshake to RefreshCw
-    { icon: <Gavel size={24} />, title: t.function4, desc: t.function4Desc },
-    { icon: <Heart size={24} />, title: t.function5, desc: t.function5Desc },
-    { icon: <UserCheck size={24} />, title: t.function6, desc: t.function6Desc }
-  ];
-
   const departmentResponsibilities = [
     { dept: t.dept1, desc: t.dept1Desc, icon: <Building2 size={20} /> },
-    { dept: t.dept2, desc: t.dept2Desc, icon: <BookOpen size={20} /> },
-    { dept: t.dept3, desc: t.dept3Desc, icon: <Briefcase size={20} /> },
-    { dept: t.dept4, desc: t.dept4Desc, icon: <Users size={20} /> },
-    { dept: t.dept5, desc: t.dept5Desc, icon: <Scale size={20} /> }
+    { dept: t.dept2, desc: t.dept2Desc, icon: <Scale size={20} /> },
+    { dept: t.dept3, desc: t.dept3Desc, icon: <Globe size={20} /> },
+    { dept: t.dept4, desc: t.dept4Desc, icon: <TrendingUp size={20} /> },
+    { dept: t.dept5, desc: t.dept5Desc, icon: <FileText size={20} /> },
   ];
 
   const leadershipResponsibilities = [
     { role: t.director, desc: t.directorDesc, icon: <Shield size={20} /> },
     { role: t.deputy1, desc: t.deputy1Desc, icon: <Users size={20} /> },
     { role: t.deputy2, desc: t.deputy2Desc, icon: <Target size={20} /> },
-    { role: t.deputy3, desc: t.deputy3Desc, icon: <Globe size={20} /> }
   ];
 
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Header with Breadcrumb */}
-      <div className="border-b border-gray-100 bg-white sticky top-0 z-40">
-        <Container className="py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link 
-                to="/" 
-                className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <Home size={18} className="text-gray-500" />
-              </Link>
-              
-              {/* Breadcrumb */}
-              <nav className="flex items-center space-x-2 text-sm">
-                <Link to="/" className="text-gray-500 hover:text-primary-600 transition-colors">
-                  {t.home}
-                </Link>
-                <ChevronRight size={12} className="text-gray-300" />
-                <span className="text-gray-900 font-medium">អំពីអគ្គនាយកដ្ឋាន</span>
-                <ChevronRight size={12} className="text-gray-300" />
-                <span className="text-primary-600 font-medium">{t.title}</span>
-              </nav>
-            </div>
-
-            <div className="flex items-center space-x-1">
-              <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                <Download size={16} className="text-gray-500" />
-              </button>
-              <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                <Share2 size={16} className="text-gray-500" />
-              </button>
-              <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                <Printer size={16} className="text-gray-500" />
-              </button>
-            </div>
-          </div>
-        </Container>
+  // Component for "Coming Soon" sections
+  const ComingSoonSection = ({ title, icon: Icon }) => (
+    <Container className="py-8">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center space-x-2 bg-gray-100 px-4 py-2 rounded-full mb-4">
+          <Icon size={14} className="text-gray-500" />
+          <span className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+            {title}
+          </span>
+        </div>
+        <h2 className="text-xl font-light text-gray-900 mb-2">{title}</h2>
       </div>
 
-      {/* Page Header */}
-      <Container className="py-10">
-        <div className="max-w-3xl">
-          <div className="flex items-center space-x-2 text-primary-600 mb-3">
-            <Briefcase size={16} />
-            <span className="text-xs font-medium uppercase tracking-wider">{t.title}</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-light text-gray-900 mb-2">{t.title}</h1>
-          <p className="text-sm text-gray-500 max-w-2xl leading-relaxed">
-            {currentLang === 'km' 
-              ? 'តួនាទី និងភារកិច្ចចម្បងរបស់អគ្គនាយកដ្ឋានពន្ធនាគារ'
-              : 'Main roles and responsibilities of the General Department of Prisons'
-            }
-          </p>
-          <div className="w-12 h-0.5 bg-primary-600 mt-4"></div>
+      <div className="bg-white border border-gray-200 rounded-xl p-12 text-center hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+          <Construction size={32} className="text-gray-400" />
         </div>
-      </Container>
+        <h3 className="text-lg font-medium text-gray-700 mb-2">
+          {t.comingSoon}
+        </h3>
+        <p className="text-sm text-gray-500 max-w-md mx-auto">
+          {t.comingSoonDesc}
+        </p>
+      </div>
+    </Container>
+  );
 
-      {/* Overview Section */}
-      <Container className="pb-8">
-        <div className="bg-gradient-to-br from-primary-50 to-white p-8 rounded-xl border border-primary-100">
-          <div className="flex items-start space-x-4">
-            <div className="p-3 bg-primary-600 rounded-lg text-white flex-shrink-0">
-              <Eye size={24} />
-            </div>
-            <div>
-              <h2 className="text-lg font-medium text-gray-900 mb-3">{t.overview}</h2>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {t.overviewDesc}
-              </p>
-            </div>
-          </div>
-        </div>
-      </Container>
+  function runningText() {
+    function logo() {
+      return (
+        <img
+          src={Image}
+          style={{
+            height: "20px",
+            width: "20px",
+            objectFit: "cover",
+            display: "inline", // Add this
+          }}
+        />
+      );
+    }
+    return (
+      <>
+        {/* ✅ RUNNING TEXT FIXED UNDER HEADER */}
 
-      {/* Core Functions Section */}
-      <Container className="py-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-2 bg-primary-50 px-4 py-2 rounded-full mb-4">
-            <Target size={14} className="text-primary-600" />
-            <span className="text-xs font-medium text-primary-700 uppercase tracking-wider">
-              {t.coreFunctions}
+        <div
+          className="
+            running-text-bar
+            sticky
+            top-[72px]
+            md:top-[140px]
+            w-full
+            z-40
+            overflow-hidden
+          bg-gradient-to-r from-[#2E7D32]/80 to-[#4CAF50]/80
+            shadow-lg
+          "
+        >
+          <div className="animate-marquee whitespace-nowrap py-2 md:py-3">
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} អនុក្រឹត្យ ស្តីពី
+              ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
+              ក្នុងព្រះណាចក្រកម្ពុជា
+            </span>
+
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
+            </span>
+
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} LAW ON EXPROPRIATION
+            </span>
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} អនុក្រឹត្យ ស្តីពី
+              ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយភលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
+              ក្នុងព្រះណាចក្រកម្ពុជា •
+            </span>
+
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
+            </span>
+
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} LAW ON EXPROPRIATION
             </span>
           </div>
-          <h2 className="text-xl font-light text-gray-900 mb-2">{t.coreFunctions}</h2>
-          <p className="text-sm text-gray-500 max-w-2xl mx-auto">
-            {currentLang === 'km'
-              ? 'មុខងារសំខាន់ៗរបស់អគ្គនាយកដ្ឋាន'
-              : 'Key functions of the department'
-            }
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {coreFunctions.map((func, index) => (
-            <div key={index} className="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-              <div className="flex items-start space-x-3">
-                <div className="p-2 bg-primary-100 rounded-lg text-primary-600">
-                  {func.icon}
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-1">{func.title}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">{func.desc}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Container>
+        {/* ✅ MARQUEE CSS */}
+        <style jsx>{`
+          @keyframes marquee {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
+          }
+
+          .animate-marquee {
+            animation: marquee 30s linear infinite;
+            display: inline-block;
+          }
+
+          .animate-marquee:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+      </>
+    );
+  }
+
+  function missionTitleText() {
+    return "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ បំពេញមុខងារជាសេនាធិការឱ្យក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ លើការងារដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍នានា ដោយមានបេសកកម្មដូចខាងក្រោម៖";
+  }
+
+  function missionText() {
+    return `• ត្រួតពិនិត្យផ្ទៃក្នុងលើការអនុវត្តផែនការសកម្មភាពដោះស្រាយផលប៉ះពាល់សេដ្ឋកិច្ច-សង្គម ដោយសារគម្រោងអភិវឌ្ឍន៍ ដើម្បីធានានូវអនុលោមភាព និងប្រសិទ្ធភាពនៃការអនុវត្តការងារ
+• រៀបចំឱ្យមានការតាមដានត្រួតពិនិត្យពីខាងក្រៅដោយភ្នាក់ងារឯករាជ្យ ចំពោះអនុលោមភាពនៃការអនុវត្តផែនការសកម្មភាពដោះស្រាយផលប៉ះពាល់សេដ្ឋកិច្ច-សង្គម
+• ចូលរួមជាមួយតំណាងក្រសួងស្ថាប័នអនុវត្តគម្រោង និងអាជ្ញាធរដែនដីនៅពេលប្រគល់ទទួលគម្រោងដែលបានសាងសង់ ស្តារ ឬជួសជុលរួច ដើម្បីពិនិត្យផ្ទៀងផ្ទាត់លើការប្រើប្រាស់ជាក់ស្ដែងនូវដី ឬទ្រព្យសម្បត្តិដែលត្រូវបានធ្វើលទ្ធកម្មសម្រាប់បម្រើឱ្យគម្រោង ហើយដែលបានប្រើប្រាស់ថវិកាជាតិ ឬថវិកាដែលបានមកពីហិរញ្ញប្បទានសហប្រតិបត្តិការនានា
+• សហការជាមួយអគ្គនាយកដ្ឋានទ្រព្យសម្បត្តិរដ្ឋ និងចំណូលមិនមែនសារពើពន្ធ និងអគ្គនាយកដ្ឋាន ឬអង្គភាពជំនាញនៃក្រសួងសេដ្ឋកិច្ច និងហិរញ្ញវត្ថុ និងក្រសួងស្ថាប័នអនុវត្តគម្រោង ក្នុងការរៀបចំឱ្យមានការចុះបញ្ជីដីធ្លី ក្នុងបញ្ជីសារពើភ័ណ្ឌទ្រព្យសម្បត្តិរដ្ឋ ចំពោះដីដែលបានធ្វើលទ្ធកម្មសម្រាប់គម្រោង និងដែលបានប្រគល់ជូនក្រសួងស្ថាប័នអនុវត្តគម្រោង ដើម្បីកាន់កាប់ និងគ្រប់គ្រងបន្ត
+• តំណាងឱ្យក្រសួងសេដ្ឋកិច្ច និងហិរញ្ញវត្ថុ ក្នុងករណីដែលមានបណ្ដឹងតវ៉ាទៅតុលាការទាក់ទងនឹងការងារដោះស្រាយផលប៉ះពាល់សេដ្ឋកិច្ច-សង្គម ឬបញ្ហាទូទាត់សងសំណង ឬលក្ខណៈសម្បត្តិក្នុងការទទួលបាននូវប្រាក់សំណង និង/ឬប្រាក់ឧបត្ថម្ភផ្សេងៗ
+• ត្រួតពិនិត្យ ផ្ទៀងផ្ទាត់ និងគ្រប់គ្រងទិន្នន័យផលប៉ះពាល់នៃគម្រោងនីមួយៗ ដែលទទួលបានពីក្រសួងស្ថាប័នអនុវត្តគម្រោង
+• រៀបចំសំណើថវិកាពេញលេញសម្រាប់ការសិក្សា ការរៀបចំ និងការអនុវត្តផែនការសកម្មភាពដោះស្រាយផលប៉ះពាល់សេដ្ឋកិច្ច-សង្គម ដោយផ្អែកលើលទ្ធផលនៃការអង្កេតវាស់វែងលម្អិតអំពីផលប៉ះពាល់ និងលទ្ធផលនៃការសិក្សាវាយតម្លៃថ្លៃដី និងទ្រព្យសម្បត្តិផ្សេងៗដែលទទួលរងផលប៉ះពាល់
+• សហការជាមួយអគ្គនាយកដ្ឋានពាក់ព័ន្ធនៃក្រសួងសេដ្ឋកិច្ច និងហិរញ្ញវត្ថុ ក្នុងការរៀបចំគម្រោងថវិកាប្រចាំឆ្នាំ សម្រាប់អនុវត្តការងារដោះស្រាយផលប៉ះពាល់សេដ្ឋកិច្ច-សង្គមដោយសារគម្រោងអភិវឌ្ឍន៍
+• សិក្សាស្រាវជ្រាវ រៀបចំ និងកសាងសេចក្តីព្រាងច្បាប់ និងលិខិតបទដ្ឋានគតិយុត្តនានាដែលពាក់ព័ន្ធនឹងគោលនយោបាយដោះស្រាយផលប៉ះពាល់សេដ្ឋកិច្ច-សង្គមដោយសារគម្រោងអភិវឌ្ឍន៍ ដោយមានការចូលរួមពីអង្គភាពពាក់ព័ន្ធ
+• រៀបចំវគ្គបណ្តុះបណ្ដាលពង្រឹងសមត្ថភាពរបស់រដ្ឋបាលថ្នាក់ក្រោមជាតិគ្រប់កម្រិតអំពីក្របខណ្ឌច្បាប់នីតិវិធីគោលការណ៍ និងគោលនយោបាយពាក់ព័ន្ធនឹងការងារដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍នានា
+• បំពេញភារកិច្ចផ្សេងទៀត តាមការកំណត់របស់ក្រសួងសេដ្ឋកិច្ច និងហិរញ្ញវត្ថុ`;
+  }
+
+  function missionItems() {
+    return missionText()
+      .split("•")
+      .filter((item) => item.trim())
+      .map((item, index) => (
+        <li key={index} style={{ marginTop: "20px" }}>
+          {item.trim()}
+        </li>
+      ));
+  }
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Running Text - Fixed under header menu */}
+      <div
+        className="
+            running-text-bar
+            sticky
+            top-[72px]
+            md:top-[140px]
+            w-full
+            z-40
+            overflow-hidden
+          bg-gradient-to-r from-[#2E7D32]/80 to-[#4CAF50]/80
+            shadow-lg
+          "
+      >
+        {runningText()}
+      </div>
+
+      {/* Global Banner */}
+      <GlobalBanner
+        title={t.title}
+        subtitle={
+          currentLang === "km"
+            ? "តួនាទី និងការទទួលខុសត្រូវរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍"
+            : "Roles and responsibilities of the General Department of Project Impact Resolution"
+        }
+        height="h-[200px] md:h-[280px] lg:h-[350px]"
+        showBreadcrumb={true}
+      />
 
       {/* Department Responsibilities */}
-      <Container className="py-8">
+      <Container className="py-12">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Left Column - Departments */}
           <div>
             <div className="flex items-center space-x-2 mb-6">
-              <Building2 size={20} className="text-primary-600" />
-              <h2 className="text-lg font-medium text-gray-900">{t.departments}</h2>
+              <Building2 size={20} className="text-[#2E7D32]" />
+              <h2 className="text-lg font-medium text-gray-900">
+                {t.departments}
+              </h2>
             </div>
 
             <div className="space-y-3">
               {departmentResponsibilities.map((item, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div
+                  key={index}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:shadow-gray-200/50 hover:border-[#4CAF50] transition-all duration-300 backdrop-blur-sm"
+                >
                   <div className="flex items-start space-x-3">
-                    <div className="p-2 bg-primary-100 rounded-lg text-primary-600">
+                    <div className="p-2 bg-[#4CAF50] bg-opacity-10 rounded-lg text-[#2E7D32]">
                       {item.icon}
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-900 mb-1">{item.dept}</h3>
+                      <h3 className="text-sm font-medium text-gray-900 mb-1">
+                        {item.dept}
+                      </h3>
                       <p className="text-xs text-gray-500">{item.desc}</p>
                     </div>
                   </div>
@@ -356,19 +406,26 @@ const RolesResponsibilitiesPage = () => {
           {/* Right Column - Leadership Responsibilities */}
           <div>
             <div className="flex items-center space-x-2 mb-6">
-              <Users size={20} className="text-primary-600" />
-              <h2 className="text-lg font-medium text-gray-900">{t.leadership}</h2>
+              <Users size={20} className="text-[#2E7D32]" />
+              <h2 className="text-lg font-medium text-gray-900">
+                {t.leadership}
+              </h2>
             </div>
 
             <div className="space-y-3">
               {leadershipResponsibilities.map((item, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div
+                  key={index}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:shadow-gray-200/50 hover:border-[#4CAF50] transition-all duration-300 backdrop-blur-sm"
+                >
                   <div className="flex items-start space-x-3">
-                    <div className="p-2 bg-primary-100 rounded-lg text-primary-600">
+                    <div className="p-2 bg-[#4CAF50] bg-opacity-10 rounded-lg text-[#2E7D32]">
                       {item.icon}
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-900 mb-1">{item.role}</h3>
+                      <h3 className="text-sm font-medium text-gray-900 mb-1">
+                        {item.role}
+                      </h3>
                       <p className="text-xs text-gray-500">{item.desc}</p>
                     </div>
                   </div>
@@ -379,50 +436,80 @@ const RolesResponsibilitiesPage = () => {
         </div>
       </Container>
 
-      {/* Statistics Section */}
+      {/* Coming Soon Sections - Overview, Core Functions, Phase Responsibilities */}
+      {/* <ComingSoonSection title={t.overview} icon={Eye} />
+      <ComingSoonSection title={t.coreFunctions} icon={Target} />
+      <ComingSoonSection title={t.responsibilities} icon={ClipboardList} /> */}
+
       <Container className="py-8">
-        <div className="bg-gray-50 rounded-xl p-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-light text-primary-600 mb-1">២៥+</div>
-              <div className="text-xs text-gray-500">{t.stat1}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-light text-primary-600 mb-1">១០០០+</div>
-              <div className="text-xs text-gray-500">{t.stat2}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-light text-primary-600 mb-1">១៥,០០០+</div>
-              <div className="text-xs text-gray-500">{t.stat3}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-light text-primary-600 mb-1">២០+</div>
-              <div className="text-xs text-gray-500">{t.stat4}</div>
-            </div>
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center space-x-2 bg-gray-100 px-4 py-2 rounded-full mb-4">
+            <Target size={14} className="text-gray-500" />
+            <span className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+              {currentLang == "km" ? "បេសកកម្ម" : "Mission"}
+            </span>
           </div>
+          <h2
+            className="text-xl font-light text-gray-900 mb-2"
+            style={{ paddingLeft: "50px", paddingRight: "50px" }}
+          >
+            {missionTitleText()}
+            <br />
+            <br />
+            <p>
+              <div className="mission-list text-left">{missionItems()}</div>
+            </p>
+          </h2>
         </div>
       </Container>
 
-      {/* Contact Section */}
-      <Container className="py-8">
-        <div className="max-w-3xl mx-auto text-center bg-white border border-gray-200 rounded-xl p-8">
-          <div className="mb-4">
-            <AlertCircle size={24} className="text-primary-400 mx-auto" />
-          </div>
-          <h3 className="text-base font-medium text-gray-900 mb-2">{t.contact}</h3>
-          <p className="text-xs text-gray-500 mb-4">{t.contactDesc}</p>
-          <div className="flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-6">
-            <a href={`mailto:${t.email}`} className="flex items-center space-x-2 text-sm text-primary-600 hover:text-primary-700">
-              <Mail size={14} />
-              <span>{t.email}</span>
+      {/* Contact Section
+      <Container className="py-12 mb-12">
+        <div className="bg-gradient-to-r from-[#2E7D32]/5 to-[#4CAF50]/5 rounded-2xl p-8 text-center border border-[#4CAF50]/20">
+          <h2 className="text-xl font-medium text-gray-900 mb-3">
+            {t.contact}
+          </h2>
+          <p className="text-sm text-gray-600 mb-4 max-w-md mx-auto">
+            {t.contactDesc}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href={`mailto:${t.email}`}
+              className="flex items-center space-x-2 px-4 py-2 bg-white border border-[#4CAF50] text-[#2E7D32] rounded-lg hover:bg-[#4CAF50] hover:text-white transition-all duration-200"
+            >
+              <Mail size={16} />
+              <span className="text-sm">{t.email}</span>
             </a>
-            <a href={`tel:${t.phone}`} className="flex items-center space-x-2 text-sm text-primary-600 hover:text-primary-700">
-              <Phone size={14} />
-              <span>{t.phone}</span>
+            <a
+              href={`tel:${t.phone}`}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white rounded-lg hover:shadow-lg transition-all duration-200"
+            >
+              <Phone size={16} />
+              <span className="text-sm">{t.phone}</span>
             </a>
           </div>
         </div>
-      </Container>
+      </Container> */}
+
+      <style jsx>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+
+        .animate-marquee {
+          animation: marquee 40s linear infinite;
+          display: inline-block;
+        }
+
+        .animate-marquee:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </div>
   );
 };

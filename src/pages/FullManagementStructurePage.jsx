@@ -1,860 +1,1040 @@
 // src/pages/FullManagementStructurePage.jsx
-import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  ChevronRight, 
-  Building2, 
-  Shield,
-  BarChart3,
-  Scale,
-  Landmark,
-  TrendingUp,
-  Globe,
+import React, { useState, useEffect } from "react";
+import {
+  Users,
+  ChevronRight,
+  Building2,
   Mail,
   Phone,
-  ArrowLeft,
   ChevronLeft,
-  ChevronDown,
-  ChevronUp,
-  Filter,
-  X,
-  User,
-  Award,
-  Calendar,
-  Clock,
-  Download,
-  Share2,
-  Printer,
-  BookOpen,
-  FileText,
-  Briefcase,
-  Star,
-  MapPin,
-  Layers,
-  Network,
-  GitBranch,
-  Plus,
-  Minus,
-  Maximize2,
-  Minimize2,
   ZoomIn,
   ZoomOut,
-  Home
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import Container from '../components/ui/Container.jsx';
-import defaultImg from '../images/image.png';
-
+  Maximize2,
+  Home,
+  Share2,
+  User,
+  GraduationCap,
+  Medal,
+  Languages,
+  FileText as FileTextIcon,
+  Briefcase as BriefcaseIcon,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import Container from "../components/ui/Container.jsx";
+import GlobalBanner from "../components/ui/GlobalBanner.jsx";
+import defaultImg from "../images/director.jpg";
+import logo from "../images/logo.png";
+import Image from "../images/logo_white.png";
 const FullManagementStructurePage = () => {
-  const [currentLang, setCurrentLang] = useState('km');
+  const [currentLang, setCurrentLang] = useState("km");
   const [selectedDept, setSelectedDept] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [expandedNodes, setExpandedNodes] = useState([]);
-  const [filterBy, setFilterBy] = useState('all');
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState('org');
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
-    const handleLanguageChange = (e) => {
-      setCurrentLang(e.detail.language);
-    };
-
-    window.addEventListener('languagechange', handleLanguageChange);
-    
-    const savedLang = localStorage.getItem('language');
-    if (savedLang) {
-      setCurrentLang(savedLang);
-    }
-
-    return () => window.removeEventListener('languagechange', handleLanguageChange);
+    const handleLanguageChange = (e) => setCurrentLang(e.detail.language);
+    window.addEventListener("languagechange", handleLanguageChange);
+    const savedLang = localStorage.getItem("language");
+    if (savedLang) setCurrentLang(savedLang);
+    return () =>
+      window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
 
   useEffect(() => {
-    if (showDetail) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setWindowWidth(width);
+      if (width < 640) setZoomLevel(0.55);
+      else if (width < 768) setZoomLevel(0.7);
+      else if (width < 1024) setZoomLevel(0.85);
+      else setZoomLevel(1);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = showDetail ? "hidden" : "unset";
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [showDetail]);
 
   const translations = {
     km: {
-      title: 'តារាងរចនាសម្ព័ន្ធគ្រប់គ្រង',
-      subtitle: 'រចនាសម្ព័ន្ធអង្គភាពពេញលេញ',
-      back: 'ត្រលប់ក្រោយ',
-      home: 'ទំព័រដើម',
-      filter: 'តម្រង',
-      all: 'ទាំងអស់',
-      departments: 'នាយកដ្ឋាន',
-      offices: 'ការិយាល័យ',
-      units: 'អង្គភាព',
-      director: 'អគ្គនាយក',
-      deputyDirector: 'អនុប្រធាន',
-      departmentHead: 'ប្រធាននាយកដ្ឋាន',
-      officeChief: 'ប្រធានការិយាល័យ',
-      staff: 'នាក់',
-      totalStaff: 'បុគ្គលិកសរុប',
-      viewDetails: 'មើលលម្អិត',
-      expandAll: 'ពង្រីកទាំងអស់',
-      collapseAll: 'បង្រួមទាំងអស់',
-      zoomIn: 'ពង្រីក',
-      zoomOut: 'បង្រួម',
-      reset: 'កំណត់ឡើងវិញ',
-      orgChart: 'តារាងរចនាសម្ព័ន្ធ',
-      listView: 'បញ្ជី',
-      legend: 'សញ្ញាណ',
-      management: 'ថ្នាក់ដឹកនាំ',
-      contact: 'ទំនាក់ទំនង',
-      email: 'អ៊ីមែល',
-      phone: 'ទូរស័ព្ទ',
-      established: 'បង្កើតឡើង',
-      description: 'ការពិពណ៌នា',
-      responsibilities: 'ភារកិច្ច',
-      achievements: 'សមិទ្ធិផល',
-      overview: 'ទិដ្ឋភាពទូទៅ',
-      team: 'ក្រុមការងារ',
-      projects: 'គម្រោង',
-      download: 'ទាញយក',
-      share: 'ចែករំលែក',
-      print: 'បោះពុម្ព'
+      title: "រចនាសម្ព័ន្ធនគ្រប់គ្រង",
+      subtitle: "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
+      back: "ត្រលប់ក្រោយ",
+      home: "ទំព័រដើម",
+      director: "អគ្គនាយក",
+      deputyDirector: "អគ្គនាយករង",
+      departments: "នាយកដ្ឋាន",
+      zoomIn: "ពង្រីក",
+      zoomOut: "បង្រួម",
+      reset: "កំណត់ឡើងវិញ",
+      contact: "ទំនាក់ទំនង",
+      email: "អ៊ីមែល",
+      phone: "ទូរស័ព្ទ",
+      personalInfo: "ព័ត៌មានផ្ទាល់ខ្លួន",
+      education: "កម្រិតវប្បធម៌",
+      employment: "ប្រវត្តិការងារ",
+      publications: "បោះពុម្ពផ្សាយ",
+      decorations: "គ្រឿងឥស្សរិយយស",
+      languages: "សមត្ថភាពភាសា",
+      name: "ឈ្មោះ",
+      dob: "ថ្ងៃខែឆ្នាំកំណើត",
+      pob: "ទីកន្លែងកំណើត",
+      nationality: "សញ្ជាតិ",
+      maritalStatus: "ស្ថានភាពគ្រួសារ",
+      department: "នាយកដ្ឋានទទួលបន្ទុក",
+      deptHead: "ប្រធាននាយកដ្ឋាន",
+      runningText:
+        "សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ • WELCOME TO THE OFFICIAL WEBSITE •",
     },
     en: {
-      title: 'Management Structure Chart',
-      subtitle: 'Complete Organizational Structure',
-      back: 'Back',
-      home: 'Home',
-      filter: 'Filter',
-      all: 'All',
-      departments: 'Departments',
-      offices: 'Offices',
-      units: 'Units',
-      director: 'Director General',
-      deputyDirector: 'Deputy Director',
-      departmentHead: 'Department Head',
-      officeChief: 'Office Chief',
-      staff: 'staff',
-      totalStaff: 'Total Staff',
-      viewDetails: 'View Details',
-      expandAll: 'Expand All',
-      collapseAll: 'Collapse All',
-      zoomIn: 'Zoom In',
-      zoomOut: 'Zoom Out',
-      reset: 'Reset',
-      orgChart: 'Organization Chart',
-      listView: 'List View',
-      legend: 'Legend',
-      management: 'Management',
-      contact: 'Contact',
-      email: 'Email',
-      phone: 'Phone',
-      established: 'Established',
-      description: 'Description',
-      responsibilities: 'Responsibilities',
-      achievements: 'Achievements',
-      overview: 'Overview',
-      team: 'Team',
-      projects: 'Projects',
-      download: 'Download',
-      share: 'Share',
-      print: 'Print'
-    }
+      title: "Management Structure",
+      subtitle: "General Department of Project Impact Resolution",
+      back: "Back",
+      home: "Home",
+      director: "Director General",
+      deputyDirector: "Deputy Director General",
+      departments: "Departments",
+      zoomIn: "Zoom In",
+      zoomOut: "Zoom Out",
+      reset: "Reset",
+      contact: "Contact",
+      email: "Email",
+      phone: "Phone",
+      personalInfo: "Personal Information",
+      education: "Education",
+      employment: "Employment Records",
+      publications: "Publications",
+      decorations: "Decorations",
+      languages: "Languages",
+      name: "Name",
+      dob: "Date of Birth",
+      pob: "Place of Birth",
+      nationality: "Nationality",
+      maritalStatus: "Marital Status",
+      department: "Department in Charge",
+      deptHead: "Department Head",
+      runningText:
+        "WELCOME TO THE OFFICIAL WEBSITE OF THE GENERAL DEPARTMENT OF PROJECT IMPACT RESOLUTION • សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ •",
+    },
   };
 
   const t = translations[currentLang];
 
-  // Director General
   const directorGeneral = {
-    id: 'dg',
-    name: { km: 'ឯកឧត្តម អ៊ឹង កន្ថាផាវ័ន្ធ', en: 'H.E. Ung Kunthaphavorn' },
-    position: { km: 'អគ្គនាយក', en: 'Director General' },
-    title: { km: 'អគ្គនាយក', en: 'Director General' },
-    email: 'director.general@irc.gov.kh',
-    phone: '023 123 455',
-    image: 'https://i.pravatar.cc/150?img=7',
-    staff: 120,
-    children: ['dept1', 'dept2', 'dept3', 'dept4', 'dept5', 'dept6']
+    id: "dg",
+    name: { km: "ឯកឧត្តម អ៊ឹម សិទ្ធីរ៉ា", en: "H.E. Im Sitthyra" },
+    position: {
+      km: "ប្រតិភូរាជរដ្ឋាភិបាលទទួលបន្ទុកជាអគ្គនាយក",
+      en: "Delegate of the Royal Government in charge as Director General",
+    },
+    email: "xxx@mef.gov.kh",
+    phone: "(+885) xx xxx xxxx",
+    image: defaultImg,
+    personalInfo: {
+      name: { km: "អ៊ឹម សិទ្ធីរ៉ា", en: "IM SETHYRA" },
+      dob: { km: "ថ្ងៃទី ២១ ខែ ធ្នូ ឆ្នាំ ១៩៨០", en: "21 December 1980" },
+      pob: { km: "សង្កាត់លេខ៦ ក្រុងភ្នំពេញ", en: "Sangkat 6, Phnom Penh" },
+      nationality: { km: "ខ្មែរ", en: "Cambodian" },
+      maritalStatus: { km: "រៀបអាពាហ៍ពិពាហ៍", en: "Married" },
+    },
+    education: [
+      {
+        year: "2002 - 2003",
+        degree: {
+          km: "អនុបណ្ឌិតផ្នែកធុរកិច្ចអន្តរជាតិ",
+          en: "Master of Business Administration (MBA) in International Business",
+        },
+      },
+      {
+        year: "2001 - 2002",
+        degree: {
+          km: "អនុបណ្ឌិតផ្នែកគ្រប់គ្រងសណ្ឋាគារ និងទេសចរណ៍អន្តរជាតិ",
+          en: "Master of Business Administration (MBA) in International Hotel and Tourism Management",
+        },
+      },
+      {
+        year: "1997 - 2001",
+        degree: {
+          km: "បរិញ្ញាបត្រផ្នែកគណនេយ្យ",
+          en: "Bachelor of Business Administration (BBA) in Accounting",
+        },
+      },
+      {
+        year: "1994 - 1997",
+        degree: {
+          km: "សញ្ញាបត្រមធ្យមសិក្សាទុតិយភូមិ",
+          en: "High School Diploma",
+        },
+      },
+    ],
+    employment: [
+      {
+        year: "2021 - បច្ចុប្បន្ន",
+        title: {
+          km: "ប្រតិភូរាជរដ្ឋាភិបាលទទួលបន្ទុក ជាអគ្គនាយក នៃអគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
+          en: "Royal Government Delegate in charge as Director General, General Department of Resettlement (GDR)",
+        },
+      },
+      {
+        year: "2019 - បច្ចុប្បន្ន",
+        title: {
+          km: "សមាជិកឧត្តមក្រុមប្រឹក្សាសេដ្ឋកិច្ចជាតិ",
+          en: "Member of the Supreme National Economic Council (SNEC)",
+        },
+      },
+      {
+        year: "2016 - 2021",
+        title: {
+          km: "អគ្គនាយក នៃអគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
+          en: "Director General of the General Department of Resettlement",
+        },
+      },
+      {
+        year: "2015 - 2018",
+        title: {
+          km: "ទីប្រឹក្សាឧត្តមក្រុមប្រឹក្សាសេដ្ឋកិច្ចជាតិ",
+          en: "Advisor to the Supreme National Economic Council",
+        },
+      },
+      {
+        year: "2011 - 2016",
+        title: {
+          km: "ប្រធាននាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
+          en: "Director of the Department of Resettlement",
+        },
+      },
+      {
+        year: "2007 - 2011",
+        title: {
+          km: "អនុប្រធានអង្គភាពរៀបចំ អនុវត្ត ផែនការសកម្មភាពការតាំងទីលំនៅឡើងវិញ",
+          en: "Deputy Director of the Resettlement Unit",
+        },
+      },
+      {
+        year: "2005 - 2007",
+        title: {
+          km: "អនុប្រធាននាយកដ្ឋានសមាហរណកម្មសេដ្ឋកិច្ច និងអាស៊ាន",
+          en: "Deputy Director of the Department of Economic Integration and ASEAN",
+        },
+      },
+    ],
+    publications: [
+      {
+        year: "កុម្ភៈ ២០១៨",
+        title: {
+          km: "ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិ",
+          en: "The Promulgation of the Standard Operating Procedures for Land Acquisition and Involuntary Resettlement for Externally Financed Projects in Cambodia",
+        },
+      },
+    ],
+    decorations: [
+      {
+        year: "2023",
+        title: {
+          km: "ប្រកាសនីយបត្រគ្រឿងឥស្សរិយយស ជាតូបការ",
+          en: "Certificate of Grand Order of National Merit",
+        },
+      },
+      {
+        year: "2019",
+        title: {
+          km: "គ្រឿងឥស្សរិយយស ជាតូបការ",
+          en: "Grand Order of National Merit",
+        },
+      },
+      {
+        year: "2017",
+        title: {
+          km: "គ្រឿងឥស្សរិយយស សុវត្ថារា ថ្នាក់ មហាសេរីវឌ្ឍន៍",
+          en: "Royal Order of Sowathara Grand Cross",
+        },
+      },
+      {
+        year: "2013",
+        title: {
+          km: "គ្រឿងឥស្សរិយយស ព្រះរាជាណាចក្រកម្ពុជា ថ្នាក់ មហាសេរីវឌ្ឍន៍",
+          en: "Royal Order of Cambodia Grand Cross",
+        },
+      },
+      {
+        year: "2011",
+        title: {
+          km: "គ្រឿងឥស្សរិយយស ព្រះរាជាណាចក្រកម្ពុជា ថ្នាក់ មហាសេនា",
+          en: "Royal Order of Cambodia Grand Officer",
+        },
+      },
+      {
+        year: "2008",
+        title: {
+          km: "គ្រឿងឥស្សរិយយស ព្រះរាជាណាចក្រកម្ពុជា ថ្នាក់ អស្សឬទ្ធិ",
+          en: "Royal Order of Cambodia Knight",
+        },
+      },
+    ],
+    languages: {
+      desc: {
+        km: "ភាសាកំណើត: ខ្មែរ, ភាសាបរទេស: អង់គ្លេស និង បារាំង",
+        en: "Native: Khmer, Foreign: English and French",
+      },
+    },
   };
 
-  // Departments with their offices and units
-  const departments = [
+  const deputyDirectors = [
     {
-      id: 'dept1',
-      name: { km: 'នាយកដ្ឋានគ្រប់គ្រងក្រុមហ៊ុនធានារ៉ាប់រង', en: 'Insurance Company Supervision Department' },
-      icon: <Building2 size={18} />,
-      head: { km: 'លោក សុខ វុទ្ធី', en: 'Mr. Sok Vuthy' },
-      position: { km: 'ប្រធាននាយកដ្ឋាន', en: 'Department Director' },
-      email: 'sok.vuthy@irc.gov.kh',
-      phone: '023 123 456',
-      staff: 24,
-      color: 'blue',
-      image: 'https://i.pravatar.cc/150?img=1',
-      established: '2015',
-      description: {
-        km: 'នាយកដ្ឋានគ្រប់គ្រងក្រុមហ៊ុនធានារ៉ាប់រងទទួលខុសត្រូវលើការត្រួតពិនិត្យ និងគ្រប់គ្រងសកម្មភាពរបស់ក្រុមហ៊ុនធានារ៉ាប់រងទាំងអស់នៅកម្ពុជា។',
-        en: 'The Insurance Company Supervision Department is responsible for monitoring and supervising all insurance companies operating in Cambodia.'
+      id: "deputy1",
+      name: { km: "លោក លី ហ្សេមីន", en: "Mr. Ly Jemine" },
+      rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានកិច្ចការទូទៅ",
+        en: "Department of General Affairs",
       },
-      responsibilities: {
-        km: ['ត្រួតពិនិត្យក្រុមហ៊ុនធានារ៉ាប់រង', 'វាយតម្លៃហានិភ័យ', 'ផ្តល់អាជ្ញាប័ណ្ណ', 'ត្រួតពិនិត្យការអនុលោមតាមច្បាប់'],
-        en: ['Monitor insurance companies', 'Risk assessment', 'License issuance', 'Compliance monitoring']
-      },
-      achievements: {
-        km: ['បានត្រួតពិនិត្យក្រុមហ៊ុនចំនួន ២៥', 'ចេញអាជ្ញាប័ណ្ណថ្មីចំនួន ៥', 'បង្កើនប្រសិទ្ធភាពត្រួតពិនិត្យ ៣០%'],
-        en: ['Supervised 25 companies', 'Issued 5 new licenses', 'Increased inspection efficiency by 30%']
-      },
-      children: ['office1_1', 'office1_2', 'office1_3']
     },
     {
-      id: 'dept2',
-      name: { km: 'នាយកដ្ឋានត្រួតពិនិត្យហិរញ្ញវត្ថុ', en: 'Financial Inspection Department' },
-      icon: <BarChart3 size={18} />,
-      head: { km: 'លោកស្រី ជា ស្រីពេជ្រ', en: 'Ms. Chea Srey Pich' },
-      position: { km: 'ប្រធាននាយកដ្ឋាន', en: 'Department Director' },
-      email: 'chea.sreypich@irc.gov.kh',
-      phone: '023 123 457',
-      staff: 18,
-      color: 'green',
-      image: 'https://i.pravatar.cc/150?img=2',
-      established: '2016',
-      description: {
-        km: 'នាយកដ្ឋានត្រួតពិនិត្យហិរញ្ញវត្ថុទទួលខុសត្រូវលើការត្រួតពិនិត្យស្ថានភាពហិរញ្ញវត្ថុរបស់ក្រុមហ៊ុនធានារ៉ាប់រង។',
-        en: 'The Financial Inspection Department is responsible for monitoring the financial status of insurance companies.'
+      id: "deputy2",
+      name: { km: "លោក យ៉េន សុភ័ណ", en: "Mr. Yen Sophorn" },
+      rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានត្រួតពិនិត្យផ្ទៃក្នុង និងគ្រប់គ្រងទិន្នន័យ",
+        en: "Department of Internal Inspection and Data Management",
       },
-      responsibilities: {
-        km: ['ត្រួតពិនិត្យរបាយការណ៍ហិរញ្ញវត្ថុ', 'វាយតម្លៃស្ថិរភាពហិរញ្ញវត្ថុ', 'ត្រួតពិនិត្យសាច់ប្រាក់បម្រុង'],
-        en: ['Review financial reports', 'Assess financial stability', 'Monitor reserve requirements']
-      },
-      achievements: {
-        km: ['ត្រួតពិនិត្យរបាយការណ៍ហិរញ្ញវត្ថុចំនួន ៥០', 'រកឃើញភាពមិនប្រក្រតីចំនួន ៣'],
-        en: ['Reviewed 50 financial reports', 'Identified 3 irregularities']
-      },
-      children: ['office2_1', 'office2_2']
     },
     {
-      id: 'dept3',
-      name: { km: 'នាយកដ្ឋានច្បាប់ និងបទប្បញ្ញត្តិ', en: 'Legal and Regulatory Department' },
-      icon: <Scale size={18} />,
-      head: { km: 'លោក ហេង សុខា', en: 'Mr. Heng Sokha' },
-      position: { km: 'ប្រធាននាយកដ្ឋាន', en: 'Department Director' },
-      email: 'heng.sokha@irc.gov.kh',
-      phone: '023 123 458',
-      staff: 15,
-      color: 'purple',
-      image: 'https://i.pravatar.cc/150?img=3',
-      established: '2014',
-      description: {
-        km: 'នាយកដ្ឋានច្បាប់ និងបទប្បញ្ញត្តិទទួលខុសត្រូវលើការរៀបចំច្បាប់ និងបទប្បញ្ញត្តិស្តីពីវិស័យធានារ៉ាប់រង។',
-        en: 'The Legal and Regulatory Department is responsible for drafting laws and regulations related to the insurance sector.'
+      id: "deputy3",
+      name: { km: "លោក ប៊ុត សង្វារ", en: "Mr. But Sangvar" },
+      rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ១",
+        en: "Impact Resolution Department 1",
       },
-      responsibilities: {
-        km: ['រៀបចំច្បាប់', 'ពិនិត្យបទប្បញ្ញត្តិ', 'ផ្តល់យោបល់ផ្នែកច្បាប់'],
-        en: ['Draft laws', 'Review regulations', 'Provide legal advice']
-      },
-      achievements: {
-        km: ['រៀបចំច្បាប់ថ្មីចំនួន ២', 'កែសម្រួលបទប្បញ្ញត្តិចំនួន ៥'],
-        en: ['Drafted 2 new laws', 'Amended 5 regulations']
-      },
-      children: ['office3_1']
     },
     {
-      id: 'dept4',
-      name: { km: 'នាយកដ្ឋានគោលនយោបាយ និងផែនការ', en: 'Policy and Planning Department' },
-      icon: <Landmark size={18} />,
-      head: { km: 'លោកស្រី ពៅ ម៉ាលី', en: 'Ms. Pau Mali' },
-      position: { km: 'ប្រធាននាយកដ្ឋាន', en: 'Department Director' },
-      email: 'pau.mali@irc.gov.kh',
-      phone: '023 123 459',
-      staff: 12,
-      color: 'orange',
-      image: 'https://i.pravatar.cc/150?img=4',
-      established: '2017',
-      description: {
-        km: 'នាយកដ្ឋានគោលនយោបាយ និងផែនការទទួលខុសត្រូវលើការរៀបចំគោលនយោបាយ និងផែនការអភិវឌ្ឍន៍វិស័យធានារ៉ាប់រង។',
-        en: 'The Policy and Planning Department is responsible for developing policies and development plans for the insurance sector.'
+      id: "deputy4",
+      name: { km: "លោក ចាន់ ធន់", en: "Mr. Chan Thon" },
+      rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ២",
+        en: "Impact Resolution Department 2",
       },
-      responsibilities: {
-        km: ['រៀបចំគោលនយោបាយ', 'រៀបចំផែនការយុទ្ធសាស្រ្ត', 'វាយតម្លៃគម្រោង'],
-        en: ['Develop policies', 'Create strategic plans', 'Evaluate projects']
-      },
-      achievements: {
-        km: ['រៀបចំគោលនយោបាយថ្មីចំនួន ៣', 'បញ្ចប់ផែនការយុទ្ធសាស្រ្ត ២០២១-២០៣០'],
-        en: ['Developed 3 new policies', 'Completed 2021-2030 strategic plan']
-      },
-      children: ['office4_1', 'office4_2']
     },
     {
-      id: 'dept5',
-      name: { km: 'នាយកដ្ឋានស្ថិតិ និងព័ត៌មានវិទ្យា', en: 'Statistics and IT Department' },
-      icon: <TrendingUp size={18} />,
-      head: { km: 'លោក សុខ ដារ៉ា', en: 'Mr. Sok Dara' },
-      position: { km: 'ប្រធាននាយកដ្ឋាន', en: 'Department Director' },
-      email: 'sok.dara@irc.gov.kh',
-      phone: '023 123 460',
-      staff: 20,
-      color: 'red',
-      image: 'https://i.pravatar.cc/150?img=5',
-      established: '2018',
-      description: {
-        km: 'នាយកដ្ឋានស្ថិតិ និងព័ត៌មានវិទ្យាទទួលខុសត្រូវលើការប្រមូលទិន្នន័យស្ថិតិ និងគ្រប់គ្រងប្រព័ន្ធព័ត៌មានវិទ្យា។',
-        en: 'The Statistics and IT Department is responsible for collecting statistical data and managing IT systems.'
+      id: "deputy5",
+      name: { km: "លោក ស្រ៊ាង លឹមស្រូយ", en: "Mr. Sreng Limsroy" },
+      rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+      position: { km: "អគ្គនាយករង", en: "Deputy Director General" },
+      department: {
+        km: "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ៣",
+        en: "Impact Resolution Department 3",
       },
-      responsibilities: {
-        km: ['ប្រមូលទិន្នន័យស្ថិតិ', 'គ្រប់គ្រងប្រព័ន្ធព័ត៌មានវិទ្យា', 'ផ្តល់សេវាកម្មបច្ចេកទេស'],
-        en: ['Collect statistical data', 'Manage IT systems', 'Provide technical support']
-      },
-      achievements: {
-        km: ['បង្កើតប្រព័ន្ធទិន្នន័យថ្មី', 'បណ្តុះបណ្តាលបុគ្គលិកចំនួន ៥០ នាក់'],
-        en: ['Created new data system', 'Trained 50 staff members']
-      },
-      children: ['office5_1', 'office5_2', 'office5_3']
     },
-    {
-      id: 'dept6',
-      name: { km: 'នាយកដ្ឋានធនធានមនុស្ស និងរដ្ឋបាល', en: 'Human Resources and Administration Department' },
-      icon: <Users size={18} />,
-      head: { km: 'លោកស្រី នួន ស្រីនាថ', en: 'Ms. Nuon Sreinath' },
-      position: { km: 'ប្រធាននាយកដ្ឋាន', en: 'Department Director' },
-      email: 'nuon.sreinath@irc.gov.kh',
-      phone: '023 123 461',
-      staff: 16,
-      color: 'teal',
-      image: 'https://i.pravatar.cc/150?img=6',
-      established: '2014',
-      description: {
-        km: 'នាយកដ្ឋានធនធានមនុស្ស និងរដ្ឋបាលទទួលខុសត្រូវលើការគ្រប់គ្រងបុគ្គលិក និងកិច្ចការរដ្ឋបាលទូទៅ។',
-        en: 'The Human Resources and Administration Department is responsible for personnel management and general administrative affairs.'
-      },
-      responsibilities: {
-        km: ['គ្រប់គ្រងបុគ្គលិក', 'រៀបចំថវិកា', 'គ្រប់គ្រងឯកសារ'],
-        en: ['Manage personnel', 'Budget planning', 'Document management']
-      },
-      achievements: {
-        km: ['ជ្រើសរើសបុគ្គលិកថ្មីចំនួន ១០ នាក់', 'រៀបចំកម្មវិធីបណ្តុះបណ្តាលចំនួន ៥'],
-        en: ['Recruited 10 new staff', 'Organized 5 training programs']
-      },
-      children: ['office6_1', 'office6_2']
-    }
   ];
 
-  // Offices under departments
-  const offices = {
-    office1_1: { id: 'office1_1', name: { km: 'ការិយាល័យត្រួតពិនិត្យក្រុមហ៊ុនធានារ៉ាប់រងទូទៅ', en: 'General Insurance Company Supervision Office' }, chief: { km: 'លោក រស់ វុទ្ធី', en: 'Mr. Ros Vuthy' }, staff: 8, parent: 'dept1' },
-    office1_2: { id: 'office1_2', name: { km: 'ការិយាល័យវាយតម្លៃហានិភ័យ', en: 'Risk Assessment Office' }, chief: { km: 'លោកស្រី ច័ន្ទ សុភាព', en: 'Ms. Chan Sopheap' }, staff: 6, parent: 'dept1' },
-    office1_3: { id: 'office1_3', name: { km: 'ការិយាល័យផ្តល់អាជ្ញាប័ណ្ណ', en: 'Licensing Office' }, chief: { km: 'លោក សុខ វុទ្ធី', en: 'Mr. Sok Vuthy' }, staff: 5, parent: 'dept1' },
-    office2_1: { id: 'office2_1', name: { km: 'ការិយាល័យត្រួតពិនិត្យរបាយការណ៍ហិរញ្ញវត្ថុ', en: 'Financial Report Inspection Office' }, chief: { km: 'លោកស្រី ជា ស្រីពេជ្រ', en: 'Ms. Chea Srey Pich' }, staff: 7, parent: 'dept2' },
-    office2_2: { id: 'office2_2', name: { km: 'ការិយាល័យត្រួតពិនិត្យសាច់ប្រាក់បម្រុង', en: 'Reserve Monitoring Office' }, chief: { km: 'លោក ហេង សុខា', en: 'Mr. Heng Sokha' }, staff: 5, parent: 'dept2' },
-    office3_1: { id: 'office3_1', name: { km: 'ការិយាល័យរៀបចំច្បាប់', en: 'Legal Drafting Office' }, chief: { km: 'លោក ហេង សុខា', en: 'Mr. Heng Sokha' }, staff: 8, parent: 'dept3' },
-    office4_1: { id: 'office4_1', name: { km: 'ការិយាល័យរៀបចំគោលនយោបាយ', en: 'Policy Development Office' }, chief: { km: 'លោកស្រី ពៅ ម៉ាលី', en: 'Ms. Pau Mali' }, staff: 6, parent: 'dept4' },
-    office4_2: { id: 'office4_2', name: { km: 'ការិយាល័យផែនការយុទ្ធសាស្រ្ត', en: 'Strategic Planning Office' }, chief: { km: 'លោកស្រី ពៅ ម៉ាលី', en: 'Ms. Pau Mali' }, staff: 4, parent: 'dept4' },
-    office5_1: { id: 'office5_1', name: { km: 'ការិយាល័យប្រមូលទិន្នន័យស្ថិតិ', en: 'Statistical Data Collection Office' }, chief: { km: 'លោក សុខ ដារ៉ា', en: 'Mr. Sok Dara' }, staff: 7, parent: 'dept5' },
-    office5_2: { id: 'office5_2', name: { km: 'ការិយាល័យគ្រប់គ្រងប្រព័ន្ធព័ត៌មានវិទ្យា', en: 'IT Systems Management Office' }, chief: { km: 'លោក សុខ ដារ៉ា', en: 'Mr. Sok Dara' }, staff: 8, parent: 'dept5' },
-    office5_3: { id: 'office5_3', name: { km: 'ការិយាល័យសេវាកម្មបច្ចេកទេស', en: 'Technical Support Office' }, chief: { km: 'លោក សុខ ដារ៉ា', en: 'Mr. Sok Dara' }, staff: 5, parent: 'dept5' },
-    office6_1: { id: 'office6_1', name: { km: 'ការិយាល័យគ្រប់គ្រងបុគ្គលិក', en: 'Personnel Management Office' }, chief: { km: 'លោកស្រី នួន ស្រីនាថ', en: 'Ms. Nuon Sreinath' }, staff: 8, parent: 'dept6' },
-    office6_2: { id: 'office6_2', name: { km: 'ការិយាល័យរដ្ឋបាល', en: 'Administration Office' }, chief: { km: 'លោកស្រី នួន ស្រីនាថ', en: 'Ms. Nuon Sreinath' }, staff: 6, parent: 'dept6' }
-  };
+  const departments = [
+    {
+      id: "dept1",
+      name: {
+        km: "ប្រធាននាយកដ្ឋានកិច្ចការទូទៅ",
+        en: "Department of General Affairs",
+      },
+      rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
+      head: { km: "លោក ពិន និលឡា", en: "Mr. Pin Nilla" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+    },
+    {
+      id: "dept2",
+      name: {
+        km: "ប្រធាននាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ១",
+        en: "Impact Resolution Department 1",
+      },
+      rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
+      head: { km: "លោក សេង វណ្ណឌី", en: "Mr. Seng Vandy" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+    },
+    {
+      id: "dept3",
+      name: {
+        km: "ប្រធាននាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ២",
+        en: "Impact Resolution Department 2",
+      },
+      rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
+      head: { km: "លោក ស៊ន់ សេរីវឌ្ឍន:", en: "Mr. Son Sereyvath" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+    },
+    {
+      id: "dept4",
+      name: {
+        km: "ប្រធាននាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ៣",
+        en: "Impact Resolution Department 3",
+      },
+      rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
+      head: { km: "លោក គីម ច័ន្ទវិបុល", en: "Mr. Kim Chanvipol" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+    },
+    {
+      id: "dept5",
+      name: {
+        km: "ប្រធាននាយកដ្ឋានត្រួតពិនិត្យផ្ទៃក្នង និងគ្រប់គ្រងទិន្នន័យ",
+        en: "Internal Inspection and Data Management Department",
+      },
+      rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
+      head: { km: "លោក គង់ រដ្ឋា", en: "Mr. Kong Ratha" },
+      email: "xxx@mef.gov.kh",
+      phone: "(+855) xx xxx xxxx",
+      image: logo,
+    },
+  ];
 
-  const handleGoBack = () => {
-    window.location.href = '/';
-  };
-
-  const toggleNode = (nodeId) => {
-    if (expandedNodes.includes(nodeId)) {
-      setExpandedNodes(expandedNodes.filter(id => id !== nodeId));
-    } else {
-      setExpandedNodes([...expandedNodes, nodeId]);
-    }
-  };
-
-  const expandAll = () => {
-    const allNodes = ['dg', ...departments.map(d => d.id), ...Object.keys(offices)];
-    setExpandedNodes(allNodes);
-  };
-
-  const collapseAll = () => {
-    setExpandedNodes([]);
-  };
-
-  const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 0.1, 1.5));
-  };
-
-  const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 0.1, 0.8));
-  };
-
+  const handleZoomIn = () => setZoomLevel((p) => Math.min(p + 0.1, 1.5));
+  const handleZoomOut = () => setZoomLevel((p) => Math.max(p - 0.1, 0.4));
   const handleZoomReset = () => {
-    setZoomLevel(1);
+    if (windowWidth < 640) setZoomLevel(0.55);
+    else if (windowWidth < 768) setZoomLevel(0.7);
+    else if (windowWidth < 1024) setZoomLevel(0.85);
+    else setZoomLevel(1);
   };
-
   const handleNodeClick = (node) => {
     setSelectedDept(node);
     setShowDetail(true);
-    setActiveTab('overview');
   };
 
-  const getColorClasses = (color) => {
-    const colors = {
-      blue: 'border-blue-200 bg-blue-50 text-blue-600',
-      green: 'border-green-200 bg-green-50 text-green-600',
-      purple: 'border-purple-200 bg-purple-50 text-purple-600',
-      orange: 'border-orange-200 bg-orange-50 text-orange-600',
-      red: 'border-red-200 bg-red-50 text-red-600',
-      teal: 'border-teal-200 bg-teal-50 text-teal-600'
-    };
-    return colors[color] || colors.blue;
+  // ── NEW: floating pill label above each row ──────────────────────────────────
+  const RowLabel = ({ label }) => (
+    <div className="flex justify-center mb-2">
+      <span
+        className="text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-300 px-4 py-1 rounded-full shadow-sm"
+        style={{ fontSize: "11px" }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+  // ────────────────────────────────────────────────────────────────────────────
+
+  const OrgNode = ({ data, onClick, highlight = false, isDept = false }) => {
+    let topLine = "";
+    let bottomLine = "";
+
+    if (data.id === "dg") {
+      topLine = data.position?.[currentLang] || "";
+      bottomLine = data.name?.[currentLang] || "";
+    } else if (isDept) {
+      topLine = data.name?.[currentLang] || "";
+      bottomLine = data.head?.[currentLang] || "";
+    } else {
+      topLine =
+        data.rowLabel?.[currentLang] || data.position?.[currentLang] || "";
+      bottomLine = data.name?.[currentLang] || "";
+    }
+
+    return (
+      <div
+        onClick={() => onClick(data)}
+        className={`
+          border-2 rounded cursor-pointer select-none text-center transition-all duration-150
+          hover:shadow-lg active:scale-95
+          ${
+            highlight
+              ? "bg-white border-gray-700 shadow-md"
+              : "bg-white border-gray-500 hover:border-green-600"
+          }
+        `}
+        style={{
+          width: 160,
+          minWidth: 160,
+          maxWidth: 160,
+          padding: "6px 8px",
+          boxShadow: highlight
+            ? "0 4px 14px rgba(0,0,0,0.18)"
+            : "0 1px 4px rgba(0,0,0,0.1)",
+        }}
+      >
+        <p
+          className="font-bold text-gray-900 leading-snug border-b border-gray-200 pb-1 mb-1"
+          style={{ fontSize: "11px" }}
+        >
+          {topLine}
+        </p>
+        <p
+          className="text-gray-600 leading-snug"
+          style={{ fontSize: "10.5px" }}
+        >
+          {bottomLine}
+        </p>
+      </div>
+    );
   };
+
+  // SVG arrow connector: vertical line with arrowhead
+  const VArrow = ({ height = 32 }) => (
+    <div className="flex justify-center" style={{ height }}>
+      <svg
+        width="20"
+        height={height}
+        viewBox={`0 0 20 ${height}`}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <line
+          x1="10"
+          y1="0"
+          x2="10"
+          y2={height - 8}
+          stroke="#4b5563"
+          strokeWidth="1.5"
+        />
+        <polygon
+          points={`10,${height} 6,${height - 8} 14,${height - 8}`}
+          fill="#4b5563"
+        />
+      </svg>
+    </div>
+  );
+
+  function runningText() {
+    function logo() {
+      return (
+        <img
+          src={Image}
+          style={{
+            height: "20px",
+            width: "20px",
+            objectFit: "cover",
+            display: "inline", // Add this
+          }}
+        />
+      );
+    }
+    return (
+      <>
+        {/* ✅ RUNNING TEXT FIXED UNDER HEADER */}
+
+        <div
+          className="
+            running-text-bar
+            sticky
+            top-[72px]
+            md:top-[140px]
+            w-full
+            z-40
+            overflow-hidden
+          bg-gradient-to-r from-[#2E7D32]/80 to-[#4CAF50]/80
+            shadow-lg
+          "
+        >
+          <div className="animate-marquee whitespace-nowrap py-2 md:py-3">
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} អនុក្រឹត្យ ស្តីពី
+              ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
+              ក្នុងព្រះណាចក្រកម្ពុជា
+            </span>
+
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
+            </span>
+
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} LAW ON EXPROPRIATION
+            </span>
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} អនុក្រឹត្យ ស្តីពី
+              ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយភលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
+              ក្នុងព្រះណាចក្រកម្ពុជា •
+            </span>
+
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
+            </span>
+
+            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
+              {logo()} LAW ON EXPROPRIATION
+            </span>
+          </div>
+        </div>
+
+        {/* ✅ MARQUEE CSS */}
+        <style jsx>{`
+          @keyframes marquee {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
+          }
+
+          .animate-marquee {
+            animation: marquee 30s linear infinite;
+            display: inline-block;
+          }
+
+          .animate-marquee:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with Breadcrumb */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <Container className="py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link 
-                to="/" 
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <Home size={20} className="text-gray-600" />
-              </Link>
-              
-              {/* Breadcrumb */}
-              <nav className="flex items-center space-x-2 text-sm">
-                <Link to="/" className="text-gray-500 hover:text-primary-600 transition-colors">
-                  {t.home}
-                </Link>
-                <ChevronRight size={14} className="text-gray-400" />
-                <span className="text-gray-700">រចនាសម្ព័ន្ធគ្រប់គ្រង</span>
-                <ChevronRight size={14} className="text-gray-400" />
-                <span className="text-primary-600 font-medium">{t.title}</span>
-              </nav>
-            </div>
-
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={expandAll}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                title={t.expandAll}
-              >
-                <Plus size={18} className="text-gray-600" />
-              </button>
-              <button
-                onClick={collapseAll}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                title={t.collapseAll}
-              >
-                <Minus size={18} className="text-gray-600" />
-              </button>
-              <button
-                onClick={handleZoomIn}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                title={t.zoomIn}
-              >
-                <ZoomIn size={18} className="text-gray-600" />
-              </button>
-              <button
-                onClick={handleZoomOut}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                title={t.zoomOut}
-              >
-                <ZoomOut size={18} className="text-gray-600" />
-              </button>
-              <button
-                onClick={handleZoomReset}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                title={t.reset}
-              >
-                <Maximize2 size={18} className="text-gray-600" />
-              </button>
-            </div>
-          </div>
-        </Container>
+      <div
+        className="
+          running-text-bar
+          sticky
+          top-[72px]
+          md:top-[140px]
+          w-full
+          z-40
+          overflow-hidden
+          bg-gradient-to-r from-[#2E7D32]/80 to-[#4CAF50]/80
+          shadow-lg
+        "
+      >
+        {runningText()}
       </div>
 
-      {/* Filter Bar - Simplified */}
-      <div className="bg-white border-b border-gray-200 sticky top-[73px] z-30">
-        <Container className="py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm"
-              >
-                <Filter size={16} className="text-gray-600" />
-                <span>{t.filter}</span>
-              </button>
-              
-              {filterBy !== 'all' && (
-                <span className="text-sm text-gray-500">
-                  បង្ហាញ: {filterBy === 'departments' ? t.departments : t.offices}
-                </span>
-              )}
-            </div>
+      {/* Global Banner */}
+      <GlobalBanner
+        title={t.title}
+        subtitle={t.subtitle}
+        height="h-[200px] md:h-[280px] lg:h-[350px]"
+        showBreadcrumb={true}
+      />
 
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={() => setViewMode('org')}
-                className={`p-2 rounded-lg transition-colors ${viewMode === 'org' ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-100 text-gray-600'}`}
-                title={t.orgChart}
-              >
-                <Network size={18} />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-100 text-gray-600'}`}
-                title={t.listView}
-              >
-                <Layers size={18} />
-              </button>
-            </div>
-          </div>
+      {/* Zoom Controls */}
+      <Container className="py-4">
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={handleZoomIn}
+            className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-green-50 transition-colors"
+            title={t.zoomIn}
+          >
+            <ZoomIn size={16} className="text-gray-600" />
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-green-50 transition-colors"
+            title={t.zoomOut}
+          >
+            <ZoomOut size={16} className="text-gray-600" />
+          </button>
+          <button
+            onClick={handleZoomReset}
+            className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-green-50 transition-colors"
+            title={t.reset}
+          >
+            <Maximize2 size={16} className="text-gray-600" />
+          </button>
+        </div>
+      </Container>
 
-          {showFilters && (
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setFilterBy('all')}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    filterBy === 'all' 
-                      ? 'bg-primary-600 text-white shadow-sm' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {t.all}
-                </button>
-                <button
-                  onClick={() => setFilterBy('departments')}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    filterBy === 'departments' 
-                      ? 'bg-primary-600 text-white shadow-sm' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {t.departments}
-                </button>
-                <button
-                  onClick={() => setFilterBy('offices')}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    filterBy === 'offices' 
-                      ? 'bg-primary-600 text-white shadow-sm' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {t.offices}
-                </button>
-              </div>
-            </div>
-          )}
-        </Container>
-      </div>
-
-      {/* Main Content */}
-      <Container className="py-8">
-        <div 
-          className="transition-transform duration-300"
-          style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top center' }}
+      {/* Org Chart */}
+      <Container className="pb-16 overflow-x-auto">
+        <div
+          style={{
+            transform: `scale(${zoomLevel})`,
+            transformOrigin: "top center",
+            transition: "transform 0.3s ease",
+          }}
         >
-          {viewMode === 'org' ? (
-            /* Organization Chart View */
-            <div className="org-chart">
-              {/* Level 1: Director General */}
-              <div className="flex justify-center mb-8">
-                <div 
-                  className="bg-primary-600 text-white rounded-lg p-4 w-full max-w-md cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleNodeClick(directorGeneral)}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 rounded-full bg-white/20 overflow-hidden ring-2 ring-white/50 flex-shrink-0">
-                      <img 
-                        src={directorGeneral.image} 
-                        alt={directorGeneral.name[currentLang]}
-                        className="w-full h-full object-cover"
-                        onError={(e) => e.target.src = defaultImg}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-primary-100 mb-1">{t.director}</p>
-                      <p className="text-base font-semibold">{directorGeneral.name[currentLang]}</p>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <Mail size={14} className="text-primary-200" />
-                        <Phone size={14} className="text-primary-200" />
-                      </div>
-                    </div>
-                    <ChevronRight size={18} className="text-primary-200" />
-                  </div>
-                </div>
-              </div>
+          {/* ── Director General ── */}
+          {/* 🏷 Floating pill label ABOVE the box */}
+          <RowLabel
+            label={currentLang === "km" ? "អគ្គនាយក" : "Director General"}
+          />
+          <div className="flex justify-center">
+            <OrgNode
+              data={directorGeneral}
+              onClick={handleNodeClick}
+              highlight
+            />
+          </div>
 
-              {/* Connecting Line */}
-              <div className="flex justify-center">
-                <div className="w-px h-8 bg-gray-300"></div>
-              </div>
+          {/* Vertical drop + horizontal spanning line to 5 deputies */}
+          <div className="flex justify-center">
+            <svg
+              width="900"
+              height="60"
+              viewBox="0 0 900 60"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ display: "block" }}
+            >
+              <line
+                x1="450"
+                y1="0"
+                x2="450"
+                y2="30"
+                stroke="#4b5563"
+                strokeWidth="1.5"
+              />
+              <line
+                x1="90"
+                y1="30"
+                x2="810"
+                y2="30"
+                stroke="#4b5563"
+                strokeWidth="1.5"
+              />
 
-              {/* Level 2: Departments */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {departments
-                  .filter(dept => filterBy === 'all' || filterBy === 'departments')
-                  .map((dept) => {
-                    const colorClasses = getColorClasses(dept.color);
-                    const isExpanded = expandedNodes.includes(dept.id);
-                    
-                    return (
-                      <div key={dept.id} className="relative">
-                        <div
-                          className={`bg-white border ${colorClasses.split(' ')[0]} rounded-lg hover:shadow-md transition-shadow cursor-pointer`}
-                          onClick={() => handleNodeClick(dept)}
-                        >
-                          <div className={`h-1 ${colorClasses.split(' ')[1]} rounded-t-lg`}></div>
-                          <div className="p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className={`p-2 ${colorClasses.split(' ')[1]} rounded-lg`}>
-                                {dept.icon}
-                              </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleNode(dept.id);
-                                }}
-                                className="p-1 hover:bg-gray-100 rounded"
-                              >
-                                {isExpanded ? <ChevronUp size={16} className="text-gray-500" /> : <ChevronDown size={16} className="text-gray-500" />}
-                              </button>
-                            </div>
-                            <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">
-                              {dept.name[currentLang]}
-                            </h3>
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-gray-500">{dept.staff} {t.staff}</span>
-                              <span className="text-primary-600">{t.viewDetails}</span>
-                            </div>
-                          </div>
-                        </div>
+              {/* Arrows for deputies 1-4 */}
+              {[90, 270, 450, 630].map((x) => (
+                <g key={x}>
+                  <line
+                    x1={x}
+                    y1="30"
+                    x2={x}
+                    y2="52"
+                    stroke="#4b5563"
+                    strokeWidth="1.5"
+                  />
+                  <polygon
+                    points={`${x},60 ${x - 5},52 ${x + 5},52`}
+                    fill="#4b5563"
+                  />
+                </g>
+              ))}
+              <g>
+                <line
+                  x1="720"
+                  y1="30"
+                  x2="720"
+                  y2="350"
+                  stroke="#4b5563"
+                  strokeWidth="1.5"
+                />
+                <polygon points="720,358 715,350 725,350" fill="#4b5563" />
+              </g>
+              <g>
+                <line
+                  x1="810"
+                  y1="30"
+                  x2="810"
+                  y2="52"
+                  stroke="#4b5563"
+                  strokeWidth="1.5"
+                />
+                <polygon points="810,60 805,52 815,52" fill="#4b5563" />
+              </g>
+            </svg>
+          </div>
 
-                        {/* Level 3: Offices */}
-                        {isExpanded && dept.children && (
-                          <div className="mt-2 ml-4 pl-2 border-l-2 border-gray-200 space-y-2">
-                            {dept.children.map(childId => {
-                              const office = offices[childId];
-                              if (!office) return null;
-                              return (
-                                <div
-                                  key={office.id}
-                                  className="bg-white border border-gray-200 rounded-lg p-3 text-sm cursor-pointer hover:shadow-sm transition-shadow"
-                                  onClick={() => handleNodeClick(office)}
-                                >
-                                  <div className="flex items-center space-x-2">
-                                    <Building2 size={14} className="text-gray-400" />
-                                    <span className="font-medium text-gray-800 line-clamp-1">{office.name[currentLang]}</span>
-                                  </div>
-                                  <div className="mt-1 text-xs text-gray-500">
-                                    {office.chief[currentLang]} • {office.staff} {t.staff}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          ) : (
-            /* List View */
-            <div className="space-y-6">
-              {/* Director General in List View */}
-              <div 
-                className="bg-primary-600 text-white rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => handleNodeClick(directorGeneral)}
+          {/* ── Deputy Directors Row ── */}
+          {/* 🏷 Floating pill label ABOVE the row */}
+          <RowLabel
+            label={
+              currentLang === "km" ? "អគ្គនាយករង" : "Deputy Director General"
+            }
+          />
+
+        
+
+          <div className="flex justify-center" style={{ gap: 0 }}>
+            {deputyDirectors.map((dep) => (
+              <div
+                key={dep.id}
+                style={{
+                  width: 180,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-white/20 overflow-hidden ring-2 ring-white/50">
-                      <img src={directorGeneral.image} alt={directorGeneral.name[currentLang]} className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-primary-100">{t.director}</p>
-                      <p className="font-semibold">{directorGeneral.name[currentLang]}</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={18} className="text-primary-200" />
-                </div>
+                <OrgNode data={dep} onClick={handleNodeClick} />
               </div>
+            ))}
+          </div>
 
-              {/* Departments in List View */}
-              <div className="space-y-3">
-                <h3 className="font-medium text-gray-700 px-2">{t.departments}</h3>
-                {departments
-                  .filter(dept => filterBy === 'all' || filterBy === 'departments')
-                  .map(dept => (
-                    <div
-                      key={dept.id}
-                      className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-sm transition-shadow"
-                      onClick={() => handleNodeClick(dept)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-lg ${getColorClasses(dept.color).split(' ')[1]}`}>
-                            {dept.icon}
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-gray-900">{dept.name[currentLang]}</h4>
-                            <p className="text-xs text-gray-500 mt-1">{dept.head[currentLang]} • {dept.staff} {t.staff}</p>
-                          </div>
-                        </div>
-                        <ChevronRight size={16} className="text-gray-400" />
-                      </div>
-                    </div>
-                  ))}
+          {/* Arrows from deputy down to dept */}
+          <div className="flex justify-center" style={{ gap: 0 }}>
+            {deputyDirectors.map((dep, index) => (
+              <div
+                key={dep.id + "_arr"}
+                style={{
+                  width: 180,
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                {/* Don't render arrow for index 4 (deputy5) */}
+                {index !== 4 && <VArrow height={36} />}
               </div>
+            ))}
+          </div>
 
-              {/* Offices in List View - Only show if filter includes offices */}
-              {(filterBy === 'all' || filterBy === 'offices') && (
-                <div className="space-y-3">
-                  <h3 className="font-medium text-gray-700 px-2">{t.offices}</h3>
-                  {Object.values(offices).map(office => (
-                    <div
-                      key={office.id}
-                      className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-sm transition-shadow"
-                      onClick={() => handleNodeClick(office)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-gray-100 rounded-lg">
-                            <Building2 size={16} className="text-gray-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-gray-900">{office.name[currentLang]}</h4>
-                            <p className="text-xs text-gray-500 mt-1">{office.chief[currentLang]} • {office.staff} {t.staff}</p>
-                          </div>
-                        </div>
-                        <ChevronRight size={16} className="text-gray-400" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          {/* ── Departments Row ── */}
+          {/* 🏷 Floating pill label ABOVE the row */}
+          <RowLabel
+            label={currentLang === "km" ? "ប្រធាននាយកដ្ឋាន" : "Department Head"}
+          />
+          <div className="flex justify-center" style={{ gap: 0 }}>
+            {departments.map((dept) => (
+              <div
+                key={dept.id}
+                style={{
+                  width: 180,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <OrgNode data={dept} onClick={handleNodeClick} isDept />
+              </div>
+            ))}
+          </div>
         </div>
       </Container>
 
       {/* Detail Modal */}
       {showDetail && selectedDept && (
-        <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
-          {/* Modal Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-              <div className="flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 rounded-t-2xl z-10 px-5 py-3 flex items-center justify-between">
                 <button
                   onClick={() => setShowDetail(false)}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-primary-600 transition-colors group"
+                  className="flex items-center space-x-1 text-gray-600 hover:text-green-700 transition-colors group"
                 >
-                  <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                  <ChevronLeft
+                    size={17}
+                    className="group-hover:-translate-x-1 transition-transform"
+                  />
                   <span className="text-sm">{t.back}</span>
                 </button>
-                <div className="flex items-center space-x-2">
-                  <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
-                    <Share2 size={18} />
-                  </button>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
-                    <Printer size={18} />
-                  </button>
+                <button className="p-2 hover:bg-green-50 rounded-lg text-gray-600">
+                  <Share2 size={16} />
+                </button>
+              </div>
+
+              <div className="p-5">
+                {/* Profile header */}
+                <div className="bg-green-50 rounded-xl p-4 mb-5 flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="w-20 h-20 rounded-full bg-white overflow-hidden ring-4 ring-green-200 shadow flex-shrink-0 mx-auto md:mx-0">
+                    <img
+                      src={selectedDept.image || defaultImg}
+                      alt={selectedDept.name?.[currentLang]}
+                      className="w-full h-full object-cover"
+                      onError={(e) => (e.target.src = defaultImg)}
+                    />
+                  </div>
+                  <div className="text-center md:text-left">
+                    <h2 className="text-xl font-bold text-gray-900">
+                      {selectedDept.name?.[currentLang]}
+                    </h2>
+                    <p className="text-green-700 font-medium text-sm mt-1">
+                      {selectedDept.position?.[currentLang]}
+                    </p>
+                    {selectedDept.head && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        <span className="font-medium">{t.deptHead}:</span>{" "}
+                        {selectedDept.head[currentLang]}
+                      </p>
+                    )}
+                  </div>
                 </div>
+
+                {selectedDept.id === "dg" ? (
+                  <>
+                    <Section
+                      title={t.personalInfo}
+                      icon={<User size={16} className="text-green-600" />}
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {[
+                          ["name", t.name],
+                          ["dob", t.dob],
+                          ["pob", t.pob],
+                          ["nationality", t.nationality],
+                          ["maritalStatus", t.maritalStatus],
+                        ].map(([key, label]) => (
+                          <div key={key}>
+                            <p className="text-xs text-gray-500">{label}</p>
+                            <p className="text-sm text-gray-800">
+                              {selectedDept.personalInfo[key][currentLang]}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </Section>
+                    <Section
+                      title={t.education}
+                      icon={
+                        <GraduationCap size={16} className="text-green-600" />
+                      }
+                    >
+                      {selectedDept.education.map((e, i) => (
+                        <Item
+                          key={i}
+                          year={e.year}
+                          text={e.degree[currentLang]}
+                        />
+                      ))}
+                    </Section>
+                    <Section
+                      title={t.employment}
+                      icon={
+                        <BriefcaseIcon size={16} className="text-green-600" />
+                      }
+                    >
+                      {selectedDept.employment.map((e, i) => (
+                        <Item
+                          key={i}
+                          year={e.year}
+                          text={e.title[currentLang]}
+                        />
+                      ))}
+                    </Section>
+                    <Section
+                      title={t.publications}
+                      icon={
+                        <FileTextIcon size={16} className="text-green-600" />
+                      }
+                    >
+                      {selectedDept.publications.map((e, i) => (
+                        <Item
+                          key={i}
+                          year={e.year}
+                          text={e.title[currentLang]}
+                        />
+                      ))}
+                    </Section>
+                    <Section
+                      title={t.decorations}
+                      icon={<Medal size={16} className="text-green-600" />}
+                    >
+                      {selectedDept.decorations.map((e, i) => (
+                        <Item
+                          key={i}
+                          year={e.year}
+                          text={e.title[currentLang]}
+                        />
+                      ))}
+                    </Section>
+                    <Section
+                      title={t.languages}
+                      icon={<Languages size={16} className="text-green-600" />}
+                    >
+                      <p className="text-sm text-gray-800">
+                        {selectedDept.languages.desc[currentLang]}
+                      </p>
+                    </Section>
+                  </>
+                ) : selectedDept.department ? (
+                  <Section
+                    title={t.department}
+                    icon={<Building2 size={16} className="text-green-600" />}
+                  >
+                    <p className="text-sm text-gray-700">
+                      {selectedDept.department[currentLang]}
+                    </p>
+                  </Section>
+                ) : null}
+
+                {/* Contact */}
+                {selectedDept.email && (
+                  <div className="bg-gray-50 rounded-lg p-4 mt-4">
+                    <h3 className="font-medium text-gray-900 mb-3 text-sm">
+                      {t.contact}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <a
+                        href={`mailto:${selectedDept.email}`}
+                        className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-700"
+                      >
+                        <Mail
+                          size={13}
+                          className="text-green-600 flex-shrink-0"
+                        />
+                        <span className="break-all">{selectedDept.email}</span>
+                      </a>
+                      <a
+                        href={`tel:${selectedDept.phone}`}
+                        className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-700"
+                      >
+                        <Phone
+                          size={13}
+                          className="text-green-600 flex-shrink-0"
+                        />
+                        <span>{selectedDept.phone}</span>
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Modal Content */}
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-            {/* Header with Image */}
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="w-20 h-20 rounded-full bg-gray-100 overflow-hidden ring-4 ring-primary-100">
-                <img 
-                  src={selectedDept.image || defaultImg} 
-                  alt={selectedDept.name?.[currentLang] || selectedDept.title?.[currentLang]}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h2 className="text-2xl font-semibold text-gray-900">
-                  {selectedDept.name?.[currentLang] || selectedDept.title?.[currentLang]}
-                </h2>
-                <p className="text-gray-500 mt-1">
-                  {selectedDept.position?.[currentLang] || selectedDept.title?.[currentLang]}
-                </p>
-              </div>
-            </div>
-
-            {/* Quick Info Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <Users size={18} className="text-primary-600 mb-2" />
-                <div className="text-xl font-semibold text-gray-900">{selectedDept.staff || 0}</div>
-                <div className="text-xs text-gray-500">{t.staff}</div>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <Calendar size={18} className="text-primary-600 mb-2" />
-                <div className="text-xl font-semibold text-gray-900">{selectedDept.established || '2015'}</div>
-                <div className="text-xs text-gray-500">{t.established}</div>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <Award size={18} className="text-primary-600 mb-2" />
-                <div className="text-xl font-semibold text-gray-900">12</div>
-                <div className="text-xs text-gray-500">{t.achievements}</div>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <Briefcase size={18} className="text-primary-600 mb-2" />
-                <div className="text-xl font-semibold text-gray-900">8</div>
-                <div className="text-xs text-gray-500">{t.projects}</div>
-              </div>
-            </div>
-
-            {/* Contact Information */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <h3 className="font-medium text-gray-900 mb-3">{t.contact}</h3>
-              <div className="grid md:grid-cols-2 gap-3">
-                <a href={`mailto:${selectedDept.email}`} className="flex items-center space-x-2 text-sm text-gray-600 hover:text-primary-600">
-                  <Mail size={14} className="text-primary-500" />
-                  <span>{selectedDept.email}</span>
-                </a>
-                <a href={`tel:${selectedDept.phone}`} className="flex items-center space-x-2 text-sm text-gray-600 hover:text-primary-600">
-                  <Phone size={14} className="text-primary-500" />
-                  <span>{selectedDept.phone}</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Description */}
-            {selectedDept.description && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 className="font-medium text-gray-900 mb-2">{t.description}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {selectedDept.description[currentLang]}
-                </p>
-              </div>
-            )}
-
-            {/* Responsibilities */}
-            {selectedDept.responsibilities && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">{t.responsibilities}</h3>
-                <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                  {selectedDept.responsibilities[currentLang].map((item, idx) => (
-                    <li key={idx}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+        .animate-marquee {
+          animation: marquee 40s linear infinite;
+          display: inline-block;
+        }
+        .animate-marquee:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </div>
   );
 };
+
+// Reusable helpers
+const Section = ({ title, icon, children }) => (
+  <div className="mb-5">
+    <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-sm">
+      {icon}
+      {title}
+    </h3>
+    <div className="bg-gray-50 rounded-lg p-3 space-y-2">{children}</div>
+  </div>
+);
+
+const Item = ({ year, text }) => (
+  <div className="border-b border-gray-100 pb-2 last:border-0 last:pb-0">
+    <p className="text-xs text-green-600 font-medium">{year}</p>
+    <p className="text-xs md:text-sm text-gray-800 mt-0.5">{text}</p>
+  </div>
+);
 
 export default FullManagementStructurePage;

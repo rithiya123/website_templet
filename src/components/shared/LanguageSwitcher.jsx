@@ -21,9 +21,15 @@ const LanguageSwitcher = ({ variant = 'topbar', className = '' }) => {
     window.dispatchEvent(new CustomEvent('languagechange', { detail: { language: lang } }));
   };
 
+  // Flag images from online URLs
+  const flags = {
+    km: 'https://flagcdn.com/w40/kh.png',
+    en: 'https://flagcdn.com/w40/gb.png'
+  };
+
   const languages = [
-    { code: 'km', name: 'ភាសាខ្មែរ', short: 'ខ្មែរ', flag: '🇰🇭' },
-    { code: 'en', name: 'English', short: 'ENG', flag: '🇬🇧' }
+    { code: 'km', name: 'ភាសាខ្មែរ', short: 'ខ្មែរ', flag: flags.km },
+    { code: 'en', name: 'English', short: 'ENG', flag: flags.en }
   ];
 
   // Top bar variant (only used in header top bar)
@@ -39,7 +45,11 @@ const LanguageSwitcher = ({ variant = 'topbar', className = '' }) => {
               : 'text-white/70 hover:text-white hover:bg-white/10'
           }`}
         >
-          <span className="text-base">{lang.flag}</span>
+          <img 
+            src={lang.flag} 
+            alt={lang.name}
+            className="w-4 h-4 object-cover rounded-sm"
+          />
           <span className="text-xs font-medium">{lang.short}</span>
           {currentLang === lang.code && (
             <Check size={12} className="ml-1 animate-fadeIn" />

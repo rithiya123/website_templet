@@ -11,6 +11,8 @@ import HistoryPage from './pages/HistoryPage.jsx';
 import VisionMissionPage from './pages/VisionMissionPage.jsx';
 import RolesResponsibilitiesPage from './pages/RolesResponsibilitiesPage.jsx';
 import DirectorMessagePage from './pages/DirectorMessagePage.jsx';
+import NewsPhotos from './pages/NewsPhotos.jsx';
+import NewsVideos from './pages/NewsVideos.jsx';
 // import OrganizationStructurePage from './pages/OrganizationStructurePage.jsx';
 
 export const routes = [
@@ -26,7 +28,17 @@ export const routes = [
     name: 'news'
   },
   {
-    path: '/management',
+    path: '/news/photos',
+    component: NewsPhotos,
+    name: 'news-photos'
+  },
+  {
+    path: '/news/videos',
+    component: NewsVideos,
+    name: 'news-videos'
+  },
+  {
+    path: '/about/management',
     component: ManagementPage,
     name: 'management'
   },
@@ -75,6 +87,7 @@ export const routes = [
     component: DirectorMessagePage,
     name: 'director-message'
   }
+ 
 
   
 ];

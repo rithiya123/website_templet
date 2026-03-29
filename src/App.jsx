@@ -16,6 +16,8 @@ import VisionMissionPage from './pages/VisionMissionPage.jsx';
 import RolesResponsibilitiesPage from './pages/RolesResponsibilitiesPage.jsx';
 import DirectorMessagePage from './pages/DirectorMessagePage.jsx';
 import HistoryPage from './pages/HistoryPage.jsx';
+import NewsPhotos from './pages/NewsPhotos.jsx';
+import NewsVideos from './pages/NewsVideos.jsx';
 
 function App() {
   return (
@@ -24,7 +26,9 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/news" element={<NewsPage />} />
-          <Route path="/management" element={<ManagementPage />} />
+          <Route path="/news/photos" element={<NewsPhotos />} />
+          <Route path="/news/videos" element={<NewsVideos />} />
+          <Route path="/about/management" element={<ManagementPage />} />
           <Route path="/leadership" element={<LeadershipPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
