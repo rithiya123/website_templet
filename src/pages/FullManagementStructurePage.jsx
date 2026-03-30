@@ -725,7 +725,7 @@ const FullManagementStructurePage = () => {
                   />
                 </g>
               ))}
-              <g>
+              {/* <g>
                 <line
                   x1="720"
                   y1="30"
@@ -735,7 +735,7 @@ const FullManagementStructurePage = () => {
                   strokeWidth="1.5"
                 />
                 <polygon points="720,358 715,350 725,350" fill="#4b5563" />
-              </g>
+              </g> */}
               <g>
                 <line
                   x1="810"

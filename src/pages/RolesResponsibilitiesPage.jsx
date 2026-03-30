@@ -333,7 +333,7 @@ const RolesResponsibilitiesPage = () => {
       .split("•")
       .filter((item) => item.trim())
       .map((item, index) => (
-        <li key={index} style={{ marginTop: "20px" }}>
+        <li key={index} style={{ marginTop: "20px", color: "gray" }}>
           {item.trim()}
         </li>
       ));
@@ -369,14 +369,66 @@ const RolesResponsibilitiesPage = () => {
         showBreadcrumb={true}
       />
 
+      {/* Coming Soon Sections - Overview, Core Functions, Phase Responsibilities */}
+      {/* <ComingSoonSection title={t.overview} icon={Eye} />
+      <ComingSoonSection title={t.coreFunctions} icon={Target} />
+      <ComingSoonSection title={t.responsibilities} icon={ClipboardList} /> */}
+
+      <Container className="py-8">
+        <div className="text-center mb-8">
+          <div className="flex flex-col items-center justify-center mb-6 text-center">
+            <div className="flex items-center space-x-2">
+              <Target
+                size={20}
+                className="text-[#2E7D32]"
+                style={{ marginTop: "-10px" }}
+              />
+              <h1 className="text-lg " style={{ marginTop: "5px" }}>
+                {currentLang == "km" ? "បេសកកម្ម" : "Mission"}
+              </h1>
+            </div>
+
+            <label
+              style={{
+                paddingLeft: "70px",
+                paddingRight: "70px",
+                color: "black",
+              }}
+            >
+              {missionTitleText()}
+            </label>
+          </div>
+
+          {/* <div className="inline-flex items-center space-x-2 bg-gray-100 px-4 py-2 rounded-full mb-4">
+            <Target size={14} className="text-gray-500" />
+            <span className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+              {currentLang == "km" ? "បេសកកម្ម" : "Mission"}
+            </span>
+          </div> */}
+
+          <h2
+            className="text-xl font-light text-gray-900 pt-1"
+            style={{ paddingLeft: "50px", paddingRight: "50px" }}
+          >
+
+            <p>
+              <div className="mission-list text-left">{missionItems()}</div>
+            </p>
+          </h2>
+        </div>
+      </Container>
+
       {/* Department Responsibilities */}
-      <Container className="py-12">
+      <Container className="py-0">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Left Column - Departments */}
           <div>
             <div className="flex items-center space-x-2 mb-6">
-              <Building2 size={20} className="text-[#2E7D32]" />
-              <h2 className="text-lg font-medium text-gray-900">
+              <Building2 size={20} className="text-[#2E7D32] " />
+              <h2
+                className="text-lg font-medium text-gray-900 "
+                style={{ marginTop: "15px" }}
+              >
                 {t.departments}
               </h2>
             </div>
@@ -407,7 +459,10 @@ const RolesResponsibilitiesPage = () => {
           <div>
             <div className="flex items-center space-x-2 mb-6">
               <Users size={20} className="text-[#2E7D32]" />
-              <h2 className="text-lg font-medium text-gray-900">
+              <h2
+                className="text-lg font-medium text-gray-900"
+                style={{ marginTop: "15px" }}
+              >
                 {t.leadership}
               </h2>
             </div>
@@ -436,32 +491,9 @@ const RolesResponsibilitiesPage = () => {
         </div>
       </Container>
 
-      {/* Coming Soon Sections - Overview, Core Functions, Phase Responsibilities */}
-      {/* <ComingSoonSection title={t.overview} icon={Eye} />
-      <ComingSoonSection title={t.coreFunctions} icon={Target} />
-      <ComingSoonSection title={t.responsibilities} icon={ClipboardList} /> */}
-
-      <Container className="py-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-2 bg-gray-100 px-4 py-2 rounded-full mb-4">
-            <Target size={14} className="text-gray-500" />
-            <span className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-              {currentLang == "km" ? "បេសកកម្ម" : "Mission"}
-            </span>
-          </div>
-          <h2
-            className="text-xl font-light text-gray-900 mb-2"
-            style={{ paddingLeft: "50px", paddingRight: "50px" }}
-          >
-            {missionTitleText()}
-            <br />
-            <br />
-            <p>
-              <div className="mission-list text-left">{missionItems()}</div>
-            </p>
-          </h2>
-        </div>
-      </Container>
+      <br />
+      <br />
+      <br />
 
       {/* Contact Section
       <Container className="py-12 mb-12">
