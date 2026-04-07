@@ -457,7 +457,7 @@ const FullManagementStructurePage = () => {
 
     return (
       <div
-        onClick={() => onClick(data)}
+        
         className={`
           border-2 rounded cursor-pointer select-none text-center transition-all duration-150
           hover:shadow-lg active:scale-95
