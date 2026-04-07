@@ -447,7 +447,7 @@ const RolesResponsibilitiesPage = () => {
                       <h3 className="text-sm font-medium text-gray-900 mb-1">
                         {item.dept}
                       </h3>
-                      <p className="text-xs text-gray-500">{item.desc}</p>
+                      {/* <p className="text-xs text-gray-500">{item.desc}</p> */}
                     </div>
                   </div>
                 </div>
@@ -481,7 +481,7 @@ const RolesResponsibilitiesPage = () => {
                       <h3 className="text-sm font-medium text-gray-900 mb-1">
                         {item.role}
                       </h3>
-                      <p className="text-xs text-gray-500">{item.desc}</p>
+                      {/* <p className="text-xs text-gray-500">{item.desc}</p> */}
                     </div>
                   </div>
                 </div>

@@ -71,7 +71,7 @@ const GlobalBanner = ({
           currentLang === "km" ? "អំពីរអគ្គនាយកដ្ឋាន" : "About Department";
       if (path === "director-message")
         label =
-          currentLang === "km" ? "សារពីឯកឧត្តម អគ្គនាយ" : "Director-Messages";
+          currentLang === "km" ? "សារពីឯកឧត្តម អគ្គនាយក" : "Director-Messages";
       if (path === "roles")
         label =
           currentLang === "km"

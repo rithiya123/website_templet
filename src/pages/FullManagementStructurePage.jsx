@@ -129,7 +129,7 @@ const FullManagementStructurePage = () => {
 
   const directorGeneral = {
     id: "dg",
-    name: { km: "ឯកឧត្តម អ៊ឹម សិទ្ធីរ៉ា", en: "H.E. Im Sitthyra" },
+
     position: {
       km: "ប្រតិភូរាជរដ្ឋាភិបាលទទួលបន្ទុកជាអគ្គនាយក",
       en: "Delegate of the Royal Government in charge as Director General",
@@ -288,8 +288,6 @@ const FullManagementStructurePage = () => {
 
   const deputyDirectors = [
     {
-      id: "deputy1",
-      name: { km: "លោក លី ហ្សេមីន", en: "Mr. Ly Jemine" },
       rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
@@ -302,7 +300,7 @@ const FullManagementStructurePage = () => {
     },
     {
       id: "deputy2",
-      name: { km: "លោក យ៉េន សុភ័ណ", en: "Mr. Yen Sophorn" },
+
       rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
@@ -315,7 +313,7 @@ const FullManagementStructurePage = () => {
     },
     {
       id: "deputy3",
-      name: { km: "លោក ប៊ុត សង្វារ", en: "Mr. But Sangvar" },
+
       rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
@@ -328,7 +326,6 @@ const FullManagementStructurePage = () => {
     },
     {
       id: "deputy4",
-      name: { km: "លោក ចាន់ ធន់", en: "Mr. Chan Thon" },
       rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
@@ -341,7 +338,6 @@ const FullManagementStructurePage = () => {
     },
     {
       id: "deputy5",
-      name: { km: "លោក ស្រ៊ាង លឹមស្រូយ", en: "Mr. Sreng Limsroy" },
       rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
@@ -362,7 +358,7 @@ const FullManagementStructurePage = () => {
         en: "Department of General Affairs",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-      head: { km: "លោក ពិន និលឡា", en: "Mr. Pin Nilla" },
+      
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -374,7 +370,7 @@ const FullManagementStructurePage = () => {
         en: "Impact Resolution Department 1",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-      head: { km: "លោក សេង វណ្ណឌី", en: "Mr. Seng Vandy" },
+      
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -386,7 +382,7 @@ const FullManagementStructurePage = () => {
         en: "Impact Resolution Department 2",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-      head: { km: "លោក ស៊ន់ សេរីវឌ្ឍន:", en: "Mr. Son Sereyvath" },
+     
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -398,7 +394,7 @@ const FullManagementStructurePage = () => {
         en: "Impact Resolution Department 3",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-      head: { km: "លោក គីម ច័ន្ទវិបុល", en: "Mr. Kim Chanvipol" },
+      
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -410,7 +406,7 @@ const FullManagementStructurePage = () => {
         en: "Internal Inspection and Data Management Department",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-      head: { km: "លោក គង់ រដ្ឋា", en: "Mr. Kong Ratha" },
+      
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -482,13 +478,13 @@ const FullManagementStructurePage = () => {
         }}
       >
         <p
-          className="font-bold text-gray-900 leading-snug border-b border-gray-200 pb-1 mb-1"
+          className="font-bold text-gray-900 leading-snug"
           style={{ fontSize: "11px" }}
         >
           {topLine}
         </p>
         <p
-          className="text-gray-600 leading-snug"
+          className="text-gray-600 leading-snug mt-1"
           style={{ fontSize: "10.5px" }}
         >
           {bottomLine}
