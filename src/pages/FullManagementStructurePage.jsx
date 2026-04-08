@@ -448,6 +448,7 @@ const FullManagementStructurePage = () => {
       bottomLine = data.name?.[currentLang] || "";
     } else if (isDept) {
       topLine = data.name?.[currentLang] || "";
+
       bottomLine = data.head?.[currentLang] || "";
     } else {
       topLine =
