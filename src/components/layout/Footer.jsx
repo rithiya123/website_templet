@@ -17,13 +17,12 @@ import {
 import Container from "../ui/Container";
 import { useFooter } from "../../hooks/useFooter";
 import { useHeader } from "../../hooks/useHeader";
-import logoImage from "../../images/logo.png"; // Fallback only
+import logoImage from "../../images/logo.png";
 
 const Footer = () => {
   const [currentLang, setCurrentLang] = useState("km");
   const location = useLocation();
 
-  // Use footer hook to fetch real data
   const { 
     loading: footerLoading, 
     contact, 
@@ -33,15 +32,19 @@ const Footer = () => {
     mapUrl 
   } = useFooter(currentLang);
 
-  // Use header hook to get logo
   const { logo: apiLogo, loading: headerLoading } = useHeader(currentLang);
 
   const loading = footerLoading || headerLoading;
 
-  // Check if email is valid
+  // Same email validation as Header
   const hasValidEmail = email && email.trim() !== '';
 
-  // Listen for language changes
+  const getEmbedMapUrl = (url) => {
+    if (!url) return '';
+    if (url.includes('/embed')) return url;
+    return 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.6539446787106!2d104.920614!3d11.576647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310951434d493e03%3A0xb1a605e9a569ec8b!2sMinistry%20of%20Economy%20and%20Finance%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1774153266478!5m2!1sen!2skh';
+  };
+
   useEffect(() => {
     const handleLanguageChange = (e) => {
       setCurrentLang(e.detail.language);
@@ -68,85 +71,47 @@ const Footer = () => {
       email: "អ៊ីមែល",
       quickLinks: "តំណភ្ជាប់រហ័ស",
       home: "ទំព័រដើម",
-      news: "ព័ត៌មាន",
+      news: "ព័ត៌មាន និង ព្រឹត្តិការណ៍",
       about: "អំពីអគ្គនាយកដ្ឋាន",
       legal: "លិខិតបទដ្ឋានគតិយុត្ត",
-      structure: "រចនាសម្ព័ន្ធគ្រប់គ្រង",
-      aboutSub1: "ប្រវត្តិអគ្គនាយកដ្ឋាន",
       aboutSub2: "តួនាទី និងភារកិច្ច",
       aboutSub3: "សារអគ្គនាយក",
       backToTop: "ត្រលប់ទៅកំពូល",
       location: "ទីតាំង",
       viewMap: "មើលផែនទីធំ",
+      contactUs: "ទំនាក់ទំនង",
     },
     en: {
       address: "Address",
       email: "Email",
       quickLinks: "Quick Links",
       home: "Home",
-      news: "News",
+      news: "News & Events",
       about: "About Department",
       legal: "Legal Documents",
-      structure: "Management Structure",
-      aboutSub1: "Department History",
       aboutSub2: "Roles & Responsibilities",
       aboutSub3: "Director's Message",
       backToTop: "Back to top",
       location: "Location",
       viewMap: "View larger map",
+      contactUs: "Contact Us",
     },
   };
 
   const t = translations[currentLang];
 
-  // Quick Links
   const quickLinksList = [
     { label: t.home, path: "/", icon: <Home size={14} /> },
     { label: t.news, path: "/news", icon: <Globe size={14} /> },
-    { label: t.structure, path: "/management", icon: <Users size={14} /> },
+    { label: t.about, path: "/about", icon: <Info size={14} /> },
     { label: t.legal, path: "/legal", icon: <FileText size={14} /> },
   ];
 
-  // About sub-links
   const aboutSubLinks = [
-    { label: t.aboutSub1, path: "/about/history", icon: <Building2 size={12} /> },
     { label: t.aboutSub2, path: "/about/roles", icon: <Shield size={12} /> },
     { label: t.aboutSub3, path: "/about/director-message", icon: <Info size={12} /> },
   ];
 
-  // Get logo source - use API logo from header, fallback to local
-  const getLogoSrc = () => {
-    if (apiLogo && apiLogo.trim() !== '') {
-      return apiLogo;
-    }
-    return logoImage;
-  };
-
-  // Get dynamic title from API
-  const getTitle = () => {
-    if (loading) return '';
-    return currentLang === "km" ? contact.titleKh : contact.titleEn;
-  };
-
-  // Get dynamic address from API
-  const getAddress = () => {
-    if (loading) return '';
-    return currentLang === "km" ? address.km : address.en;
-  };
-
-  // Get dynamic copyright text from API
-  const getCopyrightText = () => {
-    if (loading) return '';
-    return currentLang === "km" ? copyright.textKh : copyright.textEn;
-  };
-
-  // Get dynamic copyright below text from API
-  const getCopyrightBelow = () => {
-    if (loading) return '';
-    return currentLang === "km" ? copyright.belowKh : copyright.belowEn;
-  };
-
-  // Show loading skeleton
   if (loading) {
     return (
       <footer className="bg-gradient-to-b from-[#1B5E20] to-[#0D3310] text-white">
@@ -169,19 +134,14 @@ const Footer = () => {
 
   return (
     <footer className="bg-gradient-to-b from-[#1B5E20] to-[#0D3310] text-white relative">
-      {/* Back to Top Button */}
       <button
         onClick={scrollToTop}
         className="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-[#4CAF50] hover:bg-[#2E7D32] text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 group z-10"
         aria-label={t.backToTop}
       >
-        <ArrowUp
-          size={18}
-          className="group-hover:-translate-y-1 transition-transform"
-        />
+        <ArrowUp size={18} className="group-hover:-translate-y-1 transition-transform" />
       </button>
 
-      {/* Main Footer */}
       <Container className="pt-16 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Column */}
@@ -189,54 +149,48 @@ const Footer = () => {
             <div className="flex flex-col items-start gap-3 group">
               <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm">
                 <img
-                  src={getLogoSrc()}
-                  alt={getTitle()}
+                  src={apiLogo || logoImage}
+                  alt={currentLang === "km" ? contact.titleKh : contact.titleEn}
                   className="h-12 sm:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                  onError={(e) => {
-                    e.target.src = logoImage;
-                  }}
+                  onError={(e) => { e.target.src = logoImage; }}
                 />
               </div>
               <div className="min-w-0">
                 <h3 className="font-bold text-base sm:text-lg leading-tight text-white break-words">
-                  {getTitle()}
+                  {currentLang === "km" ? contact.titleKh : contact.titleEn}
                 </h3>
               </div>
             </div>
           </div>
 
-          {/* Address Column */}
+          {/* Contact Column */}
           <div className="space-y-5">
             <h4 className="font-semibold text-white flex items-center text-base sm:text-lg">
               <span className="w-8 h-0.5 bg-[#4CAF50] mr-2"></span>
-              {t.address}
+              {t.contactUs}
             </h4>
 
             <div className="space-y-4">
-              {/* Address - Always show */}
-              <div className="flex items-start space-x-3 group">
-                <div className="bg-white/10 p-2 rounded-lg group-hover:bg-[#4CAF50] transition-colors flex-shrink-0">
-                  <MapPin
-                    size={16}
-                    className="text-[#4CAF50] group-hover:text-white"
-                  />
+              {/* Address - Always show if exists */}
+              {(address.km || address.en) && (
+                <div className="flex items-start space-x-3 group">
+                  <div className="bg-white/10 p-2 rounded-lg group-hover:bg-[#4CAF50] transition-colors flex-shrink-0">
+                    <MapPin size={16} className="text-[#4CAF50] group-hover:text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-green-300 mb-1">{t.address}</p>
+                    <p className="text-sm text-green-100 leading-relaxed break-words">
+                      {currentLang === "km" ? address.km : address.en}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-green-300 mb-1">{t.address}</p>
-                  <p className="text-sm text-green-100 leading-relaxed break-words">
-                    {getAddress()}
-                  </p>
-                </div>
-              </div>
+              )}
 
-              {/* Email - Only show if valid */}
+              {/* Email - Only show if valid (same condition as Header) */}
               {hasValidEmail && (
                 <div className="flex items-start space-x-3 group">
                   <div className="bg-white/10 p-2 rounded-lg group-hover:bg-[#4CAF50] transition-colors flex-shrink-0">
-                    <Mail
-                      size={16}
-                      className="text-[#4CAF50] group-hover:text-white"
-                    />
+                    <Mail size={16} className="text-[#4CAF50] group-hover:text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-green-300 mb-1">{t.email}</p>
@@ -262,14 +216,8 @@ const Footer = () => {
             <ul className="space-y-3">
               {quickLinksList.map((link, index) => (
                 <li key={index}>
-                  <Link
-                    to={link.path}
-                    className="group flex items-center text-sm text-green-200 hover:text-white transition-colors"
-                  >
-                    <ChevronRight
-                      size={14}
-                      className="mr-2 text-[#4CAF50] group-hover:translate-x-1 transition-transform flex-shrink-0"
-                    />
+                  <Link to={link.path} className="group flex items-center text-sm text-green-200 hover:text-white transition-colors">
+                    <ChevronRight size={14} className="mr-2 text-[#4CAF50] group-hover:translate-x-1 transition-transform flex-shrink-0" />
                     <span className="break-words">{link.label}</span>
                   </Link>
                 </li>
@@ -286,13 +234,8 @@ const Footer = () => {
               <ul className="space-y-2 pl-2">
                 {aboutSubLinks.map((link, index) => (
                   <li key={index}>
-                    <Link
-                      to={link.path}
-                      className="group flex items-center text-sm text-green-300 hover:text-white transition-colors"
-                    >
-                      <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">
-                        •
-                      </span>
+                    <Link to={link.path} className="group flex items-center text-sm text-green-300 hover:text-white transition-colors">
+                      <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span>
                       <span className="break-words">{link.label}</span>
                     </Link>
                   </li>
@@ -310,7 +253,7 @@ const Footer = () => {
 
             <div className="bg-white/10 rounded-xl overflow-hidden shadow-lg">
               <iframe
-                src={mapUrl || "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3908.6539446787106!2d104.920614!3d11.576647!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310951434d493e03%3A0xb1a605e9a569ec8b!2sMinistry%20of%20Economy%20and%20Finance%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1774153266478!5m2!1sen!2skh"}
+                src={getEmbedMapUrl(mapUrl)}
                 width="100%"
                 height="180"
                 style={{ border: 0 }}
@@ -330,10 +273,7 @@ const Footer = () => {
                 className="inline-flex items-center text-xs text-green-300 hover:text-white transition-colors group"
               >
                 <span className="break-words">{t.viewMap}</span>
-                <ChevronRight
-                  size={12}
-                  className="ml-1 group-hover:translate-x-1 transition-transform flex-shrink-0"
-                />
+                <ChevronRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform flex-shrink-0" />
               </a>
             )}
           </div>
@@ -343,9 +283,9 @@ const Footer = () => {
         <div className="mt-12 pt-6 border-t border-white/10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-green-300 text-center md:text-left break-words">
-              {getCopyrightText()}
+              {currentLang === "km" ? copyright.textKh : copyright.textEn}
               <span className="block mt-1 text-green-400 font-medium">
-                {getCopyrightBelow()}
+                {currentLang === "km" ? copyright.belowKh : copyright.belowEn}
               </span>
             </p>
 

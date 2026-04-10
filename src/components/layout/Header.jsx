@@ -17,7 +17,6 @@ const Header = () => {
   });
   const location = useLocation();
 
-  // Use the header hook
   const { 
     loading: headerLoading, 
     error,
@@ -28,10 +27,10 @@ const Header = () => {
     isActive 
   } = useHeader(currentLang);
 
-  // Get email from footer API
   const { email: footerEmail, loading: emailLoading } = useFooterEmail();
 
-  // Add smooth scroll function
+  const hasValidEmail = footerEmail && footerEmail.trim() !== '' && footerEmail !== '...';
+
   const smoothScrollTo = (elementId, offset = 80) => {
     const element = document.getElementById(elementId);
     if (element) {
@@ -44,7 +43,6 @@ const Header = () => {
     }
   };
 
-  // Add hash link smooth scroll handler
   useEffect(() => {
     const handleHashLinkClick = (e) => {
       const target = e.target.closest("a");
@@ -78,7 +76,6 @@ const Header = () => {
     return () => document.removeEventListener("click", handleHashLinkClick);
   }, []);
 
-  // Listen for language changes
   useEffect(() => {
     const handleLanguageChange = (e) => {
       setCurrentLang(e.detail.language);
@@ -88,7 +85,6 @@ const Header = () => {
     return () => window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
 
-  // Handle scroll effect
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
@@ -105,7 +101,6 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -117,14 +112,12 @@ const Header = () => {
     };
   }, [mobileMenuOpen]);
 
-  // Get current page
   const getCurrentPage = () => {
     const path = location.pathname;
     if (path === "/") return "home";
     return path.substring(1);
   };
 
-  // Show loading state
   if (headerLoading) {
     return (
       <header className="bg-white shadow-sm py-4 border-b border-gray-100">
@@ -140,31 +133,35 @@ const Header = () => {
 
   return (
     <>
-      {/* Top Bar */}
       <div
         className={`bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white py-1.5 hidden md:block transition-all duration-300 ${
           scrolled ? "-translate-y-full" : "translate-y-0"
         }`}
       >
         <Container>
-          <div className="flex justify-between items-center">
-            <LanguageSwitcher variant="minimal" />
-            <a
-              href={`mailto:${footerEmail}`}
-              className="flex items-center space-x-2 text-xs group"
-            >
-              <span className="p-1.5 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
-                <Mail size={12} className="text-white/80 group-hover:text-white" />
-              </span>
-              <span className="text-white/80 group-hover:text-white font-medium">
-                {emailLoading ? '...' : footerEmail}
-              </span>
-            </a>
-          </div>
-        </Container>
+  <div className="flex justify-between items-center">
+    <LanguageSwitcher variant="minimal" />
+    
+    {!emailLoading && hasValidEmail ? (
+      <a
+        href={`mailto:${footerEmail}`}
+        className="flex items-center space-x-2 text-xs group"
+      >
+        <span className="p-1.5 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
+          <Mail size={12} className="text-white/80 group-hover:text-white" />
+        </span>
+        <span className="text-white/80 group-hover:text-white font-medium">
+          {footerEmail}
+        </span>
+      </a>
+    ) : (
+      // Empty div to maintain flex spacing when email is hidden
+      <div></div>
+    )}
+  </div>
+</Container>
       </div>
 
-      {/* Main Header */}
       <header
         className={`sticky top-0 z-50 transition-all duration-500 ${
           scrolled
@@ -174,7 +171,6 @@ const Header = () => {
       >
         <Container>
           <div className="flex justify-between items-center gap-4">
-            {/* Logo */}
             <Link to="/" className="flex-shrink-0 group max-w-[70%] sm:max-w-full">
               <Logo
                 variant="default"
@@ -185,7 +181,6 @@ const Header = () => {
               />
             </Link>
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(true)}
               className="p-2.5 md:hidden bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
@@ -194,7 +189,6 @@ const Header = () => {
             </button>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className={`transition-all duration-500 ${scrolled ? "mt-2" : "mt-4"}`}>
               <Navigation currentPage={getCurrentPage()} />
@@ -202,7 +196,6 @@ const Header = () => {
           </div>
         </Container>
 
-        {/* Progress bar */}
         <div
           className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-[#4CAF50] via-[#2E7D32] to-[#4CAF50] transition-all duration-300 ${
             scrolled ? "w-full" : "w-0"
@@ -210,7 +203,6 @@ const Header = () => {
         />
       </header>
 
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <Navigation
           mobileMenuOpen={mobileMenuOpen}
@@ -218,33 +210,6 @@ const Header = () => {
           currentPage={getCurrentPage()}
         />
       )}
-
-      {/* Marquee Animation Styles */}
-      <style jsx>{`
-        .marquee-wrapper {
-          width: 100%;
-          overflow: hidden;
-        }
-        
-        .marquee-content {
-          display: inline-block;
-          white-space: nowrap;
-          animation: marquee 35s linear infinite;
-        }
-        
-        .marquee-content:hover {
-          animation-play-state: paused;
-        }
-        
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-      `}</style>
     </>
   );
 };

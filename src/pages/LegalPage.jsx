@@ -1,31 +1,11 @@
 // src/pages/LegalPage.jsx
 import React, { useState, useEffect } from "react";
 import {
-  FileText,
-  Search,
-  Download,
-  Eye,
-  Calendar,
-  Tag,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Grid,
-  List,
-  Filter,
-  BookOpen,
-  Copy,
-  Scale,
-  FileCheck,
-  AlertCircle,
-  ChevronDown,
-  MoreHorizontal,
-  Share2,
-  Check,
-  Facebook,
-  Twitter,
-  Linkedin,
-  MessageCircle,
+  FileText, Search, Download, Eye, Calendar, Tag,
+  ChevronLeft, ChevronRight, X, Grid, List, Filter,
+  BookOpen, Copy, Scale, FileCheck, AlertCircle,
+  ChevronDown, MoreHorizontal, Share2, Check,
+  Facebook, Twitter, Linkedin, MessageCircle,
 } from "lucide-react";
 import Container from "../components/ui/Container.jsx";
 import GlobalBanner from "../components/ui/GlobalBanner.jsx";
@@ -47,20 +27,13 @@ const LegalPage = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Fetch legal documents from API
-  const { 
-    loading, 
-    documents, 
-    totalPages,
-    categories,
-    total,
-  } = useLegalDocuments(page, 10, selectedCategory);
+  const { loading, documents, totalPages, categories, total } =
+    useLegalDocuments(page, 10, selectedCategory);
 
   useEffect(() => {
     const handleLanguageChange = (e) => {
       setCurrentLang(e.detail.language);
     };
-
     window.addEventListener("languagechange", handleLanguageChange);
     return () => window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
@@ -71,34 +44,22 @@ const LegalPage = () => {
     } else {
       document.body.style.overflow = "unset";
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    return () => { document.body.style.overflow = "unset"; };
   }, [showModal, showShareModal]);
 
-  // Filter documents by search term
-  const filteredDocuments = documents.filter(doc => {
-    if (!searchTerm) return true;
-    const title = currentLang === "km" ? doc.titleKh : doc.titleEn;
-    const desc = currentLang === "km" ? doc.descriptionKh : doc.descriptionEn;
-    return title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           desc.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  // ─── Helpers ──────────────────────────────────────────────────────────────
 
-  // Get category display name - ONLY from API
+  // ✅ KEY FIX: reads kh or en from category object based on currentLang
+  // categories = [ { law: { kh: 'ច្បាប់', en: 'Law' } }, ... ]
   const getCategoryDisplayName = (categoryKey) => {
-    if (!categories || !Array.isArray(categories)) {
-      return categoryKey;
-    }
-    
-    const categoryObj = categories.find(cat => cat[categoryKey]);
-    if (categoryObj && categoryObj[categoryKey]) {
-      return categoryObj[categoryKey][currentLang] || categoryKey;
-    }
-    return categoryKey;
+    if (!Array.isArray(categories) || !categoryKey) return categoryKey;
+    const found = categories.find((cat) => cat[categoryKey]);
+    if (!found || !found[categoryKey]) return categoryKey;
+    return currentLang === 'km'
+      ? found[categoryKey].kh || found[categoryKey].en || categoryKey
+      : found[categoryKey].en || found[categoryKey].kh || categoryKey;
   };
 
-  // Get category icon
   const getCategoryIcon = (categoryKey) => {
     const icons = {
       law: <Scale size={14} />,
@@ -111,7 +72,6 @@ const LegalPage = () => {
     return icons[categoryKey] || <FileText size={14} />;
   };
 
-  // Get category color
   const getCategoryColor = (categoryKey) => {
     const colors = {
       law: "bg-blue-100 text-blue-700 border-blue-200",
@@ -124,11 +84,9 @@ const LegalPage = () => {
     return colors[categoryKey] || "bg-gray-100 text-gray-700 border-gray-200";
   };
 
-  // Get thumbnail - use cover_image from API
-  const getThumbnail = (doc) => {
-    return doc.coverImage || defaultThumbnail;
-  };
+  const getThumbnail = (doc) => doc.coverImage || defaultThumbnail;
 
+  // ─── Translations ─────────────────────────────────────────────────────────
   const translations = {
     km: {
       title: "ឯកសារច្បាប់",
@@ -202,41 +160,50 @@ const LegalPage = () => {
 
   const t = translations[currentLang];
 
-  // Format date
+  // ─── Utilities ────────────────────────────────────────────────────────────
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    
     if (currentLang === "km") {
-      const khmerMonths = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
-      const day = date.getDate();
-      const month = khmerMonths[date.getMonth()];
-      const year = date.getFullYear();
-      return `${day} ${month} ${year}`;
+      const khmerMonths = [
+        "មករា","កុម្ភៈ","មីនា","មេសា","ឧសភា","មិថុនា",
+        "កក្កដា","សីហា","កញ្ញា","តុលា","វិច្ឆិកា","ធ្នូ",
+      ];
+      return `${date.getDate()} ${khmerMonths[date.getMonth()]} ${date.getFullYear()}`;
     }
-    
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
+  const filteredDocuments = documents.filter((doc) => {
+    if (!searchTerm) return true;
+    const title = currentLang === "km" ? doc.titleKh : doc.titleEn;
+    const desc = currentLang === "km" ? doc.descriptionKh : doc.descriptionEn;
+    return (
+      title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      desc.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  const itemsPerPage = 10;
+  const startItem = filteredDocuments.length > 0 ? (page - 1) * itemsPerPage + 1 : 0;
+  const endItem = Math.min(page * itemsPerPage, filteredDocuments.length);
+
+  // ─── Event Handlers ───────────────────────────────────────────────────────
   const handleDocumentClick = (doc) => {
     setSelectedDocument(doc);
     setShowModal(true);
   };
 
-  const handlePdfAction = (doc, action = 'view', language = currentLang) => {
+  const handlePdfAction = (doc, action = "view", language = currentLang) => {
     const pdfUrl = language === "km" ? doc.pdfFileKh : doc.pdfFileEn;
-    if (pdfUrl && pdfUrl !== '#') {
-      if (action === 'download') {
-        const link = document.createElement('a');
+    if (pdfUrl && pdfUrl !== "#") {
+      if (action === "download") {
+        const link = document.createElement("a");
         link.href = pdfUrl;
         link.download = `${language === "km" ? doc.titleKh : doc.titleEn}.pdf`;
         link.click();
       } else {
-        window.open(pdfUrl, '_blank');
+        window.open(pdfUrl, "_blank");
       }
     }
   };
@@ -255,27 +222,16 @@ const LegalPage = () => {
 
   const handleShareToSocial = (platform) => {
     const url = `${window.location.origin}/legal/${selectedDocument?.id}`;
-    const title = currentLang === 'km' ? selectedDocument?.titleKh : selectedDocument?.titleEn;
-    let shareUrl = '';
-
-    switch(platform) {
-      case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-        break;
-      case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
-        break;
-      case 'linkedin':
-        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
-        break;
-      case 'telegram':
-        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
-        break;
-      default:
-        return;
+    const title = currentLang === "km" ? selectedDocument?.titleKh : selectedDocument?.titleEn;
+    const shareUrls = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
+      linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`,
+      telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
+    };
+    if (shareUrls[platform]) {
+      window.open(shareUrls[platform], "_blank", "width=600,height=500");
     }
-
-    window.open(shareUrl, '_blank', 'width=600,height=500');
   };
 
   const clearFilters = () => {
@@ -284,14 +240,10 @@ const LegalPage = () => {
     setPage(1);
   };
 
-  const itemsPerPage = 10;
-  const startItem = filteredDocuments.length > 0 ? (page - 1) * itemsPerPage + 1 : 0;
-  const endItem = Math.min(page * itemsPerPage, filteredDocuments.length);
-
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <RunningText />
-
       <GlobalBanner
         title={t.title}
         subtitle={t.subtitle}
@@ -312,103 +264,96 @@ const LegalPage = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-visible mb-6">
           <div className="p-5">
             <div className="flex flex-col lg:flex-row gap-4">
+
               {/* Search */}
               <div className="flex-1 relative">
-                <Search size={18} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder={t.search}
                   value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setPage(1);
-                  }}
+                  onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent bg-gray-50/50 text-sm"
                 />
               </div>
 
-              {/* Category Dropdown */}
+              {/* ✅ Category Dropdown — shows KH or EN label based on currentLang */}
               <div className="relative lg:w-64 z-50">
-  <button
-    onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-left text-sm flex items-center justify-between hover:bg-gray-50 transition-colors"
-  >
-    <span className="flex items-center gap-2">
-      <Filter size={16} className="text-gray-400" />
-      <span className={selectedCategory ? "text-gray-900" : "text-gray-500"}>
-        {selectedCategory ? getCategoryDisplayName(selectedCategory) : t.allCategories}
-      </span>
-    </span>
-    <ChevronDown size={16} className={`text-gray-400 transition-transform ${categoryDropdownOpen ? "rotate-180" : ""}`} />
-  </button>
-  
-  {categoryDropdownOpen && (
-    <>
-      <div className="fixed inset-0 z-40" onClick={() => setCategoryDropdownOpen(false)} />
-      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 max-h-64 overflow-y-auto">
-        {/* All Categories Option */}
-        <button
-          onClick={() => {
-            setSelectedCategory("");
-            setPage(1);
-            setCategoryDropdownOpen(false);
-          }}
-          className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${!selectedCategory ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
-        >
-          <Filter size={14} />
-          <span>{t.allCategories}</span>
-        </button>
-        
-        {/* Map through API categories - THIS IS THE KEY PART */}
-        {categories.length > 0 ? (
-          categories.map((cat, index) => {
-            const key = Object.keys(cat)[0]; // Gets "law", "regulation", etc.
-            return (
-              <button
-                key={index}
-                onClick={() => {
-                  setSelectedCategory(key); // Set the category key for API filtering
-                  setPage(1);
-                  setCategoryDropdownOpen(false);
-                }}
-                className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${selectedCategory === key ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
-              >
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center ${getCategoryColor(key).split(' ')[0]}`}>
-                  {getCategoryIcon(key)}
-                </span>
-                <span>{cat[key][currentLang] || key}</span>
-              </button>
-            );
-          })
-        ) : (
-          <div className="px-4 py-2.5 text-sm text-gray-400">
-            {loading ? t.loading : t.noCategories}
-          </div>
-        )}
-      </div>
-    </>
-  )}
-</div>
+                <button
+                  onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-left text-sm flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Filter size={16} className="text-gray-400" />
+                    <span className={selectedCategory ? "text-gray-900" : "text-gray-500"}>
+                      {selectedCategory
+                        ? getCategoryDisplayName(selectedCategory)
+                        : t.allCategories}
+                    </span>
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    className={`text-gray-400 transition-transform ${categoryDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {categoryDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setCategoryDropdownOpen(false)} />
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 max-h-64 overflow-y-auto">
+
+                      {/* All Categories */}
+                      <button
+                        onClick={() => { setSelectedCategory(""); setPage(1); setCategoryDropdownOpen(false); }}
+                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${!selectedCategory ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
+                      >
+                        <Filter size={14} />
+                        <span>{t.allCategories}</span>
+                      </button>
+
+                      {/* ✅ API categories — label switches KH/EN with currentLang */}
+                      {!loading && categories.length > 0 ? (
+                        categories.map((cat, index) => {
+                          const key = Object.keys(cat)[0]; // "law", "decree", etc.
+                          // ✅ pick kh or en based on currentLang, fallback to the other
+                          const label = currentLang === "km"
+                            ? cat[key].kh || cat[key].en || key
+                            : cat[key].en || cat[key].kh || key;
+
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => { setSelectedCategory(key); setPage(1); setCategoryDropdownOpen(false); }}
+                              className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${selectedCategory === key ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
+                            >
+                              <span className={`w-5 h-5 rounded-full flex items-center justify-center ${getCategoryColor(key).split(" ")[0]}`}>
+                                {getCategoryIcon(key)}
+                              </span>
+                              <span>{label}</span>
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <div className="px-4 py-2.5 text-sm text-gray-400">
+                          {loading ? t.loading : t.noCategories}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
 
               {/* View Toggle */}
               <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2.5 rounded-lg transition-all duration-200 ${
-                    viewMode === "list" 
-                      ? "bg-white text-[#4CAF50] shadow-sm" 
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === "list" ? "bg-white text-[#4CAF50] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                 >
                   <List size={18} />
                 </button>
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2.5 rounded-lg transition-all duration-200 ${
-                    viewMode === "grid" 
-                      ? "bg-white text-[#4CAF50] shadow-sm" 
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === "grid" ? "bg-white text-[#4CAF50] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                 >
                   <Grid size={18} />
                 </button>
@@ -427,13 +372,14 @@ const LegalPage = () => {
             </div>
           </div>
 
-          {/* Active Filters */}
+          {/* Active Filter Tags */}
           {(selectedCategory || searchTerm) && (
             <div className="px-5 pb-4 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
               <span className="text-xs text-gray-500">{t.filter}:</span>
               {selectedCategory && (
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${getCategoryColor(selectedCategory)}`}>
                   {getCategoryIcon(selectedCategory)}
+                  {/* ✅ also uses getCategoryDisplayName which respects currentLang */}
                   {getCategoryDisplayName(selectedCategory)}
                   <button onClick={() => setSelectedCategory("")} className="ml-1 hover:bg-black/10 rounded-full p-0.5">
                     <X size={12} />
@@ -456,14 +402,13 @@ const LegalPage = () => {
         {/* Results Count */}
         {!loading && (
           <div className="text-sm text-gray-500 mb-4">
-            {filteredDocuments.length > 0 
+            {filteredDocuments.length > 0
               ? `${t.showing} ${startItem}-${endItem} ${t.ofTotal} ${filteredDocuments.length} ${t.documents}`
-              : t.noDocuments
-            }
+              : t.noDocuments}
           </div>
         )}
 
-        {/* Documents List/Grid with Thumbnails */}
+        {/* Loading Skeleton */}
         {loading ? (
           <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-4"}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -485,10 +430,9 @@ const LegalPage = () => {
             </div>
             <p className="text-gray-500 font-medium text-lg mb-2">{t.noDocuments}</p>
             <p className="text-gray-400 text-sm">
-              {currentLang === "km" 
+              {currentLang === "km"
                 ? "សាកល្បងកែតម្រូវតម្រង ឬពាក្យស្វែងរករបស់អ្នក"
-                : "Try adjusting your filters or search term"
-              }
+                : "Try adjusting your filters or search term"}
             </p>
             {(selectedCategory || searchTerm) && (
               <button onClick={clearFilters} className="mt-4 px-4 py-2 text-sm text-[#4CAF50] hover:bg-green-50 rounded-lg transition-colors">
@@ -496,12 +440,17 @@ const LegalPage = () => {
               </button>
             )}
           </div>
+
         ) : viewMode === "grid" ? (
+          /* ── Grid View ── */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredDocuments.map((doc) => {
-              const title = currentLang === "km" ? doc.titleKh : doc.titleEn;
+              // ✅ title switches based on currentLang
+              const title = currentLang === "km"
+                ? doc.titleKh || doc.titleEn
+                : doc.titleEn || doc.titleKh;
               const thumbnail = getThumbnail(doc);
-              
+
               return (
                 <div
                   key={doc.id}
@@ -521,16 +470,16 @@ const LegalPage = () => {
                     <div className="absolute top-3 left-3">
                       <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border ${getCategoryColor(doc.category)}`}>
                         {getCategoryIcon(doc.category)}
+                        {/* ✅ category label in correct language */}
                         {getCategoryDisplayName(doc.category)}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="p-4">
                     <h3 className="font-medium text-gray-900 text-sm line-clamp-2 mb-2 group-hover:text-[#2E7D32] transition-colors">
                       {title}
                     </h3>
-                    
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
                       {doc.publishedDate && (
                         <span className="flex items-center gap-1">
@@ -545,21 +494,18 @@ const LegalPage = () => {
                         </span>
                       )}
                     </div>
-
                     <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                       <button
-                        onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'view'); }}
+                        onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "view"); }}
                         className="flex-1 py-2 text-xs font-medium text-gray-600 hover:text-[#4CAF50] hover:bg-green-50 rounded-lg transition-colors flex items-center justify-center gap-1"
                       >
-                        <Eye size={14} />
-                        {t.view}
+                        <Eye size={14} />{t.view}
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'download'); }}
+                        onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download"); }}
                         className="flex-1 py-2 text-xs font-medium text-white bg-[#4CAF50] rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center justify-center gap-1 shadow-sm"
                       >
-                        <Download size={14} />
-                        {t.download}
+                        <Download size={14} />{t.download}
                       </button>
                     </div>
                   </div>
@@ -567,13 +513,20 @@ const LegalPage = () => {
               );
             })}
           </div>
+
         ) : (
+          /* ── List View ── */
           <div className="space-y-4">
             {filteredDocuments.map((doc) => {
-              const title = currentLang === "km" ? doc.titleKh : doc.titleEn;
-              const description = currentLang === "km" ? doc.descriptionKh : doc.descriptionEn;
+              // ✅ title and description switch based on currentLang
+              const title = currentLang === "km"
+                ? doc.titleKh || doc.titleEn
+                : doc.titleEn || doc.titleKh;
+              const description = currentLang === "km"
+                ? doc.descriptionKh || doc.descriptionEn
+                : doc.descriptionEn || doc.descriptionKh;
               const thumbnail = getThumbnail(doc);
-              
+
               return (
                 <div
                   key={doc.id}
@@ -581,7 +534,7 @@ const LegalPage = () => {
                   onClick={() => handleDocumentClick(doc)}
                 >
                   <div className="flex flex-col sm:flex-row p-4 gap-4">
-                    {/* Thumbnail - Left side */}
+                    {/* Thumbnail */}
                     <div className="relative w-full sm:w-36 h-32 sm:h-full min-h-[128px] bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
                       <img
                         src={thumbnail}
@@ -595,7 +548,10 @@ const LegalPage = () => {
                       <div className="absolute bottom-2 left-2">
                         <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border ${getCategoryColor(doc.category)}`}>
                           {getCategoryIcon(doc.category)}
-                          <span className="hidden sm:inline">{getCategoryDisplayName(doc.category)}</span>
+                          <span className="hidden sm:inline">
+                            {/* ✅ category on thumbnail also in correct language */}
+                            {getCategoryDisplayName(doc.category)}
+                          </span>
                         </span>
                       </div>
                     </div>
@@ -619,32 +575,30 @@ const LegalPage = () => {
                       </h3>
 
                       {description && (
-                        <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-                          {description}
-                        </p>
+                        <p
+                          className="text-sm text-gray-500 mb-3 line-clamp-2"
+                          dangerouslySetInnerHTML={{ __html: description }}
+                        />
                       )}
 
                       <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                         <button
-                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'view'); }}
+                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "view"); }}
                           className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
                         >
-                          <Eye size={13} />
-                          {t.view}
+                          <Eye size={13} />{t.view}
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'download', 'km'); }}
+                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "km"); }}
                           className="px-3 py-1.5 text-xs bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center gap-1 shadow-sm"
                         >
-                          <Download size={13} />
-                          {t.downloadKh}
+                          <Download size={13} />{t.downloadKh}
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'download', 'en'); }}
+                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "en"); }}
                           className="px-3 py-1.5 text-xs border border-[#4CAF50] text-[#4CAF50] rounded-lg hover:bg-[#4CAF50] hover:text-white transition-colors flex items-center gap-1"
                         >
-                          <Download size={13} />
-                          {t.downloadEn}
+                          <Download size={13} />{t.downloadEn}
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleShare(doc); }}
@@ -665,25 +619,20 @@ const LegalPage = () => {
         {!loading && totalPages > 1 && (
           <div className="mt-8 flex items-center justify-center gap-1">
             <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={18} />
             </button>
-            
+
             {[...Array(Math.min(5, totalPages))].map((_, i) => {
               let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (page <= 3) {
-                pageNum = i + 1;
-              } else if (page >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = page - 2 + i;
-              }
-              
+              if (totalPages <= 5) pageNum = i + 1;
+              else if (page <= 3) pageNum = i + 1;
+              else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
+              else pageNum = page - 2 + i;
+
               return (
                 <button
                   key={i}
@@ -698,9 +647,9 @@ const LegalPage = () => {
                 </button>
               );
             })}
-            
+
             <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
@@ -710,28 +659,28 @@ const LegalPage = () => {
         )}
       </Container>
 
-      {/* Document Detail Modal */}
+      {/* ── Document Detail Modal ─────────────────────────────────────────── */}
       {showModal && selectedDocument && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           onClick={() => setShowModal(false)}
         >
-          <div 
+          <div
             className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto scrollbar-hide"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white/95 backdrop-blur-sm p-5 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-lg font-medium text-gray-900 pr-4 line-clamp-1">
-                {currentLang === "km" ? selectedDocument.titleKh : selectedDocument.titleEn}
+                {/* ✅ modal title in correct language */}
+                {currentLang === "km"
+                  ? selectedDocument.titleKh || selectedDocument.titleEn
+                  : selectedDocument.titleEn || selectedDocument.titleKh}
               </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-colors flex-shrink-0"
-              >
+              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors flex-shrink-0">
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-5">
               {selectedDocument.coverImage && (
                 <div className="mb-5">
@@ -746,30 +695,29 @@ const LegalPage = () => {
 
               <div className="space-y-4 mb-6">
                 {(selectedDocument.descriptionKh || selectedDocument.descriptionEn) && (
-                  <div 
+                  <div
                     className="text-gray-600 text-sm leading-relaxed"
-                    dangerouslySetInnerHTML={{ 
-                      __html: currentLang === "km" 
-                        ? selectedDocument.descriptionKh 
-                        : selectedDocument.descriptionEn 
+                    dangerouslySetInnerHTML={{
+                      __html: currentLang === "km"
+                        ? selectedDocument.descriptionKh || selectedDocument.descriptionEn
+                        : selectedDocument.descriptionEn || selectedDocument.descriptionKh,
                     }}
                   />
                 )}
                 <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
                   <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border ${getCategoryColor(selectedDocument.category)}`}>
                     <Tag size={12} />
+                    {/* ✅ modal category tag in correct language */}
                     {getCategoryDisplayName(selectedDocument.category)}
                   </span>
                   {selectedDocument.documentNumber && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs">
-                      <FileText size={12} />
-                      {selectedDocument.documentNumber}
+                      <FileText size={12} />{selectedDocument.documentNumber}
                     </span>
                   )}
                   {selectedDocument.publishedDate && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs">
-                      <Calendar size={12} />
-                      {formatDate(selectedDocument.publishedDate)}
+                      <Calendar size={12} />{formatDate(selectedDocument.publishedDate)}
                     </span>
                   )}
                 </div>
@@ -777,13 +725,13 @@ const LegalPage = () => {
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => handlePdfAction(selectedDocument, 'view')}
+                  onClick={() => handlePdfAction(selectedDocument, "view")}
                   className="flex-1 py-2.5 border border-[#4CAF50] text-[#4CAF50] rounded-xl hover:bg-[#4CAF50] hover:text-white transition-all duration-200 font-medium text-sm"
                 >
                   {t.viewPdf}
                 </button>
                 <button
-                  onClick={() => handlePdfAction(selectedDocument, 'download')}
+                  onClick={() => handlePdfAction(selectedDocument, "download")}
                   className="flex-1 py-2.5 bg-[#4CAF50] text-white rounded-xl hover:bg-[#2E7D32] transition-all duration-200 font-medium text-sm shadow-sm hover:shadow"
                 >
                   {t.downloadPdf}
@@ -794,7 +742,7 @@ const LegalPage = () => {
         </div>
       )}
 
-      {/* Share Modal */}
+      {/* ── Share Modal ───────────────────────────────────────────────────── */}
       {showShareModal && selectedDocument && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
@@ -804,23 +752,23 @@ const LegalPage = () => {
                 <X size={20} className="text-gray-500" />
               </button>
             </div>
-            
+
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <button onClick={() => handleShareToSocial('facebook')} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#1877F2] text-white rounded-lg">
+                <button onClick={() => handleShareToSocial("facebook")} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#1877F2] text-white rounded-lg">
                   <Facebook size={16} /><span className="text-sm">Facebook</span>
                 </button>
-                <button onClick={() => handleShareToSocial('twitter')} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#1DA1F2] text-white rounded-lg">
+                <button onClick={() => handleShareToSocial("twitter")} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#1DA1F2] text-white rounded-lg">
                   <Twitter size={16} /><span className="text-sm">Twitter</span>
                 </button>
-                <button onClick={() => handleShareToSocial('linkedin')} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#0077B5] text-white rounded-lg">
+                <button onClick={() => handleShareToSocial("linkedin")} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#0077B5] text-white rounded-lg">
                   <Linkedin size={16} /><span className="text-sm">LinkedIn</span>
                 </button>
-                <button onClick={() => handleShareToSocial('telegram')} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#26A5E4] text-white rounded-lg">
+                <button onClick={() => handleShareToSocial("telegram")} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#26A5E4] text-white rounded-lg">
                   <MessageCircle size={16} /><span className="text-sm">Telegram</span>
                 </button>
               </div>
-              
+
               <div className="border-t border-gray-100 pt-4 mt-2">
                 <div className="flex items-center space-x-2">
                   <input
@@ -829,7 +777,10 @@ const LegalPage = () => {
                     readOnly
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-600"
                   />
-                  <button onClick={handleCopyLink} className="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center space-x-2">
+                  <button
+                    onClick={handleCopyLink}
+                    className="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center space-x-2"
+                  >
                     {copySuccess ? <Check size={16} /> : <Copy size={16} />}
                     <span className="text-sm">{copySuccess ? t.copied : t.copyLink}</span>
                   </button>
@@ -841,27 +792,10 @@ const LegalPage = () => {
       )}
 
       <style jsx>{`
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        
-        .line-clamp-1 {
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
       `}</style>
     </div>
   );

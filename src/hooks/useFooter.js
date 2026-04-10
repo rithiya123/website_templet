@@ -14,6 +14,8 @@ export const useFooter = (language = 'km') => {
       
       const response = await footerService.getFooterConfig();
       
+      console.log('useFooter response:', response);
+      
       if (response.success && response.data) {
         setData(response.data);
       } else {
@@ -21,6 +23,7 @@ export const useFooter = (language = 'km') => {
         setError(response.error || 'Failed to fetch footer data');
       }
     } catch (err) {
+      console.error('useFooter error:', err);
       setData(null);
       setError(err.message);
     } finally {
@@ -32,21 +35,20 @@ export const useFooter = (language = 'km') => {
     fetchData();
   }, [fetchData]);
 
-  // Extract contact info
+  // Extract contact info - directly from data
   const contact = {
     titleKh: data?.title || '',
     titleEn: data?.titleEn || '',
     email: data?.email || '',
-    phone: data?.phone || '',
   };
 
-  // Extract address
+  // Extract address - directly from data
   const address = {
     km: data?.fullAddress || '',
     en: data?.fullAddressEn || '',
   };
 
-  // Extract copyright
+  // Extract copyright - directly from data
   const copyright = {
     textKh: data?.copyRight || '',
     textEn: data?.copyRightEn || '',
@@ -55,10 +57,12 @@ export const useFooter = (language = 'km') => {
   };
 
   // Extract email
-  const email = data?.email || 'info@gdr.gov.kh';
+  const email = data?.email || '';
 
   // Extract map URL
   const mapUrl = data?.urlMef || '';
+
+  console.log('useFooter return values:', { contact, address, copyright, email, mapUrl });
 
   return {
     loading,

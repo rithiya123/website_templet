@@ -1,3 +1,4 @@
+// src/hooks/useNews.js
 import { useState, useEffect, useCallback } from 'react';
 import newsService from '../services/api/news.service';
 
@@ -13,19 +14,22 @@ export const useNews = (params = {}) => {
     try {
       setLoading(true);
       const response = await newsService.getAllNews(params);
-      
-      // ADD THESE LOGS
-      console.log('=== FULL RESPONSE ===', response);
-      console.log('=== CATEGORIES ===', response.categories);
-      
+
       if (response.success) {
         setNews(response.data.news || []);
         setTotal(response.data.total || 0);
         setTotalPages(response.data.totalPages || 0);
         setCategories(response.categories || []);
+        setError(null);
+      } else {
+        setError(response.error);
+        setNews([]);
+        setCategories([]);
       }
     } catch (err) {
-      console.error(err);
+      setError(err.message);
+      setNews([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -38,10 +42,10 @@ export const useNews = (params = {}) => {
   return {
     loading,
     error,
-    news,
-    total,
-    totalPages,
-    categories,
+    news,           // transformed news array
+    total,          // total count from pagination
+    totalPages,     // total pages from pagination
+    categories,     // [ { event: {kh, en} }, { news: {kh, en} }, ... ]
     refetch: fetchData,
   };
 };
@@ -53,11 +57,9 @@ export const useNewsDetail = (id) => {
 
   const fetchData = useCallback(async () => {
     if (!id) return;
-
     try {
       setLoading(true);
       const response = await newsService.getNewsById(id);
-
       if (response.success) {
         setData(response.data);
         setError(null);

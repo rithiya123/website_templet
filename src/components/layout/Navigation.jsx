@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, ChevronDown, Home, Globe, ChevronRight, 
-  Info, Users, Building2, FileText, Phone, Shield,
-  Award, Clock, MapPin, Mail, Star, Menu, Eye
+  Info, Users, Building2, FileText, Shield,
+  Mail, Menu
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../ui/Logo.jsx';
+import { useHeader } from '../../hooks/useHeader';
+import { useFooterEmail } from '../../hooks/useFooterEmail';
 
 const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const navigate = useNavigate();
@@ -15,7 +17,20 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState({});
   const [currentLang, setCurrentLang] = useState('km');
 
-  // Menu items configuration with corrected paths
+  // Fetch header data for title and logo
+  const { 
+    loading: headerLoading, 
+    orgNameFull, 
+    orgNameShort, 
+    logo 
+  } = useHeader(currentLang);
+
+  // Fetch email from footer
+  const { email: footerEmail, loading: emailLoading } = useFooterEmail();
+  
+  const hasValidEmail = footerEmail && footerEmail.trim() !== '' && footerEmail !== '...';
+
+  // Menu items configuration
   const menuItems = [
     { 
       id: 'home',
@@ -57,7 +72,6 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           { label: 'រចនាសម្ព័ន្ធនៃការគ្រប់គ្រង', path: '/about/management' },
           { label: 'តួនាទី និងភារកិច្ច', path: '/about/roles' },
           { label: 'សារអគ្គនាយក', path: '/about/director-message' }
-          
         ],
         en: [
           { label: 'Management Structure', path: '/about/management' },
@@ -66,7 +80,6 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
         ]
       }
     },
-
     { 
       id: 'legal',
       label: 'លិខិតបទដ្ឋានគតិយុត្ត', 
@@ -74,11 +87,9 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
       path: '/legal',
       icon: FileText,
       dropdown: false
-      
     },
   ];
 
-  // Language effect
   useEffect(() => {
     const handleLanguageChange = (e) => {
       setCurrentLang(e.detail.language);
@@ -94,7 +105,6 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     return () => window.removeEventListener('languagechange', handleLanguageChange);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -185,21 +195,20 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                   )}
                 </button>
                 
-                {/* Dropdown with smooth animation */}
                 {item.dropdown && (
                   <div 
                     className={`
-                      absolute left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-[#4CAF50] border-opacity-20 py-2 z-50
+                      absolute left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-[#4CAF50] border-opacity-20 py-2
                       transition-all duration-300 ease-out transform origin-top
                       ${activeDropdown === item.id 
                         ? 'opacity-100 scale-100 translate-y-0 visible' 
-                        : 'opacity-0 scale-95 -translate-y-2 invisible'
+                        : 'opacity-0 scale-95 -translate-y-2 invisible pointer-events-none'
                       }
                     `}
+                    style={{ zIndex: 9999 }}
                   >
                     <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-[#4CAF50] border-opacity-20 transform rotate-45"></div>
                     
-                    {/* Regular sub-items */}
                     {item.subItems[currentLang].map((subItem, i) => {
                       const isSubActive = subItem.path === location.pathname;
                       
@@ -237,8 +246,8 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
       </nav>
 
       {/* Tablet Navigation - Medium screens (md to lg) */}
-      <nav className="hidden md:flex lg:hidden items-center justify-between overflow-x-auto pb-2">
-        <div className="flex items-center space-x-1 min-w-max">
+      <nav className="hidden md:flex lg:hidden items-center justify-start overflow-visible">
+        <div className="flex items-center space-x-1 min-w-max relative">
           {menuItems.map((item) => {
             const isActive = isItemActive(item);
             
@@ -270,30 +279,55 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                   )}
                 </button>
                 
-                {/* Dropdown for tablet */}
                 {item.dropdown && activeDropdown === item.id && (
-                  <div className="absolute left-0 mt-1 w-56 bg-white rounded-xl shadow-xl border border-[#4CAF50] border-opacity-20 py-2 z-50">
-                    {item.subItems[currentLang].map((subItem, i) => {
-                      const isSubActive = subItem.path === location.pathname;
-                      
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => handleNavigation(subItem.path)}
-                          className={`
-                            block w-full text-left px-3 py-2 text-xs transition-all duration-200 
-                            hover:pl-4 hover:bg-[#4CAF50] hover:bg-opacity-5
-                            ${isSubActive
-                              ? 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10 font-medium'
-                              : 'text-gray-600 hover:text-[#2E7D32]'
-                            }
-                          `}
-                        >
-                          {subItem.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <>
+                    <div 
+                      className="fixed inset-0"
+                      style={{ zIndex: 9998 }}
+                      onClick={() => setActiveDropdown(null)}
+                    />
+                    <div 
+                      className="fixed bg-white rounded-xl shadow-xl border border-[#4CAF50] border-opacity-20 py-2"
+                      style={{ 
+                        zIndex: 9999,
+                        minWidth: '200px',
+                        maxWidth: '250px',
+                        top: 'auto',
+                        left: 'auto',
+                      }}
+                      ref={(el) => {
+                        if (el) {
+                          const btn = el.parentElement?.querySelector('button');
+                          if (btn) {
+                            const rect = btn.getBoundingClientRect();
+                            el.style.top = `${rect.bottom + 8}px`;
+                            el.style.left = `${rect.left}px`;
+                          }
+                        }
+                      }}
+                    >
+                      {item.subItems[currentLang].map((subItem, i) => {
+                        const isSubActive = subItem.path === location.pathname;
+                        
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => handleNavigation(subItem.path)}
+                            className={`
+                              block w-full text-left px-4 py-2.5 text-sm transition-all duration-200 
+                              hover:pl-6 hover:bg-[#4CAF50] hover:bg-opacity-5
+                              ${isSubActive
+                                ? 'text-[#2E7D32] bg-[#4CAF50] bg-opacity-10 font-medium'
+                                : 'text-gray-600 hover:text-[#2E7D32]'
+                              }
+                            `}
+                          >
+                            {subItem.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </div>
             );
@@ -312,32 +346,30 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
         </button>
       </div>
 
-      {/* Mobile Menu Panel - Slide from Right */}
+      {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
         <>
-          {/* Backdrop with fade animation */}
           <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-in fade-in duration-300"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
+            style={{ zIndex: 9998 }}
             onClick={closeMobileMenu}
           />
 
-          {/* Menu Panel - Slide from Right Animation */}
-          <div className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white shadow-2xl z-50 overflow-y-auto overflow-x-hidden animate-in slide-in-from-right duration-300 custom-scrollbar">
-            
-            {/* Header with Logo - Fixed layout with proper wrapping */}
+          <div 
+            className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white shadow-2xl overflow-y-auto overflow-x-hidden animate-in slide-in-from-right duration-300 custom-scrollbar"
+            style={{ zIndex: 9999 }}
+          >
             <div className="sticky top-0 bg-white z-10 p-4 border-b border-[#4CAF50] border-opacity-10">
               <div className="flex items-start gap-5">
-                {/* Logo - Fixed position */}
                 <div className="flex-shrink-0">
-                  <Logo variant="default" showText={false} className="w-10 h-10" />
+                  <Logo variant="default" showText={false} logoSrc={logo} className="w-10 h-10" />
                 </div>
                 
-                {/* Title - With proper wrapping and flex */}
                 <div className="flex-1 min-w-0 pt-0.9">
                   <h4 className="font-small text-[#2E7D32] text-sm leading-tight break-words">
-                    {currentLang === 'km' 
+                    {!headerLoading && orgNameFull ? orgNameFull : (currentLang === 'km' 
                       ? 'អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោង' 
-                      : 'General Department of Project Impact Resolution'
+                      : 'General Department of Resettlement')
                     }
                   </h4>
                   <p className="text-xs text-[#4CAF50] mt-1">
@@ -345,7 +377,6 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                   </p>
                 </div>
                 
-                {/* Close Button - Fixed position */}
                 <div className="flex-shrink-0">
                   <button 
                     onClick={closeMobileMenu}
@@ -357,7 +388,6 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
               </div>
             </div>
 
-            {/* Menu Items with Smooth Animations */}
             <div className="p-5 pb-20">
               <div className="space-y-1">
                 {menuItems.map((item) => {
@@ -397,7 +427,6 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                             />
                           </button>
 
-                          {/* Submenu with smooth expand/collapse */}
                           <div 
                             className={`
                               ml-11 mt-1 space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out
@@ -471,24 +500,19 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                 })}
               </div>
 
-              {/* Contact Info with hover effects */}
+              {/* Contact Info - Email only from API */}
               <div className="mt-6 pt-4 border-t border-[#4CAF50] border-opacity-10 animate-in fade-in duration-500 delay-100">
                 <p className="text-xs text-[#4CAF50] mb-3 px-3 font-medium">Contact</p>
                 <div className="space-y-2 px-3">
-                  <a 
-                    href="tel:0712580896" 
-                    className="flex items-center text-sm text-gray-600 hover:text-[#2E7D32] transition-all duration-200 group hover:translate-x-1"
-                  >
-                    <Phone size={14} className="mr-3 text-[#4CAF50] flex-shrink-0 group-hover:text-[#2E7D32] group-hover:scale-110 transition-all duration-200" />
-                    <span className="group-hover:font-medium break-words">(+855) xx xxx xxxx</span>
-                  </a>
-                  <a 
-                    href="mailto:info@gdpir.gov.kh" 
-                    className="flex items-center text-sm text-gray-600 hover:text-[#2E7D32] transition-all duration-200 group hover:translate-x-1"
-                  >
-                    <Mail size={14} className="mr-3 text-[#4CAF50] flex-shrink-0 group-hover:text-[#2E7D32] group-hover:scale-110 transition-all duration-200" />
-                    <span className="group-hover:font-medium break-words">info@gdpir.gov.kh</span>
-                  </a>
+                  {!emailLoading && hasValidEmail && (
+                    <a 
+                      href={`mailto:${footerEmail}`}
+                      className="flex items-center text-sm text-gray-600 hover:text-[#2E7D32] transition-all duration-200 group hover:translate-x-1"
+                    >
+                      <Mail size={14} className="mr-3 text-[#4CAF50] flex-shrink-0 group-hover:text-[#2E7D32] group-hover:scale-110 transition-all duration-200" />
+                      <span className="group-hover:font-medium break-words">{footerEmail}</span>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
@@ -496,24 +520,15 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
         </>
       )}
 
-      {/* Add custom animations and scrollbar hiding */}
       <style jsx>{`
         @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
         
         @keyframes slide-in-from-right {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(0);
-          }
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
         }
         
         .animate-in {
@@ -533,13 +548,11 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           transform: scale(0.98);
         }
         
-        /* Break words for long text */
         .break-words {
           word-break: break-word;
           overflow-wrap: break-word;
         }
         
-        /* Custom scrollbar */
         .custom-scrollbar {
           scrollbar-width: thin;
           scrollbar-color: #4CAF50 #e5e7eb;

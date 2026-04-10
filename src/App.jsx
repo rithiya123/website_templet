@@ -17,7 +17,8 @@ import RolesResponsibilitiesPage from './pages/RolesResponsibilitiesPage.jsx';
 import DirectorMessagePage from './pages/DirectorMessagePage.jsx';
 import HistoryPage from './pages/HistoryPage.jsx';
 import NewsPhotos from './pages/NewsPhotos.jsx';
-import NewsVideos from './pages/NewsVideos.jsx';
+import NewsVideos from './pages/NewsVideos.jsx'; 
+import Preloader from 'components/ui/Preloader.jsx';
 
 function App() {
   return (

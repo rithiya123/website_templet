@@ -20,6 +20,11 @@ const RunningText = ({
 
   const { loading, runningTexts, logo } = useHeader(currentLang);
 
+  // Debug logs
+  console.log('RunningText - loading:', loading);
+  console.log('RunningText - runningTexts:', runningTexts);
+  console.log('RunningText - logo:', logo);
+
   useEffect(() => {
     const handleLanguageChange = (e) => {
       setCurrentLang(e.detail.language);
@@ -53,11 +58,16 @@ const RunningText = ({
           marginRight: "8px",
           verticalAlign: "middle",
         }}
+        onError={(e) => {
+          e.target.src = fallbackLogo;
+        }}
       />
     );
   };
 
-  if (!loading && runningTexts.length === 0) {
+  // Don't render if no running texts and not loading
+  if (!loading && (!runningTexts || runningTexts.length === 0)) {
+    console.log('RunningText - Not rendering (no texts)');
     return null;
   }
 
@@ -98,7 +108,7 @@ const RunningText = ({
             )}
 
             {/* First set */}
-            {!loading &&
+            {!loading && runningTexts && runningTexts.length > 0 && (
               runningTexts.map((text, index) => (
                 <span
                   key={index}
@@ -107,10 +117,11 @@ const RunningText = ({
                   <LogoIcon />
                   <span className="whitespace-nowrap">{text}</span>
                 </span>
-              ))}
+              ))
+            )}
 
             {/* Second set for seamless loop */}
-            {!loading &&
+            {!loading && runningTexts && runningTexts.length > 0 && (
               runningTexts.map((text, index) => (
                 <span
                   key={`dup-${index}`}
@@ -119,7 +130,8 @@ const RunningText = ({
                   <LogoIcon />
                   <span className="whitespace-nowrap">{text}</span>
                 </span>
-              ))}
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+// src/pages/AllNewsPage.jsx
 import React, { useState, useEffect } from "react";
 import {
   Calendar,
@@ -48,7 +49,6 @@ const AllNewsPage = () => {
     total,
     totalPages,
     categories,
-    refetch,
   } = useNews({
     page: currentPage,
     limit: itemsPerPage,
@@ -86,7 +86,6 @@ const AllNewsPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Client-side search filter
   const filteredNews = news.filter((item) => {
     if (!searchQuery) return true;
     const title = currentLang === "km" ? item.titleKh : item.titleEn;
@@ -97,17 +96,15 @@ const AllNewsPage = () => {
     );
   });
 
-  // Get category display name from API categories
   const getCategoryDisplayName = (categoryKey) => {
-    if (!categories || !Array.isArray(categories)) return categoryKey;
-    const categoryObj = categories.find((cat) => cat[categoryKey]);
-    if (categoryObj && categoryObj[categoryKey]) {
-      return categoryObj[categoryKey][currentLang] || categoryKey;
-    }
-    return categoryKey;
+    if (!categories || !Array.isArray(categories) || !categoryKey) return categoryKey;
+    const found = categories.find((cat) => cat[categoryKey]);
+    if (!found || !found[categoryKey]) return categoryKey;
+    return currentLang === 'km'
+      ? found[categoryKey].kh || found[categoryKey].en || categoryKey
+      : found[categoryKey].en || found[categoryKey].kh || categoryKey;
   };
 
-  // Category color map
   const getCategoryColor = (categoryKey) => {
     const colorMap = {
       event: "bg-pink-100 text-pink-700 border-pink-200",
@@ -118,7 +115,6 @@ const AllNewsPage = () => {
     return colorMap[categoryKey] || "bg-gray-100 text-gray-700 border-gray-200";
   };
 
-  // Category icon map
   const getCategoryIcon = (categoryKey) => {
     const iconMap = {
       event: <Calendar size={14} />,
@@ -133,7 +129,6 @@ const AllNewsPage = () => {
     km: {
       title: "ព័ត៌មានទាំងអស់",
       subtitle: "ព័ត៌មានថ្មីៗ និងសេចក្តីប្រកាសព័ត៌មានពីអគ្គនាយកដ្ឋាន",
-      home: "ទំព័រដើម",
       search: "ស្វែងរកព័ត៌មាន...",
       filter: "តម្រង",
       allCategories: "គ្រប់ប្រភេទ",
@@ -166,7 +161,6 @@ const AllNewsPage = () => {
     en: {
       title: "All News",
       subtitle: "Latest news and announcements from the General Department",
-      home: "Home",
       search: "Search news...",
       filter: "Filter",
       allCategories: "All Categories",
@@ -272,12 +266,10 @@ const AllNewsPage = () => {
   const startItem = filteredNews.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
   const endItem = Math.min(currentPage * itemsPerPage, filteredNews.length);
 
-  // Related news (same category, excluding current)
   const relatedNews = news
     .filter((item) => item.id !== selectedNews?.id && item.category === selectedNews?.category)
     .slice(0, 3);
 
-  // ─── Grid View ───────────────────────────────────────────────────────────────
   const GridView = ({ items }) => (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {items.map((item) => {
@@ -345,7 +337,6 @@ const AllNewsPage = () => {
     </div>
   );
 
-  // ─── List View ────────────────────────────────────────────────────────────────
   const ListView = ({ items }) => (
     <div className="space-y-4">
       {items.map((item) => {
@@ -413,10 +404,8 @@ const AllNewsPage = () => {
     </div>
   );
 
-  // ─── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Scroll to Top */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
@@ -436,19 +425,15 @@ const AllNewsPage = () => {
       />
 
       <Container className="py-8">
-        {/* Stats Bar */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="font-medium">{total} {t.totalNews.toLowerCase()}</span>
           </div>
         </div>
 
-        {/* Filter Bar */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-visible mb-6">
           <div className="p-5">
             <div className="flex flex-col lg:flex-row gap-4">
-
-              {/* Search */}
               <div className="flex-1 relative">
                 <Search size={18} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
@@ -463,7 +448,6 @@ const AllNewsPage = () => {
                 />
               </div>
 
-              {/* Category Dropdown */}
               <div className="relative lg:w-64 z-50">
                 <button
                   onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
@@ -475,42 +459,32 @@ const AllNewsPage = () => {
                       {activeTab ? getCategoryDisplayName(activeTab) : t.allCategories}
                     </span>
                   </span>
-                  <ChevronDown
-                    size={16}
-                    className={`text-gray-400 transition-transform ${categoryDropdownOpen ? "rotate-180" : ""}`}
-                  />
+                  <ChevronDown size={16} className={`text-gray-400 transition-transform ${categoryDropdownOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {categoryDropdownOpen && (
                   <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setCategoryDropdownOpen(false)}
-                    />
+                    <div className="fixed inset-0 z-40" onClick={() => setCategoryDropdownOpen(false)} />
                     <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 max-h-64 overflow-y-auto">
-                      {/* All Categories option */}
                       <button
                         onClick={() => handleCategoryChange("")}
-                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-                          !activeTab ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"
-                        }`}
+                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${!activeTab ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
                       >
                         <Filter size={14} />
                         <span>{t.allCategories}</span>
                       </button>
 
-                      {/* API Categories */}
                       {!loading && categories.length > 0 ? (
                         categories.map((cat, index) => {
                           const key = Object.keys(cat)[0];
-                          const label = cat[key][currentLang] || cat[key]["en"] || key;
+                          const label = currentLang === "km"
+                            ? cat[key].kh || cat[key].en || key
+                            : cat[key].en || cat[key].kh || key;
                           return (
                             <button
                               key={index}
                               onClick={() => handleCategoryChange(key)}
-                              className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-                                activeTab === key ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"
-                              }`}
+                              className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${activeTab === key ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
                             >
                               <span className={`w-5 h-5 rounded-full flex items-center justify-center ${getCategoryColor(key).split(" ")[0]}`}>
                                 {getCategoryIcon(key)}
@@ -529,33 +503,23 @@ const AllNewsPage = () => {
                 )}
               </div>
 
-              {/* View Toggle */}
               <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2.5 rounded-lg transition-all duration-200 ${
-                    viewMode === "grid"
-                      ? "bg-white text-[#4CAF50] shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === "grid" ? "bg-white text-[#4CAF50] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                   title={t.gridView}
                 >
                   <Grid size={18} />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2.5 rounded-lg transition-all duration-200 ${
-                    viewMode === "list"
-                      ? "bg-white text-[#4CAF50] shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === "list" ? "bg-white text-[#4CAF50] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                   title={t.listView}
                 >
                   <List size={18} />
                 </button>
               </div>
 
-              {/* Clear Filters */}
               {(activeTab || searchQuery) && (
                 <button
                   onClick={clearFilters}
@@ -568,7 +532,6 @@ const AllNewsPage = () => {
             </div>
           </div>
 
-          {/* Active Filter Tags */}
           {(activeTab || searchQuery) && (
             <div className="px-5 pb-4 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
               <span className="text-xs text-gray-500">{t.filter}:</span>
@@ -576,10 +539,7 @@ const AllNewsPage = () => {
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${getCategoryColor(activeTab)}`}>
                   {getCategoryIcon(activeTab)}
                   {getCategoryDisplayName(activeTab)}
-                  <button
-                    onClick={() => { setActiveTab(""); setCurrentPage(1); }}
-                    className="ml-1 hover:bg-black/10 rounded-full p-0.5"
-                  >
+                  <button onClick={() => { setActiveTab(""); setCurrentPage(1); }} className="ml-1 hover:bg-black/10 rounded-full p-0.5">
                     <X size={12} />
                   </button>
                 </span>
@@ -588,10 +548,7 @@ const AllNewsPage = () => {
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                   <Search size={12} />
                   "{searchQuery}"
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
-                  >
+                  <button onClick={() => setSearchQuery("")} className="ml-1 hover:bg-gray-200 rounded-full p-0.5">
                     <X size={12} />
                   </button>
                 </span>
@@ -600,7 +557,6 @@ const AllNewsPage = () => {
           )}
         </div>
 
-        {/* Results Count */}
         {!loading && (
           <div className="text-sm text-gray-500 mb-4">
             {filteredNews.length > 0
@@ -609,7 +565,6 @@ const AllNewsPage = () => {
           </div>
         )}
 
-        {/* Loading Skeleton */}
         {loading ? (
           <div className={viewMode === "grid" ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -628,10 +583,7 @@ const AllNewsPage = () => {
             <p className="text-gray-500 font-medium text-lg mb-2">{t.noNews}</p>
             <p className="text-gray-400 text-sm">{t.tryAgain}</p>
             {(activeTab || searchQuery) && (
-              <button
-                onClick={clearFilters}
-                className="mt-4 px-4 py-2 text-sm text-[#4CAF50] hover:bg-green-50 rounded-lg transition-colors"
-              >
+              <button onClick={clearFilters} className="mt-4 px-4 py-2 text-sm text-[#4CAF50] hover:bg-green-50 rounded-lg transition-colors">
                 {t.clearAll}
               </button>
             )}
@@ -642,7 +594,6 @@ const AllNewsPage = () => {
           <ListView items={filteredNews} />
         )}
 
-        {/* Pagination */}
         {!loading && totalPages > 1 && (
           <div className="mt-8 flex items-center justify-center gap-1">
             <button
@@ -655,25 +606,16 @@ const AllNewsPage = () => {
 
             {[...Array(Math.min(5, totalPages))].map((_, i) => {
               let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
+              if (totalPages <= 5) pageNum = i + 1;
+              else if (currentPage <= 3) pageNum = i + 1;
+              else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+              else pageNum = currentPage - 2 + i;
 
               return (
                 <button
                   key={i}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-colors ${
-                    currentPage === pageNum
-                      ? "bg-[#4CAF50] text-white shadow-md"
-                      : "border border-gray-200 hover:bg-gray-50 text-gray-700"
-                  }`}
+                  className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-colors ${currentPage === pageNum ? "bg-[#4CAF50] text-white shadow-md" : "border border-gray-200 hover:bg-gray-50 text-gray-700"}`}
                 >
                   {pageNum}
                 </button>
@@ -691,23 +633,16 @@ const AllNewsPage = () => {
         )}
       </Container>
 
-      {/* ── News Detail Modal ─────────────────────────────────────────────────── */}
       {showDetail && selectedNews && (
         <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
           <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 z-10">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
               <div className="flex items-center justify-between">
-                <button
-                  onClick={handleCloseDetail}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-[#2E7D32] transition-colors group"
-                >
+                <button onClick={handleCloseDetail} className="flex items-center space-x-2 text-gray-600 hover:text-[#2E7D32] transition-colors group">
                   <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                   <span className="text-sm">{t.back}</span>
                 </button>
-                <button
-                  onClick={handleCopyLink}
-                  className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
-                >
+                <button onClick={handleCopyLink} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
                   <Link2 size={18} />
                 </button>
               </div>
@@ -715,7 +650,6 @@ const AllNewsPage = () => {
           </div>
 
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-            {/* Hero Image */}
             <div className="relative h-[300px] md:h-[400px] rounded-xl overflow-hidden mb-8 bg-gray-100">
               <img
                 src={selectedNews.mainImage || defaultImg}
@@ -741,12 +675,10 @@ const AllNewsPage = () => {
               )}
             </div>
 
-            {/* Title */}
             <h1 className="text-2xl md:text-3xl font-medium text-gray-900 mb-6 leading-tight">
               {currentLang === "km" ? selectedNews.titleKh : selectedNews.titleEn}
             </h1>
 
-            {/* Meta */}
             <div className="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b border-gray-100">
               <div className="flex items-center space-x-2">
                 <User size={16} className="text-[#4CAF50]" />
@@ -764,26 +696,16 @@ const AllNewsPage = () => {
               </div>
             </div>
 
-            {/* Content */}
             <div className="prose prose-sm max-w-none mb-12 text-gray-700">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: currentLang === "km" ? selectedNews.contentKh : selectedNews.contentEn,
-                }}
-              />
+              <div dangerouslySetInnerHTML={{ __html: currentLang === "km" ? selectedNews.contentKh : selectedNews.contentEn }} />
             </div>
 
-            {/* Image Gallery */}
             {selectedNews.images && selectedNews.images.length > 1 && (
               <div className="mb-8">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">{t.viewImages}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {selectedNews.images.slice(0, 8).map((img, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => handleOpenLightbox(idx)}
-                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group bg-gray-100"
-                    >
+                    <div key={idx} onClick={() => handleOpenLightbox(idx)} className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group bg-gray-100">
                       <img
                         src={img}
                         alt={`${currentLang === "km" ? selectedNews.titleKh : selectedNews.titleEn} - ${idx + 1}`}
@@ -801,29 +723,20 @@ const AllNewsPage = () => {
               </div>
             )}
 
-            {/* Share */}
             <div className="mb-12 pt-6 border-t border-gray-100">
               <h3 className="text-sm font-medium text-gray-700 mb-4">{t.shareVia}</h3>
-              <button
-                onClick={handleCopyLink}
-                className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-[#4CAF50]/10 hover:text-[#2E7D32] transition-colors text-sm flex items-center space-x-2"
-              >
+              <button onClick={handleCopyLink} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-[#4CAF50]/10 hover:text-[#2E7D32] transition-colors text-sm flex items-center space-x-2">
                 <Link2 size={16} />
                 <span>{t.copyLink}</span>
               </button>
             </div>
 
-            {/* Related News */}
             {relatedNews.length > 0 && (
               <div className="border-t border-gray-100 pt-8">
                 <h3 className="text-lg font-medium text-gray-900 mb-6">{t.related}</h3>
                 <div className="grid md:grid-cols-3 gap-4">
                   {relatedNews.map((item) => (
-                    <div
-                      key={item.id}
-                      className="group cursor-pointer border border-gray-100 rounded-xl hover:shadow-md hover:border-[#4CAF50]/30 transition-all overflow-hidden"
-                      onClick={() => handleReadMore(item)}
-                    >
+                    <div key={item.id} className="group cursor-pointer border border-gray-100 rounded-xl hover:shadow-md hover:border-[#4CAF50]/30 transition-all overflow-hidden" onClick={() => handleReadMore(item)}>
                       <div className="relative h-32 overflow-hidden bg-gray-100">
                         <img
                           src={item.mainImage || defaultImg}
@@ -850,36 +763,17 @@ const AllNewsPage = () => {
         </div>
       )}
 
-      {/* ── Lightbox Modal ────────────────────────────────────────────────────── */}
       {showLightbox && selectedNews && selectedImageIndex !== null && (
         <div className="fixed inset-0 bg-black/95 z-[60] flex items-center justify-center">
-          <button
-            onClick={handleCloseLightbox}
-            className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors"
-          >
+          <button onClick={handleCloseLightbox} className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors">
             <X size={32} />
           </button>
-
-          <button
-            onClick={handlePrevImage}
-            disabled={selectedImageIndex === 0}
-            className={`absolute left-4 z-10 text-white hover:text-gray-300 transition-colors ${
-              selectedImageIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
+          <button onClick={handlePrevImage} disabled={selectedImageIndex === 0} className={`absolute left-4 z-10 text-white hover:text-gray-300 transition-colors ${selectedImageIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
             <ChevronLeft size={48} />
           </button>
-
-          <button
-            onClick={handleNextImage}
-            disabled={selectedImageIndex === selectedNews.images.length - 1}
-            className={`absolute right-4 z-10 text-white hover:text-gray-300 transition-colors ${
-              selectedImageIndex === selectedNews.images.length - 1 ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
+          <button onClick={handleNextImage} disabled={selectedImageIndex === selectedNews.images.length - 1} className={`absolute right-4 z-10 text-white hover:text-gray-300 transition-colors ${selectedImageIndex === selectedNews.images.length - 1 ? "opacity-50 cursor-not-allowed" : ""}`}>
             <ChevronRightIcon size={48} />
           </button>
-
           <div className="max-w-[90vw] max-h-[90vh] relative">
             <img
               src={selectedNews.images[selectedImageIndex]}
