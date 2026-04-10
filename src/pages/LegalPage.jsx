@@ -1,4 +1,4 @@
-// src/pages/LegalPage.jsx
+
 import React, { useState, useEffect } from "react";
 import {
   FileText, Search, Download, Eye, Calendar, Tag,
