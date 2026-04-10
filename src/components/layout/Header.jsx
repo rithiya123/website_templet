@@ -1,217 +1,212 @@
 // src/components/layout/Header.jsx
-import React, { useState, useEffect } from 'react';
-import { Phone, Mail, Menu } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
-import Container from '../ui/Container.jsx';
-import Navigation from './Navigation.jsx';
-import LanguageSwitcher from '../shared/LanguageSwitcher.jsx';
-import Logo from '../ui/Logo.jsx';
+import React, { useState, useEffect } from "react";
+import { Mail, Menu } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import Container from "../ui/Container.jsx";
+import Navigation from "./Navigation.jsx";
+import LanguageSwitcher from "../shared/LanguageSwitcher.jsx";
+import Logo from "../ui/Logo.jsx";
+import { useHeader } from "../../hooks/useHeader";
+import { useFooterEmail } from "../../hooks/useFooterEmail";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState('km');
+  const [currentLang, setCurrentLang] = useState(() => {
+    return localStorage.getItem("language") || "km";
+  });
   const location = useLocation();
 
-  // Listen for language changes
+  const { 
+    loading: headerLoading, 
+    error,
+    orgNameFull, 
+    orgNameShort, 
+    logo, 
+    runningTexts,
+    isActive 
+  } = useHeader(currentLang);
+
+  const { email: footerEmail, loading: emailLoading } = useFooterEmail();
+
+  const hasValidEmail = footerEmail && footerEmail.trim() !== '' && footerEmail !== '...';
+
+  const smoothScrollTo = (elementId, offset = 80) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  useEffect(() => {
+    const handleHashLinkClick = (e) => {
+      const target = e.target.closest("a");
+      if (target && target.hash && target.hash.startsWith("#")) {
+        const elementId = target.hash.substring(1);
+        const element = document.getElementById(elementId);
+
+        if (element) {
+          e.preventDefault();
+          const header = document.querySelector("header");
+          const headerHeight = header ? header.offsetHeight : 80;
+          smoothScrollTo(elementId, headerHeight);
+          window.history.pushState(null, null, target.hash);
+        }
+      }
+    };
+
+    document.addEventListener("click", handleHashLinkClick);
+
+    if (window.location.hash) {
+      setTimeout(() => {
+        const elementId = window.location.hash.substring(1);
+        if (document.getElementById(elementId)) {
+          const header = document.querySelector("header");
+          const headerHeight = header ? header.offsetHeight : 80;
+          smoothScrollTo(elementId, headerHeight);
+        }
+      }, 100);
+    }
+
+    return () => document.removeEventListener("click", handleHashLinkClick);
+  }, []);
+
   useEffect(() => {
     const handleLanguageChange = (e) => {
       setCurrentLang(e.detail.language);
     };
 
-    window.addEventListener('languagechange', handleLanguageChange);
-    
-    const savedLang = localStorage.getItem('language');
-    if (savedLang) {
-      setCurrentLang(savedLang);
-    }
-
-    return () => window.removeEventListener('languagechange', handleLanguageChange);
+    window.addEventListener("languagechange", handleLanguageChange);
+    return () => window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
 
-  // Handle scroll effect with throttle for performance
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const isScrolled = window.scrollY > 20;
-          if (isScrolled !== scrolled) {
-            setScrolled(isScrolled);
-          }
+          setScrolled(window.scrollY > 20);
           ticking = false;
         });
         ticking = true;
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [scrolled]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.paddingRight = '15px';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
-      document.body.style.paddingRight = '0';
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = 'unset';
-      document.body.style.paddingRight = '0';
+      document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
 
-  // Translations
-  const translations = {
-    km: {
-      hotline: 'ទូរស័ព្ទបន្ទាន់',
-      eservice: 'សេវាកម្មអេឡិចត្រូនិក',
-      welcome: 'សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានពន្ធនាគារ',
-      irc: 'អ.ព.ន.',
-      phone: '០៧១ ២៥៨ ០៨៩៦',
-      quickLinks: 'តំណភ្ជាប់រហ័ស',
-      contactUs: 'ទំនាក់ទំនងយើងខ្ញុំ',
-      aboutUs: 'អំពីយើងខ្ញុំ',
-      announcements: 'សេចក្តីជូនដំណឹង',
-      faq: 'សំណួរពេញនិយម'
-    },
-    en: {
-      hotline: 'Hotline',
-      eservice: 'e-Services',
-      welcome: 'Welcome to the official website of the General Department of Prisons!',
-      irc: 'GDP',
-      phone: '071 258 0896',
-      quickLinks: 'Quick Links',
-      contactUs: 'Contact Us',
-      aboutUs: 'About Us',
-      announcements: 'Announcements',
-      faq: 'FAQ'
-    }
-  };
-
-  const t = translations[currentLang];
-
-  // Get current page from location pathname
   const getCurrentPage = () => {
     const path = location.pathname;
-    if (path === '/') return 'home';
+    if (path === "/") return "home";
     return path.substring(1);
   };
 
-  return (
-    <>
-      {/* Top Bar - Matching e-service button gradient */}
-      <div className={`bg-gradient-to-r from-primary-700 to-primary-600 text-white py-2 hidden md:block transition-all duration-300 ${
-        scrolled ? '-translate-y-full' : 'translate-y-0'
-      }`}>
+  if (headerLoading) {
+    return (
+      <header className="bg-white shadow-sm py-4 border-b border-gray-100">
         <Container>
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex space-x-1">
-                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse delay-75"></span>
-                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse delay-150"></span>
-              </div>
-              <span className="text-xs text-white/80 font-light tracking-wide">
-                {currentLang === 'km' ? 'ដំណើរការ 24/7' : 'Operating 24/7'}
-              </span>
-            </div>
-            
-            <div className="flex items-center space-x-8">
-              <a href="tel:0712580896" className="flex items-center space-x-2 text-xs group">
-                <span className="p-1.5 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
-                  <Phone size={12} className="text-white/80 group-hover:text-white" />
-                </span>
-                <span className="text-white/80 group-hover:text-white font-medium">{t.phone}</span>
-              </a>
-              <a href="mailto:info@gdp.gov.kh" className="flex items-center space-x-2 text-xs group">
-                <span className="p-1.5 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
-                  <Mail size={12} className="text-white/80 group-hover:text-white" />
-                </span>
-                <span className="text-white/80 group-hover:text-white font-medium">info@gdp.gov.kh</span>
-              </a>
-              
-              <div className="border-l border-white/20 pl-4">
-                <LanguageSwitcher variant="minimal" />
-              </div>
-            </div>
+            <div className="h-12 w-48 bg-gray-200 animate-pulse rounded"></div>
+            <div className="h-10 w-10 bg-gray-200 animate-pulse rounded-lg md:hidden"></div>
           </div>
         </Container>
+      </header>
+    );
+  }
+
+  return (
+    <>
+      <div
+        className={`bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white py-1.5 hidden md:block transition-all duration-300 ${
+          scrolled ? "-translate-y-full" : "translate-y-0"
+        }`}
+      >
+        <Container>
+  <div className="flex justify-between items-center">
+    <LanguageSwitcher variant="minimal" />
+    
+    {!emailLoading && hasValidEmail ? (
+      <a
+        href={`mailto:${footerEmail}`}
+        className="flex items-center space-x-2 text-xs group"
+      >
+        <span className="p-1.5 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
+          <Mail size={12} className="text-white/80 group-hover:text-white" />
+        </span>
+        <span className="text-white/80 group-hover:text-white font-medium">
+          {footerEmail}
+        </span>
+      </a>
+    ) : (
+      // Empty div to maintain flex spacing when email is hidden
+      <div></div>
+    )}
+  </div>
+</Container>
       </div>
 
-      {/* Main Header */}
-      <header className={`sticky top-0 z-50 transition-all duration-500 ${
-        scrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg py-2 border-b border-primary-100' 
-          : 'bg-white shadow-sm py-4 border-b border-transparent'
-      }`}>
+      <header
+        className={`sticky top-0 z-50 transition-all duration-500 ${
+          scrolled
+            ? "bg-white/95 backdrop-blur-md shadow-lg py-2 border-b border-green-100"
+            : "bg-white shadow-sm py-3 border-b border-transparent"
+        }`}
+      >
         <Container>
-          <div className="flex justify-between items-center">
-            {/* Logo - Link to home */}
-            <Link to="/" className="flex-1 md:flex-none group">
-              <Logo variant="default" showText={true} />
+          <div className="flex justify-between items-center gap-4">
+            <Link to="/" className="flex-shrink-0 group max-w-[70%] sm:max-w-full">
+              <Logo
+                variant="default"
+                showText={true}
+                departmentName={orgNameFull}
+                departmentShort={orgNameShort}
+                logoSrc={logo}
+              />
             </Link>
 
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-3">
-              <button className="relative px-6 py-2 overflow-hidden rounded-lg bg-gradient-to-r from-primary-700 to-primary-600 text-white font-medium text-sm shadow-md hover:shadow-lg transition-all duration-300 group">
-                <span className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
-                <span className="relative z-10 flex items-center space-x-2">
-                  <span>{t.eservice}</span>
-                  <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">New</span>
-                </span>
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="flex items-center md:hidden">
-              <button 
-                onClick={() => setMobileMenuOpen(true)}
-                className="p-2.5 bg-gradient-to-r from-primary-700 to-primary-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
-                <Menu size={22} className="relative z-10" />
-              </button>
-            </div>
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="p-2.5 md:hidden bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              <Menu size={20} />
+            </button>
           </div>
 
-          {/* Welcome Message */}
-          <div className={`hidden md:block transition-all duration-500 ease-in-out overflow-hidden ${
-            scrolled ? 'max-h-0 opacity-0 mt-0' : 'max-h-20 opacity-100 mt-3'
-          }`}>
-            <div className="bg-primary-50 rounded-lg p-3 border border-primary-100">
-              <p className="text-sm text-primary-800 flex items-center">
-                <span className="w-1.5 h-1.5 bg-primary-600 rounded-full mr-2 animate-pulse"></span>
-                <span className="font-light">{t.welcome}</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Desktop Navigation */}
           <div className="hidden md:block">
-            <div className={`transition-all duration-500 transform ${
-              scrolled ? 'mt-2' : 'mt-4'
-            }`}>
+            <div className={`transition-all duration-500 ${scrolled ? "mt-2" : "mt-4"}`}>
               <Navigation currentPage={getCurrentPage()} />
             </div>
           </div>
         </Container>
 
-        {/* Progress bar */}
-        <div className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-primary-600 via-primary-400 to-primary-600 transition-all duration-300 ease-out ${
-          scrolled ? 'w-full' : 'w-0'
-        }`}></div>
+        <div
+          className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-[#4CAF50] via-[#2E7D32] to-[#4CAF50] transition-all duration-300 ${
+            scrolled ? "w-full" : "w-0"
+          }`}
+        />
       </header>
 
-      {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
-        <Navigation 
-          mobileMenuOpen={mobileMenuOpen} 
-          setMobileMenuOpen={setMobileMenuOpen} 
+        <Navigation
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
           currentPage={getCurrentPage()}
         />
       )}

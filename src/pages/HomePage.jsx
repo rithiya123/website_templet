@@ -1,30 +1,32 @@
 // src/pages/HomePage.jsx
-import React from 'react';
-import Container from '../components/ui/Container.jsx';
-import HeroSection from '../components/home/HeroSection.jsx';
-import NewsSection from '../components/home/NewsSection.jsx';
-import AnnouncementSection from '../components/home/AnnouncementSection.jsx';
-import QuickInfoSection from '../components/home/QuickInfoSection.jsx';
-import OtherWebsites from '../components/home/OtherWebsites.jsx';
-import ManagementStructure from '../components/home/ManagementStructure.jsx';
+import React from "react";
+import Container from "../components/ui/Container.jsx";
+import HeroSection from "../components/home/HeroSection.jsx";
+import NewsSection from "../components/home/NewsSection.jsx";
+import LegalSection from "../components/home/LegalSection.jsx";
+import RunningText from "../components/ui/RunningText";
 
 const HomePage = () => {
   return (
     <>
+      <RunningText
+        position="sticky"
+        topOffset="72px"
+        mobileTopOffset="72px"
+        desktopTopOffset="140px"
+        showLogo={true}
+        logoSize="20px"
+        speed="normal"
+      />
+
       <HeroSection />
+
       <Container className="py-12">
-        <div className="grid md:grid-cols-3 gap-8">
-          <NewsSection />
-          <div className="space-y-6">
-            <AnnouncementSection />
-            <QuickInfoSection />
-          </div>
-        </div>
-        <ManagementStructure />
-        <OtherWebsites />
+        <NewsSection />
+        <LegalSection />
       </Container>
     </>
   );
 };
 
-export default HomePage; 
+export default HomePage;
