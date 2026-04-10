@@ -82,6 +82,17 @@ const AllNewsPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (categoryDropdownOpen && !event.target.closest('.category-dropdown-container')) {
+        setCategoryDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [categoryDropdownOpen]);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -431,7 +442,7 @@ const AllNewsPage = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-visible mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
           <div className="p-5">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 relative">
@@ -448,7 +459,8 @@ const AllNewsPage = () => {
                 />
               </div>
 
-              <div className="relative lg:w-64 z-50">
+              {/* Simple Category Dropdown */}
+              <div className="relative lg:w-64 category-dropdown-container">
                 <button
                   onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-left text-sm flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -459,47 +471,54 @@ const AllNewsPage = () => {
                       {activeTab ? getCategoryDisplayName(activeTab) : t.allCategories}
                     </span>
                   </span>
-                  <ChevronDown size={16} className={`text-gray-400 transition-transform ${categoryDropdownOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown 
+                    size={16} 
+                    className={`text-gray-400 transition-transform duration-200 ${categoryDropdownOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
+                {/* Dropdown Menu - Simple overlay */}
                 {categoryDropdownOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setCategoryDropdownOpen(false)} />
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 max-h-64 overflow-y-auto">
-                      <button
-                        onClick={() => handleCategoryChange("")}
-                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${!activeTab ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
-                      >
-                        <Filter size={14} />
-                        <span>{t.allCategories}</span>
-                      </button>
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 max-h-64 overflow-y-auto">
+                    {/* All Categories Option */}
+                    <button
+                      onClick={() => handleCategoryChange("")}
+                      className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${
+                        !activeTab ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"
+                      }`}
+                    >
+                      <Filter size={14} className={!activeTab ? "text-[#4CAF50]" : "text-gray-400"} />
+                      <span>{t.allCategories}</span>
+                    </button>
 
-                      {!loading && categories.length > 0 ? (
-                        categories.map((cat, index) => {
-                          const key = Object.keys(cat)[0];
-                          const label = currentLang === "km"
-                            ? cat[key].kh || cat[key].en || key
-                            : cat[key].en || cat[key].kh || key;
-                          return (
-                            <button
-                              key={index}
-                              onClick={() => handleCategoryChange(key)}
-                              className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${activeTab === key ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
-                            >
-                              <span className={`w-5 h-5 rounded-full flex items-center justify-center ${getCategoryColor(key).split(" ")[0]}`}>
-                                {getCategoryIcon(key)}
-                              </span>
-                              <span>{label}</span>
-                            </button>
-                          );
-                        })
-                      ) : (
-                        <div className="px-4 py-2.5 text-sm text-gray-400">
-                          {loading ? t.loading : t.noCategories}
-                        </div>
-                      )}
-                    </div>
-                  </>
+                    {/* Category Options */}
+                    {!loading && categories.length > 0 ? (
+                      categories.map((cat, index) => {
+                        const key = Object.keys(cat)[0];
+                        const label = currentLang === "km"
+                          ? cat[key].kh || cat[key].en || key
+                          : cat[key].en || cat[key].kh || key;
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleCategoryChange(key)}
+                            className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${
+                              activeTab === key ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"
+                            }`}
+                          >
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center ${getCategoryColor(key).split(" ")[0]}`}>
+                              {getCategoryIcon(key)}
+                            </span>
+                            <span>{label}</span>
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="px-4 py-2.5 text-sm text-gray-400 text-center">
+                        {loading ? t.loading : t.noCategories}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 

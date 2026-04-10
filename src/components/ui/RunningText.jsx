@@ -20,10 +20,7 @@ const RunningText = ({
 
   const { loading, runningTexts, logo } = useHeader(currentLang);
 
-  // Debug logs
-  console.log('RunningText - loading:', loading);
-  console.log('RunningText - runningTexts:', runningTexts);
-  console.log('RunningText - logo:', logo);
+
 
   useEffect(() => {
     const handleLanguageChange = (e) => {
@@ -57,6 +54,7 @@ const RunningText = ({
           display: "inline",
           marginRight: "8px",
           verticalAlign: "middle",
+          filter: "brightness(0) invert(1)", // This ensures the logo stays white
         }}
         onError={(e) => {
           e.target.src = fallbackLogo;

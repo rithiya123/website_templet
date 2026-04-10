@@ -25,6 +25,8 @@ import GlobalBanner from "../components/ui/GlobalBanner.jsx";
 import defaultImg from "../images/director.jpg";
 import logo from "../images/logo.png";
 import Image from "../images/logo_white.png";
+import orgChartImage from "../images/org_image.png"; // Import the organization chart image
+
 const FullManagementStructurePage = () => {
   const [currentLang, setCurrentLang] = useState("km");
   const [selectedDept, setSelectedDept] = useState(null);
@@ -129,7 +131,6 @@ const FullManagementStructurePage = () => {
 
   const directorGeneral = {
     id: "dg",
-
     position: {
       km: "ប្រតិភូរាជរដ្ឋាភិបាលទទួលបន្ទុកជាអគ្គនាយក",
       en: "Delegate of the Royal Government in charge as Director General",
@@ -300,7 +301,6 @@ const FullManagementStructurePage = () => {
     },
     {
       id: "deputy2",
-
       rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
@@ -313,7 +313,6 @@ const FullManagementStructurePage = () => {
     },
     {
       id: "deputy3",
-
       rowLabel: { km: "អគ្គនាយករង", en: "Deputy Director General" },
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
@@ -358,7 +357,6 @@ const FullManagementStructurePage = () => {
         en: "Department of General Affairs",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-      
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -370,7 +368,6 @@ const FullManagementStructurePage = () => {
         en: "Impact Resolution Department 1",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-      
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -382,7 +379,6 @@ const FullManagementStructurePage = () => {
         en: "Impact Resolution Department 2",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-     
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -394,7 +390,6 @@ const FullManagementStructurePage = () => {
         en: "Impact Resolution Department 3",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-      
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -406,7 +401,6 @@ const FullManagementStructurePage = () => {
         en: "Internal Inspection and Data Management Department",
       },
       rowLabel: { km: "ប្រធាននាយកដ្ឋាន", en: "Department Head" },
-      
       email: "xxx@mef.gov.kh",
       phone: "(+855) xx xxx xxxx",
       image: logo,
@@ -426,101 +420,8 @@ const FullManagementStructurePage = () => {
     setShowDetail(true);
   };
 
-  // ── NEW: floating pill label above each row ──────────────────────────────────
-  const RowLabel = ({ label }) => (
-    <div className="flex justify-center mb-2">
-      <span
-        className="text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-300 px-4 py-1 rounded-full shadow-sm"
-        style={{ fontSize: "11px" }}
-      >
-        {label}
-      </span>
-    </div>
-  );
-  // ────────────────────────────────────────────────────────────────────────────
-
-  const OrgNode = ({ data, onClick, highlight = false, isDept = false }) => {
-    let topLine = "";
-    let bottomLine = "";
-
-    if (data.id === "dg") {
-      topLine = data.position?.[currentLang] || "";
-      bottomLine = data.name?.[currentLang] || "";
-    } else if (isDept) {
-      topLine = data.name?.[currentLang] || "";
-
-      bottomLine = data.head?.[currentLang] || "";
-    } else {
-      topLine =
-        data.rowLabel?.[currentLang] || data.position?.[currentLang] || "";
-      bottomLine = data.name?.[currentLang] || "";
-    }
-
-    return (
-      <div
-        
-        className={`
-          border-2 rounded cursor-pointer select-none text-center transition-all duration-150
-          hover:shadow-lg active:scale-95
-          ${
-            highlight
-              ? "bg-white border-gray-700 shadow-md"
-              : "bg-white border-gray-500 hover:border-green-600"
-          }
-        `}
-        style={{
-          width: 160,
-          minWidth: 160,
-          maxWidth: 160,
-          padding: "6px 8px",
-          boxShadow: highlight
-            ? "0 4px 14px rgba(0,0,0,0.18)"
-            : "0 1px 4px rgba(0,0,0,0.1)",
-        }}
-      >
-        <p
-          className="font-bold text-gray-900 leading-snug"
-          style={{ fontSize: "11px" }}
-        >
-          {topLine}
-        </p>
-        <p
-          className="text-gray-600 leading-snug mt-1"
-          style={{ fontSize: "10.5px" }}
-        >
-          {bottomLine}
-        </p>
-      </div>
-    );
-  };
-
-  // SVG arrow connector: vertical line with arrowhead
-  const VArrow = ({ height = 32 }) => (
-    <div className="flex justify-center" style={{ height }}>
-      <svg
-        width="20"
-        height={height}
-        viewBox={`0 0 20 ${height}`}
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <line
-          x1="10"
-          y1="0"
-          x2="10"
-          y2={height - 8}
-          stroke="#4b5563"
-          strokeWidth="1.5"
-        />
-        <polygon
-          points={`10,${height} 6,${height - 8} 14,${height - 8}`}
-          fill="#4b5563"
-        />
-      </svg>
-    </div>
-  );
-
   function runningText() {
-    function logo() {
+    function logoIcon() {
       return (
         <img
           src={Image}
@@ -528,15 +429,13 @@ const FullManagementStructurePage = () => {
             height: "20px",
             width: "20px",
             objectFit: "cover",
-            display: "inline", // Add this
+            display: "inline",
           }}
         />
       );
     }
     return (
       <>
-        {/* ✅ RUNNING TEXT FIXED UNDER HEADER */}
-
         <div
           className="
             running-text-bar
@@ -546,41 +445,39 @@ const FullManagementStructurePage = () => {
             w-full
             z-40
             overflow-hidden
-          bg-gradient-to-r from-[#2E7D32]/80 to-[#4CAF50]/80
-            shadow-lg
+            bg-gradient-to-r from-[#2E7D32]/80 to-[#4CAF50]/80
           "
         >
           <div className="animate-marquee whitespace-nowrap py-2 md:py-3">
             <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} អនុក្រឹត្យ ស្តីពី
+              {logoIcon()} អនុក្រឹត្យ ស្តីពី
               ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
               ក្នុងព្រះណាចក្រកម្ពុជា
             </span>
 
             <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
+              {logoIcon()} ច្បាប់ស្តីពី អស្សាមិករណ៍
             </span>
 
             <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} LAW ON EXPROPRIATION
+              {logoIcon()} LAW ON EXPROPRIATION
             </span>
             <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} អនុក្រឹត្យ ស្តីពី
+              {logoIcon()} អនុក្រឹត្យ ស្តីពី
               ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយភលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
               ក្នុងព្រះណាចក្រកម្ពុជា •
             </span>
 
             <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
+              {logoIcon()} ច្បាប់ស្តីពី អស្សាមិករណ៍
             </span>
 
             <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} LAW ON EXPROPRIATION
+              {logoIcon()} LAW ON EXPROPRIATION
             </span>
           </div>
         </div>
 
-        {/* ✅ MARQUEE CSS */}
         <style jsx>{`
           @keyframes marquee {
             0% {
@@ -605,7 +502,7 @@ const FullManagementStructurePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div
         className="
           running-text-bar
@@ -616,7 +513,6 @@ const FullManagementStructurePage = () => {
           z-40
           overflow-hidden
           bg-gradient-to-r from-[#2E7D32]/80 to-[#4CAF50]/80
-          shadow-lg
         "
       >
         {runningText()}
@@ -657,7 +553,7 @@ const FullManagementStructurePage = () => {
         </div>
       </Container>
 
-      {/* Org Chart */}
+      {/* Organization Chart Image */}
       <Container className="pb-16 overflow-x-auto">
         <div
           style={{
@@ -666,149 +562,16 @@ const FullManagementStructurePage = () => {
             transition: "transform 0.3s ease",
           }}
         >
-          {/* ── Director General ── */}
-          {/* 🏷 Floating pill label ABOVE the box */}
-          <RowLabel
-            label={currentLang === "km" ? "អគ្គនាយក" : "Director General"}
-          />
           <div className="flex justify-center">
-            <OrgNode
-              data={directorGeneral}
-              onClick={handleNodeClick}
-              highlight
+            <img 
+              src={orgChartImage} 
+              alt="Organization Structure"
+              className="w-full max-w-6xl h-auto"
+              style={{
+                maxWidth: "100%",
+                height: "auto",
+              }}
             />
-          </div>
-
-          {/* Vertical drop + horizontal spanning line to 5 deputies */}
-          <div className="flex justify-center">
-            <svg
-              width="900"
-              height="60"
-              viewBox="0 0 900 60"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ display: "block" }}
-            >
-              <line
-                x1="450"
-                y1="0"
-                x2="450"
-                y2="30"
-                stroke="#4b5563"
-                strokeWidth="1.5"
-              />
-              <line
-                x1="90"
-                y1="30"
-                x2="810"
-                y2="30"
-                stroke="#4b5563"
-                strokeWidth="1.5"
-              />
-
-              {/* Arrows for deputies 1-4 */}
-              {[90, 270, 450, 630].map((x) => (
-                <g key={x}>
-                  <line
-                    x1={x}
-                    y1="30"
-                    x2={x}
-                    y2="52"
-                    stroke="#4b5563"
-                    strokeWidth="1.5"
-                  />
-                  <polygon
-                    points={`${x},60 ${x - 5},52 ${x + 5},52`}
-                    fill="#4b5563"
-                  />
-                </g>
-              ))}
-              {/* <g>
-                <line
-                  x1="720"
-                  y1="30"
-                  x2="720"
-                  y2="350"
-                  stroke="#4b5563"
-                  strokeWidth="1.5"
-                />
-                <polygon points="720,358 715,350 725,350" fill="#4b5563" />
-              </g> */}
-              <g>
-                <line
-                  x1="810"
-                  y1="30"
-                  x2="810"
-                  y2="52"
-                  stroke="#4b5563"
-                  strokeWidth="1.5"
-                />
-                <polygon points="810,60 805,52 815,52" fill="#4b5563" />
-              </g>
-            </svg>
-          </div>
-
-          {/* ── Deputy Directors Row ── */}
-          {/* 🏷 Floating pill label ABOVE the row */}
-          <RowLabel
-            label={
-              currentLang === "km" ? "អគ្គនាយករង" : "Deputy Director General"
-            }
-          />
-
-        
-
-          <div className="flex justify-center" style={{ gap: 0 }}>
-            {deputyDirectors.map((dep) => (
-              <div
-                key={dep.id}
-                style={{
-                  width: 180,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <OrgNode data={dep} onClick={handleNodeClick} />
-              </div>
-            ))}
-          </div>
-
-          {/* Arrows from deputy down to dept */}
-          <div className="flex justify-center" style={{ gap: 0 }}>
-            {deputyDirectors.map((dep, index) => (
-              <div
-                key={dep.id + "_arr"}
-                style={{
-                  width: 180,
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-              >
-                {/* Don't render arrow for index 4 (deputy5) */}
-                {index !== 4 && <VArrow height={36} />}
-              </div>
-            ))}
-          </div>
-
-          {/* ── Departments Row ── */}
-          {/* 🏷 Floating pill label ABOVE the row */}
-          <RowLabel
-            label={currentLang === "km" ? "ប្រធាននាយកដ្ឋាន" : "Department Head"}
-          />
-          <div className="flex justify-center" style={{ gap: 0 }}>
-            {departments.map((dept) => (
-              <div
-                key={dept.id}
-                style={{
-                  width: 180,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <OrgNode data={dept} onClick={handleNodeClick} isDept />
-              </div>
-            ))}
           </div>
         </div>
       </Container>
@@ -838,7 +601,7 @@ const FullManagementStructurePage = () => {
               <div className="p-5">
                 {/* Profile header */}
                 <div className="bg-green-50 rounded-xl p-4 mb-5 flex flex-col md:flex-row md:items-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-white overflow-hidden ring-4 ring-green-200 shadow flex-shrink-0 mx-auto md:mx-0">
+                  <div className="w-20 h-20 rounded-full bg-white overflow-hidden ring-4 ring-green-200 flex-shrink-0 mx-auto md:mx-0">
                     <img
                       src={selectedDept.image || defaultImg}
                       alt={selectedDept.name?.[currentLang]}

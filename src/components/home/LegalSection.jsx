@@ -67,10 +67,11 @@ const LegalSection = () => {
     };
   }, [showDetail, showShareModal]);
 
+  // Updated translations to match LegalPage
   const translations = {
     km: {
-      title: 'លិខិតបទដ្ឋានគតិយុត្ត',
-      subtitle: 'បណ្តុំឯកសារច្បាប់ និងបទប្បញ្ញត្តិ',
+      title: 'ឯកសារច្បាប់',
+      subtitle: 'លិខិតបទដ្ឋានគតិយុត្ត និងឯកសារពាក់ព័ន្ធ',
       viewAll: 'មើលទាំងអស់',
       downloadKh: 'ទាញយកជាភាសាខ្មែរ',
       downloadEn: 'ទាញយកជាភាសាអង់គ្លេស',
@@ -95,7 +96,7 @@ const LegalSection = () => {
     },
     en: {
       title: 'Legal Documents',
-      subtitle: 'Collection of laws and regulations',
+      subtitle: 'Legal standards and related documents',
       viewAll: 'View All',
       downloadKh: 'Download in Khmer',
       downloadEn: 'Download in English',
@@ -181,6 +182,13 @@ const LegalSection = () => {
     });
   };
 
+  // Strip HTML tags from text
+  const stripHtmlTags = (html) => {
+    if (!html) return '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  };
+
   const handleViewDetails = (doc) => {
     setSelectedDoc(doc);
     setShowDetail(true);
@@ -256,6 +264,7 @@ const LegalSection = () => {
             <div>
               <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
               <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 w-64 bg-gray-200 rounded animate-pulse mt-1"></div>
             </div>
             <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
           </div>
@@ -286,7 +295,7 @@ const LegalSection = () => {
 
   return (
     <div className="w-full mt-12">
-      {/* Section Header */}
+      {/* Section Header - Updated to match LegalPage style */}
       <div className="mb-8">
         <div className="flex items-center justify-between border-b border-gray-200 pb-4">
           <div>
@@ -326,6 +335,7 @@ const LegalSection = () => {
               {row.map((doc) => {
                 const title = currentLang === 'km' ? doc.titleKh : doc.titleEn;
                 const description = currentLang === 'km' ? doc.descriptionKh : doc.descriptionEn;
+                const plainDescription = stripHtmlTags(description);
                 const thumbnail = getThumbnail(doc);
                 
                 return (
@@ -365,9 +375,9 @@ const LegalSection = () => {
                           {title}
                         </h3>
 
-                        {description && (
+                        {plainDescription && (
                           <p className="text-xs text-gray-500 mb-3 line-clamp-2">
-                            {description}
+                            {plainDescription}
                           </p>
                         )}
 
@@ -495,7 +505,7 @@ const LegalSection = () => {
                       {currentLang === 'km' ? selectedDoc.titleKh : selectedDoc.titleEn}
                     </h2>
                     <p className="text-xs sm:text-sm text-gray-500 mb-4">
-                      {currentLang === 'km' ? selectedDoc.descriptionKh : selectedDoc.descriptionEn}
+                      {stripHtmlTags(currentLang === 'km' ? selectedDoc.descriptionKh : selectedDoc.descriptionEn)}
                     </p>
                   </div>
                 </div>
@@ -624,6 +634,18 @@ const LegalSection = () => {
           .xs\\:hidden {
             display: none;
           }
+        }
+        .line-clamp-1 {
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
     </div>
