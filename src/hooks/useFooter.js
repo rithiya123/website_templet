@@ -1,0 +1,74 @@
+// src/hooks/useFooter.js
+import { useState, useEffect, useCallback } from 'react';
+import { footerService } from '../services/api';
+
+export const useFooter = (language = 'km') => {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await footerService.getFooterConfig();
+      
+      if (response.success && response.data) {
+        setData(response.data);
+      } else {
+        setData(null);
+        setError(response.error || 'Failed to fetch footer data');
+      }
+    } catch (err) {
+      setData(null);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Extract contact info
+  const contact = {
+    titleKh: data?.title || '',
+    titleEn: data?.titleEn || '',
+    email: data?.email || '',
+    phone: data?.phone || '',
+  };
+
+  // Extract address
+  const address = {
+    km: data?.fullAddress || '',
+    en: data?.fullAddressEn || '',
+  };
+
+  // Extract copyright
+  const copyright = {
+    textKh: data?.copyRight || '',
+    textEn: data?.copyRightEn || '',
+    belowKh: data?.copyRightBelow || '',
+    belowEn: data?.copyRightBelowEn || '',
+  };
+
+  // Extract email
+  const email = data?.email || 'info@gdr.gov.kh';
+
+  // Extract map URL
+  const mapUrl = data?.urlMef || '';
+
+  return {
+    loading,
+    error,
+    data,
+    contact,
+    address,
+    copyright,
+    email,
+    mapUrl,
+    refetch: fetchData,
+  };
+};

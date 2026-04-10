@@ -1,60 +1,60 @@
 // src/pages/LegalPage.jsx
 import React, { useState, useEffect } from "react";
 import {
-  Home,
-  ChevronRight,
   FileText,
-  Download,
-  Share2,
   Search,
-  Filter,
-  Calendar,
+  Download,
   Eye,
-  Scale,
-  Clock,
-  Building2,
+  Calendar,
+  Tag,
+  ChevronLeft,
+  ChevronRight,
   X,
-  FileCheck,
-  FileSignature,
-  ScrollText,
-  BookMarked,
-  FolderOpen,
+  Grid,
+  List,
+  Filter,
+  BookOpen,
   Copy,
+  Scale,
+  FileCheck,
+  AlertCircle,
+  ChevronDown,
+  MoreHorizontal,
+  Share2,
+  Check,
   Facebook,
   Twitter,
   Linkedin,
   MessageCircle,
-  Check,
-  ChevronLeft,
-  ChevronRight as ChevronRightIcon,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import Container from "../components/ui/Container.jsx";
 import GlobalBanner from "../components/ui/GlobalBanner.jsx";
-import Image from "../images/logo_white.png";
-// Import PDF files - Khmer and English versions for each document
-import larSopPdfKh from "../images/pdf/2_GDR SOP Final_Khmer-WG_Clean_titles_Anukrit_26_4_2023.pdf";
-import larSopPdfEn from "../images/pdf/3_GDR SOP Final_English-WG_Clean_titles_Anukrit_26_4_2023.pdf";
-import expropriationLawPdf from "../images/pdf/expropriation-law-kh.pdf";
-import cam98711Pdf from "../images/pdf/cam98711.pdf";
-
-// Import PDF thumbnails
-import larSopThumbnail from "../images/pdf/thumbnails/Lor.jpg";
-import expropriationThumbnail from "../images/pdf/thumbnails/expropriation-thumbnail.jpg";
-import cam98711Thumbnail from "../images/pdf/thumbnails/cam98711-thumbnail.png";
+import RunningText from "../components/ui/RunningText";
+import { useLegalDocuments } from "../hooks/useLegal";
+import defaultThumbnail from "../images/pdf/thumbnails/Lor.jpg";
 
 const LegalPage = () => {
-  const [currentLang, setCurrentLang] = useState("km");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedYear, setSelectedYear] = useState("all");
-  const [showFilters, setShowFilters] = useState(false);
-  const [showDetail, setShowDetail] = useState(false);
-  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [currentLang, setCurrentLang] = useState(() => {
+    return localStorage.getItem("language") || "km";
+  });
+  const [page, setPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [viewMode, setViewMode] = useState("list");
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+
+  // Fetch legal documents from API
+  const { 
+    loading, 
+    documents, 
+    totalPages,
+    categories,
+    total,
+  } = useLegalDocuments(page, 10, selectedCategory);
 
   useEffect(() => {
     const handleLanguageChange = (e) => {
@@ -62,18 +62,11 @@ const LegalPage = () => {
     };
 
     window.addEventListener("languagechange", handleLanguageChange);
-
-    const savedLang = localStorage.getItem("language");
-    if (savedLang) {
-      setCurrentLang(savedLang);
-    }
-
-    return () =>
-      window.removeEventListener("languagechange", handleLanguageChange);
+    return () => window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
 
   useEffect(() => {
-    if (showDetail || showShareModal) {
+    if (showModal || showShareModal) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -81,906 +74,720 @@ const LegalPage = () => {
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [showDetail, showShareModal]);
+  }, [showModal, showShareModal]);
+
+  // Filter documents by search term
+  const filteredDocuments = documents.filter(doc => {
+    if (!searchTerm) return true;
+    const title = currentLang === "km" ? doc.titleKh : doc.titleEn;
+    const desc = currentLang === "km" ? doc.descriptionKh : doc.descriptionEn;
+    return title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           desc.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  // Get category display name - ONLY from API
+  const getCategoryDisplayName = (categoryKey) => {
+    if (!categories || !Array.isArray(categories)) {
+      return categoryKey;
+    }
+    
+    const categoryObj = categories.find(cat => cat[categoryKey]);
+    if (categoryObj && categoryObj[categoryKey]) {
+      return categoryObj[categoryKey][currentLang] || categoryKey;
+    }
+    return categoryKey;
+  };
+
+  // Get category icon
+  const getCategoryIcon = (categoryKey) => {
+    const icons = {
+      law: <Scale size={14} />,
+      regulation: <FileCheck size={14} />,
+      decree: <FileText size={14} />,
+      proclamation: <AlertCircle size={14} />,
+      directive: <BookOpen size={14} />,
+      other: <MoreHorizontal size={14} />,
+    };
+    return icons[categoryKey] || <FileText size={14} />;
+  };
+
+  // Get category color
+  const getCategoryColor = (categoryKey) => {
+    const colors = {
+      law: "bg-blue-100 text-blue-700 border-blue-200",
+      regulation: "bg-green-100 text-green-700 border-green-200",
+      decree: "bg-purple-100 text-purple-700 border-purple-200",
+      proclamation: "bg-orange-100 text-orange-700 border-orange-200",
+      directive: "bg-cyan-100 text-cyan-700 border-cyan-200",
+      other: "bg-gray-100 text-gray-700 border-gray-200",
+    };
+    return colors[categoryKey] || "bg-gray-100 text-gray-700 border-gray-200";
+  };
+
+  // Get thumbnail - use cover_image from API
+  const getThumbnail = (doc) => {
+    return doc.coverImage || defaultThumbnail;
+  };
 
   const translations = {
     km: {
-      title: "លិខិតបទដ្ឋានគតិយុត្ត",
-      home: "ទំព័រដើម",
-      search: "ស្វែងរកឯកសារ...",
-      filter: "តម្រង",
-      all: "ទាំងអស់",
-      categories: "ប្រភេទ",
-      year: "ឆ្នាំ",
+      title: "ឯកសារច្បាប់",
+      subtitle: "លិខិតបទដ្ឋានគតិយុត្ត និងឯកសារពាក់ព័ន្ធ",
+      search: "ស្វែងរកតាមចំណងជើង ឬខ្លឹមសារ...",
+      allCategories: "គ្រប់ប្រភេទ",
       download: "ទាញយក",
-      downloadKh: "ទាញយកជាភាសាខ្មែរ",
-      downloadEn: "ទាញយកជាភាសាអង់គ្លេស",
-      share: "ចែករំលែក",
+      downloadKh: "ខ្មែរ",
+      downloadEn: "អង់គ្លេស",
       view: "មើល",
-      viewDetails: "មើលលម្អិត",
-      back: "ត្រលប់ក្រោយ",
-      publishedDate: "ថ្ងៃចេញផ្សាយ",
-      effectiveDate: "ថ្ងៃចូលជាធរមាន",
-      department: "ស្ថាប័ន",
-      fileSize: "ទំហំឯកសារ",
-      format: "ទម្រង់",
-      pages: "ទំព័រ",
-      description: "សេចក្តីសង្ខេប",
-      keywords: "ពាក្យគន្លឹះ",
-      viewPdf: "បើកមើល PDF",
+      published: "ចេញផ្សាយ",
+      documentNumber: "លេខឯកសារ",
+      previous: "មុន",
+      next: "បន្ទាប់",
+      noDocuments: "រកមិនឃើញឯកសារ",
+      page: "ទំព័រ",
+      of: "នៃ",
+      viewPdf: "មើល PDF",
+      downloadPdf: "ទាញយក PDF",
+      showing: "បង្ហាញ",
+      to: "ដល់",
+      ofTotal: "នៃ",
+      documents: "ឯកសារ",
+      filter: "តម្រង",
+      clearFilters: "សម្អាតតម្រង",
+      totalDocuments: "ឯកសារសរុប",
+      loading: "កំពុងផ្ទុក...",
+      noCategories: "គ្មានប្រភេទ",
+      share: "ចែករំលែក",
       shareVia: "ចែករំលែកតាម",
       copyLink: "ចម្លងតំណ",
       copied: "បានចម្លង!",
-      close: "បិទ",
-      totalDocs: "ឯកសារសរុប",
-      page: "ទំព័រ",
-      of: "នៃ",
-      results: "លទ្ធផល",
-      runningText:
-        "សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ • WELCOME TO THE OFFICIAL WEBSITE •",
-
-      // Categories
-      law: "ច្បាប់",
-      procedure: "នីតិវិធី",
-      directive: "សេចក្តីណែនាំ",
-      regulation: "បទប្បញ្ញត្តិ",
-      standard: "ស្តង់ដារ",
+      back: "ត្រលប់ក្រោយ",
+      viewDetails: "មើលលម្អិត",
     },
     en: {
       title: "Legal Documents",
-      home: "Home",
-      search: "Search documents...",
-      filter: "Filter",
-      all: "All",
-      categories: "Categories",
-      year: "Year",
+      subtitle: "Legal standards and related documents",
+      search: "Search by title or content...",
+      allCategories: "All Categories",
       download: "Download",
-      downloadKh: "Download in Khmer",
-      downloadEn: "Download in English",
-      share: "Share",
+      downloadKh: "Khmer",
+      downloadEn: "English",
       view: "View",
-      viewDetails: "View Details",
-      back: "Back",
-      publishedDate: "Published Date",
-      effectiveDate: "Effective Date",
-      department: "Department",
-      fileSize: "File Size",
-      format: "Format",
-      pages: "Pages",
-      description: "Description",
-      keywords: "Keywords",
+      published: "Published",
+      documentNumber: "Document No.",
+      previous: "Previous",
+      next: "Next",
+      noDocuments: "No documents found",
+      page: "Page",
+      of: "of",
       viewPdf: "View PDF",
+      downloadPdf: "Download PDF",
+      showing: "Showing",
+      to: "to",
+      ofTotal: "of",
+      documents: "documents",
+      filter: "Filter",
+      clearFilters: "Clear Filters",
+      totalDocuments: "Total Documents",
+      loading: "Loading...",
+      noCategories: "No categories",
+      share: "Share",
       shareVia: "Share via",
       copyLink: "Copy Link",
       copied: "Copied!",
-      close: "Close",
-      totalDocs: "Total Documents",
-      page: "Page",
-      of: "of",
-      results: "results",
-      runningText:
-        "WELCOME TO THE OFFICIAL WEBSITE OF THE GENERAL DEPARTMENT OF PROJECT IMPACT RESOLUTION • សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ •",
-
-      // Categories
-      law: "Law",
-      procedure: "Procedure",
-      directive: "Directive",
-      regulation: "Regulation",
-      standard: "Standard",
+      back: "Back",
+      viewDetails: "View Details",
     },
   };
 
   const t = translations[currentLang];
 
-  // Helper function to get PDF file based on language
-  const getPdfFile = (doc, language) => {
-    if (doc.pdfFiles) {
-      return language === "km" ? doc.pdfFiles.kh : doc.pdfFiles.en;
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    
+    if (currentLang === "km") {
+      const khmerMonths = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
+      const day = date.getDate();
+      const month = khmerMonths[date.getMonth()];
+      const year = date.getFullYear();
+      return `${day} ${month} ${year}`;
     }
-    return doc.pdfFile;
+    
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
-  // Helper function to get filename based on language
-  const getFileName = (doc, language) => {
-    if (language === "km") {
-      return doc.title.km;
-    } else {
-      return doc.title.en;
+  const handleDocumentClick = (doc) => {
+    setSelectedDocument(doc);
+    setShowModal(true);
+  };
+
+  const handlePdfAction = (doc, action = 'view', language = currentLang) => {
+    const pdfUrl = language === "km" ? doc.pdfFileKh : doc.pdfFileEn;
+    if (pdfUrl && pdfUrl !== '#') {
+      if (action === 'download') {
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = `${language === "km" ? doc.titleKh : doc.titleEn}.pdf`;
+        link.click();
+      } else {
+        window.open(pdfUrl, '_blank');
+      }
     }
-  };
-
-  // Legal documents data - Updated to match LegalSection structure
-  const legalDocuments = [
-    {
-      id: 1,
-      title: {
-        km: "Land Acquisition and Involuntary Resettlement",
-        en: "Land Acquisition and Involuntary Resettlement",
-      },
-      category: "procedure",
-      date: "13 មីនា 2018",
-      dateEn: "March 13, 2018",
-      effectiveDate: "13 មីនា 2018",
-      effectiveDateEn: "March 13, 2018",
-      department: {
-        km: "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
-        en: "General Department of Project Impact Resolution",
-      },
-      fileSize: "2.8 MB",
-      format: "PDF",
-      pages: 85,
-      pdfFiles: {
-        kh: larSopPdfKh,
-        en: larSopPdfEn,
-      },
-      thumbnail: larSopThumbnail,
-      icon: <FileText size={20} />,
-      description: {
-        km: "អនុក្រឹត្យ ស្តីពី ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិ សម្រាប់ការងារដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍ ក្នុងព្រះរាជាណាចក្រកម្ពុជា",
-        en: "Royal Decree on Standard Operating Procedure for Project Impact Resolution for Development Projects Financed by Development Partners in the Kingdom of Cambodia",
-      },
-      keywords: ["LAR", "ទិញយកដីធ្លី", "ផ្លាស់ទីលំនៅ", "SOP"],
-      downloads: 2450,
-      views: 5670,
-    },
-    {
-      id: 2,
-      title: {
-        km: "ច្បាប់ ស្តីពី អស្សាមិករណ៍",
-        en: "LAW ON EXPROPRIATION",
-      },
-      category: "law",
-      date: "១៥ កុម្ភៈ ២០១០",
-      dateEn: "February 15, 2010",
-      effectiveDate: "១ មីនា ២០១០",
-      effectiveDateEn: "March 1, 2010",
-      department: {
-        km: "រដ្ឋសភា",
-        en: "National Assembly",
-      },
-      fileSize: "1.5 MB",
-      format: "PDF",
-      pages: 45,
-      pdfFile: expropriationLawPdf,
-      thumbnail: expropriationThumbnail,
-      icon: <Scale size={20} />,
-      description: {
-        km: "បទប្បញ្ញត្តិទូទៅ",
-        en: "General Law",
-      },
-      keywords: ["បូកសរុប", "ទុនបម្រុង", "បណ្តេញយកដី", "សំណង"],
-      downloads: 3150,
-      views: 8230,
-    },
-    {
-      id: 3,
-      title: {
-        km: "LAW ON EXPROPRIATION",
-        en: "LAW ON EXPROPRIATION",
-      },
-      category: "directive",
-      date: "២០ មិថុនា ២០១៩",
-      dateEn: "June 20, 2019",
-      effectiveDate: "១ កក្កដា ២០១៩",
-      effectiveDateEn: "July 1, 2019",
-      department: {
-        km: "ក្រសួងសេដ្ឋកិច្ច និងហិរញ្ញវត្ថុ",
-        en: "Ministry of Economy and Finance",
-      },
-      fileSize: "1.2 MB",
-      format: "PDF",
-      pages: 32,
-      pdfFile: cam98711Pdf,
-      thumbnail: cam98711Thumbnail,
-      icon: <FileCheck size={20} />,
-      description: {
-        km: "We Preahkaruna Preahbath Samdach Preah Boromneath Norodom Sihamoni Samanphoum Cheatsasna Rakhatkhaateya Khmemrarothreas Puthibthreathoreamohaksat Khemreachnea Samohopheas Kampuchekreachroathboranaksanti Sopheakmonglea Sereivibolea Khemarasreypreas Preah Chao Krong Kampuchea Thipdey",
-        en: "We Preahkaruna Preahbath Samdach Preah Boromneath Norodom Sihamoni Samanphoum Cheatsasna Rakhatkhaateya Khmemrarothreas Puthibthreathoreamohaksat Khemreachnea Samohopheas Kampuchekreachroathboranaksanti Sopheakmonglea Sereivibolea Khemarasreypreas Preah Chao Krong Kampuchea Thipdey",
-      },
-      keywords: ["អនុសាសន៍", "គម្រោងអភិវឌ្ឍន៍", "ចីរភាព"],
-      downloads: 1890,
-      views: 4320,
-    },
-  ];
-
-  const categories = [
-    { id: "all", label: t.all, icon: <FolderOpen size={16} /> },
-    { id: "law", label: t.law, icon: <Scale size={16} /> },
-    { id: "procedure", label: t.procedure, icon: <FileText size={16} /> },
-    { id: "directive", label: t.directive, icon: <FileCheck size={16} /> },
-    { id: "regulation", label: t.regulation, icon: <BookMarked size={16} /> },
-    { id: "standard", label: t.standard, icon: <FileSignature size={16} /> },
-  ];
-
-  const years = ["all", "2023", "2022", "2021", "2020", "2019", "2018"];
-
-  // Filter documents
-  const filteredDocs = legalDocuments.filter((doc) => {
-    const matchesCategory =
-      selectedCategory === "all" || doc.category === selectedCategory;
-    const matchesYear =
-      selectedYear === "all" || doc.date.includes(selectedYear);
-    const matchesSearch =
-      doc.title[currentLang]
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      doc.description[currentLang]
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesYear && matchesSearch;
-  });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredDocs.length / itemsPerPage);
-  const paginatedDocs = filteredDocs.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
-
-  const handleViewDetails = (doc) => {
-    setSelectedDoc(doc);
-    setShowDetail(true);
-  };
-
-  const handleViewPdf = (pdfFile) => {
-    window.open(pdfFile, "_blank");
-  };
-
-  const handleDownload = (doc, language) => {
-    const pdfFile = getPdfFile(doc, language);
-    const fileName = getFileName(doc, language);
-    const link = document.createElement("a");
-    link.href = pdfFile;
-    link.download = `${fileName}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const handleShare = (doc) => {
-    setSelectedDoc(doc);
+    setSelectedDocument(doc);
     setShowShareModal(true);
   };
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/legal/${selectedDoc?.id}`;
+    const url = `${window.location.origin}/legal/${selectedDocument?.id}`;
     navigator.clipboard.writeText(url);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
   const handleShareToSocial = (platform) => {
-    const url = `${window.location.origin}/legal/${selectedDoc?.id}`;
-    const title = selectedDoc?.title[currentLang];
-    let shareUrl = "";
+    const url = `${window.location.origin}/legal/${selectedDocument?.id}`;
+    const title = currentLang === 'km' ? selectedDocument?.titleKh : selectedDocument?.titleEn;
+    let shareUrl = '';
 
-    switch (platform) {
-      case "facebook":
+    switch(platform) {
+      case 'facebook':
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
         break;
-      case "twitter":
+      case 'twitter':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
         break;
-      case "linkedin":
+      case 'linkedin':
         shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
         break;
-      case "telegram":
+      case 'telegram':
         shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
         break;
       default:
         return;
     }
 
-    window.open(shareUrl, "_blank", "width=600,height=500");
+    window.open(shareUrl, '_blank', 'width=600,height=500');
   };
 
-  const getCategoryIcon = (category) => {
-    const cat = categories.find((c) => c.id === category);
-    return cat ? cat.icon : <FileText size={16} />;
+  const clearFilters = () => {
+    setSelectedCategory("");
+    setSearchTerm("");
+    setPage(1);
   };
 
-  const getCategoryLabel = (category) => {
-    const cat = categories.find((c) => c.id === category);
-    return cat ? cat.label : category;
-  };
-
-  const getCategoryColor = (category) => {
-    switch (category) {
-      case "law":
-        return "bg-blue-50 text-blue-700 border-blue-200";
-      case "procedure":
-        return "bg-green-50 text-green-700 border-green-200";
-      case "directive":
-        return "bg-purple-50 text-purple-700 border-purple-200";
-      default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
-    }
-  };
-
-  // Responsive List View Component - Thumbnail left, text right on all devices
-  const ListView = ({ items }) => (
-    <div className="space-y-4">
-      {items.map((doc) => (
-        <div
-          key={doc.id}
-          className="bg-white border border-gray-200 rounded-xl hover:shadow-lg hover:border-[#4CAF50] transition-all duration-300 cursor-pointer group"
-          onClick={() => handleViewDetails(doc)}
-        >
-          <div className="flex p-4 sm:p-5">
-            {/* PDF Thumbnail - Always on left */}
-            <div className="relative w-28 sm:w-32 h-36 sm:h-40 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 mr-3 sm:mr-5 shadow-md">
-              <img
-                src={doc.thumbnail}
-                alt={doc.title[currentLang]}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-1.5 py-0.5 rounded-md text-[10px] font-medium shadow-lg">
-                PDF
-              </div>
-              <div className="absolute bottom-2 left-2">
-                <span
-                  className={`inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium ${getCategoryColor(doc.category)}`}
-                >
-                  {getCategoryIcon(doc.category)}
-                  <span className="hidden sm:inline">
-                    {getCategoryLabel(doc.category)}
-                  </span>
-                </span>
-              </div>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center text-xs text-gray-400 mb-2">
-                <Calendar size={12} className="mr-1 flex-shrink-0" />
-                <span className="truncate">
-                  {t.publishedDate}:{" "}
-                  {currentLang === "km" ? doc.date : doc.dateEn}
-                </span>
-              </div>
-
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-2 group-hover:text-[#2E7D32] transition-colors line-clamp-2">
-                {doc.title[currentLang]}
-              </h3>
-
-              <p className="text-xs text-gray-500 mb-3 line-clamp-2">
-                {doc.description[currentLang]}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] sm:text-xs text-gray-500 mb-3">
-                <span className="flex items-center gap-1">
-                  <FileText size={10} />
-                  {doc.format} • {doc.fileSize}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Eye size={10} />
-                  {doc.views}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-2 mb-3">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(doc, "km");
-                  }}
-                  className="flex items-center justify-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-[10px] sm:text-xs rounded-lg hover:shadow-md transition-all duration-200"
-                >
-                  <Download size={10} className="sm:w-3 sm:h-3" />
-                  <span className="hidden xs:inline">{t.downloadKh}</span>
-                  <span className="xs:hidden">ខ្មែរ</span>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(doc, "en");
-                  }}
-                  className="flex items-center justify-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 border-2 border-green-500 text-green-600 text-[10px] sm:text-xs rounded-lg hover:bg-green-50 transition-all duration-200 font-medium"
-                >
-                  <Download size={10} className="sm:w-3 sm:h-3" />
-                  <span className="hidden xs:inline">{t.downloadEn}</span>
-                  <span className="xs:hidden">EN</span>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleShare(doc);
-                  }}
-                  className="flex items-center justify-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 text-gray-600 text-[10px] sm:text-xs rounded-lg hover:border-green-500 hover:text-green-600 transition-all duration-200"
-                >
-                  <Share2 size={10} className="sm:w-3 sm:h-3" />
-                  <span className="hidden xs:inline">{t.share}</span>
-                  <span className="xs:hidden">ចែក</span>
-                </button>
-              </div>
-
-              <div className="flex items-center justify-end pt-2 border-t border-gray-100">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewDetails(doc);
-                  }}
-                  className="flex items-center space-x-1 text-[10px] sm:text-xs text-green-600 hover:text-green-700 font-medium group/btn"
-                >
-                  <span>{t.viewDetails}</span>
-                  <ChevronRightIcon
-                    size={10}
-                    className="sm:w-3 sm:h-3 group-hover/btn:translate-x-1 transition-transform"
-                  />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
-  // Responsive Category Filter Component
-  const CategoryFilters = () => (
-    <div className="flex flex-wrap gap-2">
-      {categories.map((cat) => (
-        <button
-          key={cat.id}
-          onClick={() => setSelectedCategory(cat.id)}
-          className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs transition-colors ${
-            selectedCategory === cat.id
-              ? "bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white"
-              : "bg-white border border-gray-200 text-gray-600 hover:bg-[#4CAF50] hover:bg-opacity-5"
-          }`}
-        >
-          <span className="hidden sm:inline">{cat.icon}</span>
-          <span>{cat.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-
-  // Responsive Year Filter Component
-  const YearFilters = () => (
-    <div className="flex flex-wrap gap-2">
-      {years.map((year) => (
-        <button
-          key={year}
-          onClick={() => setSelectedYear(year)}
-          className={`px-3 py-1.5 rounded-full text-xs transition-colors ${
-            selectedYear === year
-              ? "bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white"
-              : "bg-white border border-gray-200 text-gray-600 hover:bg-[#4CAF50] hover:bg-opacity-5"
-          }`}
-        >
-          {year === "all" ? t.all : year}
-        </button>
-      ))}
-    </div>
-  );
-
-  function runningText() {
-    function logo() {
-      return (
-        <img
-          src={Image}
-          style={{
-            height: "20px",
-            width: "20px",
-            objectFit: "cover",
-            display: "inline", // Add this
-          }}
-        />
-      );
-    }
-    return (
-      <>
-        {/* ✅ RUNNING TEXT FIXED UNDER HEADER */}
-
-        <div
-          className="
-            running-text-bar
-            sticky
-            top-[72px]
-            md:top-[140px]
-            w-full
-            z-40
-            overflow-hidden
-          bg-gradient-to-r from-[#2E7D32]/80 to-[#4CAF50]/80
-            shadow-lg
-          "
-        >
-          <div className="animate-marquee whitespace-nowrap py-2 md:py-3">
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} អនុក្រឹត្យ ស្តីពី
-              ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
-              ក្នុងព្រះណាចក្រកម្ពុជា
-            </span>
-
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
-            </span>
-
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} LAW ON EXPROPRIATION
-            </span>
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} អនុក្រឹត្យ ស្តីពី
-              ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយភលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
-              ក្នុងព្រះណាចក្រកម្ពុជា •
-            </span>
-
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
-            </span>
-
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} LAW ON EXPROPRIATION
-            </span>
-          </div>
-        </div>
-
-        {/* ✅ MARQUEE CSS */}
-        <style jsx>{`
-          @keyframes marquee {
-            0% {
-              transform: translateX(0);
-            }
-            100% {
-              transform: translateX(-50%);
-            }
-          }
-
-          .animate-marquee {
-            animation: marquee 30s linear infinite;
-            display: inline-block;
-          }
-
-          .animate-marquee:hover {
-            animation-play-state: paused;
-          }
-        `}</style>
-      </>
-    );
-  }
+  const itemsPerPage = 10;
+  const startItem = filteredDocuments.length > 0 ? (page - 1) * itemsPerPage + 1 : 0;
+  const endItem = Math.min(page * itemsPerPage, filteredDocuments.length);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Running Text - Responsive */}
-      {runningText()}
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <RunningText />
 
-      {/* Global Banner - Responsive */}
       <GlobalBanner
         title={t.title}
-        subtitle={
-          currentLang === "km"
-            ? "បណ្តុំឯកសារច្បាប់ និងបទប្បញ្ញត្តិ"
-            : "Collection of laws and regulations"
-        }
-        height="h-[150px] sm:h-[180px] md:h-[250px] lg:h-[350px]"
+        subtitle={t.subtitle}
+        height="h-[180px] md:h-[250px] lg:h-[300px]"
         showBreadcrumb={true}
       />
 
-      {/* Total Documents Count - Responsive */}
-      <Container className="py-4 sm:py-6 pt-6 sm:pt-8">
-        <div className="flex items-center justify-between">
-          <div className="bg-[#4CAF50] bg-opacity-10 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2">
-            <span className="text-xs sm:text-sm font-medium text-[#2E7D32]">
-              {t.totalDocs}: {filteredDocs.length}
-            </span>
+      <Container className="py-8">
+        {/* Stats Bar */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <FileText size={18} className="text-[#4CAF50]" />
+            <span className="font-medium">{total} {t.totalDocuments.toLowerCase()}</span>
           </div>
         </div>
-      </Container>
 
-      {/* Search and Filter Bar - Responsive */}
-      <Container className="pb-4">
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-          <div className="flex-1 relative">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder={t.search}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#4CAF50] focus:ring-1 focus:ring-[#4CAF50] transition-colors"
-            />
-          </div>
-
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-[#4CAF50] hover:bg-opacity-5 transition-colors"
-          >
-            <Filter size={14} />
-            <span>{t.filter}</span>
-          </button>
-        </div>
-
-        {showFilters && (
-          <div className="mt-4 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Category Filter */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-2">
-                  {t.categories}
-                </label>
-                <CategoryFilters />
+        {/* Filter Bar */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-visible mb-6">
+          <div className="p-5">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search size={18} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={t.search}
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent bg-gray-50/50 text-sm"
+                />
               </div>
 
-              {/* Year Filter */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-2">
-                  {t.year}
-                </label>
-                <YearFilters />
-              </div>
-            </div>
-          </div>
-        )}
-      </Container>
-
-      {/* Results Info - Responsive */}
-      <Container className="py-2">
-        <p className="text-xs text-gray-500">
-          {t.page} {currentPage} {t.of} {totalPages || 1} •{" "}
-          {filteredDocs.length} {t.results}
-        </p>
-      </Container>
-
-      {/* Documents List */}
-      <Container className="pb-8">
-        {paginatedDocs.length > 0 ? (
-          <ListView items={paginatedDocs} />
+              {/* Category Dropdown */}
+              <div className="relative lg:w-64 z-50">
+  <button
+    onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-left text-sm flex items-center justify-between hover:bg-gray-50 transition-colors"
+  >
+    <span className="flex items-center gap-2">
+      <Filter size={16} className="text-gray-400" />
+      <span className={selectedCategory ? "text-gray-900" : "text-gray-500"}>
+        {selectedCategory ? getCategoryDisplayName(selectedCategory) : t.allCategories}
+      </span>
+    </span>
+    <ChevronDown size={16} className={`text-gray-400 transition-transform ${categoryDropdownOpen ? "rotate-180" : ""}`} />
+  </button>
+  
+  {categoryDropdownOpen && (
+    <>
+      <div className="fixed inset-0 z-40" onClick={() => setCategoryDropdownOpen(false)} />
+      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 max-h-64 overflow-y-auto">
+        {/* All Categories Option */}
+        <button
+          onClick={() => {
+            setSelectedCategory("");
+            setPage(1);
+            setCategoryDropdownOpen(false);
+          }}
+          className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${!selectedCategory ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
+        >
+          <Filter size={14} />
+          <span>{t.allCategories}</span>
+        </button>
+        
+        {/* Map through API categories - THIS IS THE KEY PART */}
+        {categories.length > 0 ? (
+          categories.map((cat, index) => {
+            const key = Object.keys(cat)[0]; // Gets "law", "regulation", etc.
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  setSelectedCategory(key); // Set the category key for API filtering
+                  setPage(1);
+                  setCategoryDropdownOpen(false);
+                }}
+                className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${selectedCategory === key ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
+              >
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center ${getCategoryColor(key).split(' ')[0]}`}>
+                  {getCategoryIcon(key)}
+                </span>
+                <span>{cat[key][currentLang] || key}</span>
+              </button>
+            );
+          })
         ) : (
-          <div className="text-center py-16">
-            <div className="inline-flex p-3 bg-gray-100 rounded-full mb-4">
-              <Search size={24} className="text-gray-400" />
+          <div className="px-4 py-2.5 text-sm text-gray-400">
+            {loading ? t.loading : t.noCategories}
+          </div>
+        )}
+      </div>
+    </>
+  )}
+</div>
+
+              {/* View Toggle */}
+              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2.5 rounded-lg transition-all duration-200 ${
+                    viewMode === "list" 
+                      ? "bg-white text-[#4CAF50] shadow-sm" 
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  <List size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2.5 rounded-lg transition-all duration-200 ${
+                    viewMode === "grid" 
+                      ? "bg-white text-[#4CAF50] shadow-sm" 
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  <Grid size={18} />
+                </button>
+              </div>
+
+              {/* Clear Filters */}
+              {(selectedCategory || searchTerm) && (
+                <button
+                  onClick={clearFilters}
+                  className="px-4 py-2 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-2"
+                >
+                  <X size={14} />
+                  {t.clearFilters}
+                </button>
+              )}
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              រកមិនឃើញឯកសារ
-            </h3>
-            <p className="text-gray-500 mb-4">សូមព្យាយាមស្វែងរកម្តងទៀត</p>
+          </div>
+
+          {/* Active Filters */}
+          {(selectedCategory || searchTerm) && (
+            <div className="px-5 pb-4 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
+              <span className="text-xs text-gray-500">{t.filter}:</span>
+              {selectedCategory && (
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${getCategoryColor(selectedCategory)}`}>
+                  {getCategoryIcon(selectedCategory)}
+                  {getCategoryDisplayName(selectedCategory)}
+                  <button onClick={() => setSelectedCategory("")} className="ml-1 hover:bg-black/10 rounded-full p-0.5">
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+              {searchTerm && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                  <Search size={12} />
+                  "{searchTerm}"
+                  <button onClick={() => setSearchTerm("")} className="ml-1 hover:bg-gray-200 rounded-full p-0.5">
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Results Count */}
+        {!loading && (
+          <div className="text-sm text-gray-500 mb-4">
+            {filteredDocuments.length > 0 
+              ? `${t.showing} ${startItem}-${endItem} ${t.ofTotal} ${filteredDocuments.length} ${t.documents}`
+              : t.noDocuments
+            }
           </div>
         )}
 
-        {/* Pagination - Responsive */}
-        {totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-center space-x-1 sm:space-x-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border ${
-                currentPage === 1
-                  ? "border-gray-200 text-gray-300 cursor-not-allowed"
-                  : "border-gray-300 text-gray-600 hover:bg-[#4CAF50] hover:bg-opacity-10 hover:border-[#4CAF50] hover:text-[#2E7D32]"
-              }`}
-            >
-              <ChevronLeft size={14} className="sm:w-4 sm:h-4" />
-            </button>
+        {/* Documents List/Grid with Thumbnails */}
+        {loading ? (
+          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-4"}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse">
+                <div className="flex gap-4">
+                  <div className="w-28 h-32 bg-gray-200 rounded-lg"></div>
+                  <div className="flex-1">
+                    <div className="h-5 w-3/4 bg-gray-200 rounded mb-3"></div>
+                    <div className="h-4 w-1/2 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredDocuments.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FileText size={40} className="text-gray-400" />
+            </div>
+            <p className="text-gray-500 font-medium text-lg mb-2">{t.noDocuments}</p>
+            <p className="text-gray-400 text-sm">
+              {currentLang === "km" 
+                ? "សាកល្បងកែតម្រូវតម្រង ឬពាក្យស្វែងរករបស់អ្នក"
+                : "Try adjusting your filters or search term"
+              }
+            </p>
+            {(selectedCategory || searchTerm) && (
+              <button onClick={clearFilters} className="mt-4 px-4 py-2 text-sm text-[#4CAF50] hover:bg-green-50 rounded-lg transition-colors">
+                {t.clearFilters}
+              </button>
+            )}
+          </div>
+        ) : viewMode === "grid" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredDocuments.map((doc) => {
+              const title = currentLang === "km" ? doc.titleKh : doc.titleEn;
+              const thumbnail = getThumbnail(doc);
+              
+              return (
+                <div
+                  key={doc.id}
+                  className="bg-white rounded-xl border border-gray-100 hover:shadow-lg hover:border-[#4CAF50]/30 transition-all duration-300 group cursor-pointer overflow-hidden"
+                  onClick={() => handleDocumentClick(doc)}
+                >
+                  <div className="relative h-40 overflow-hidden bg-gray-100">
+                    <img
+                      src={thumbnail}
+                      alt={title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => { e.target.src = defaultThumbnail; }}
+                    />
+                    <div className="absolute top-3 right-3 bg-gradient-to-r from-green-500 to-green-600 text-white px-2 py-0.5 rounded-md text-[10px] font-medium shadow-lg">
+                      PDF
+                    </div>
+                    <div className="absolute top-3 left-3">
+                      <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border ${getCategoryColor(doc.category)}`}>
+                        {getCategoryIcon(doc.category)}
+                        {getCategoryDisplayName(doc.category)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4">
+                    <h3 className="font-medium text-gray-900 text-sm line-clamp-2 mb-2 group-hover:text-[#2E7D32] transition-colors">
+                      {title}
+                    </h3>
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                      {doc.publishedDate && (
+                        <span className="flex items-center gap-1">
+                          <Calendar size={12} />
+                          {formatDate(doc.publishedDate)}
+                        </span>
+                      )}
+                      {doc.documentNumber && (
+                        <span className="flex items-center gap-1">
+                          <FileText size={12} />
+                          {doc.documentNumber}
+                        </span>
+                      )}
+                    </div>
 
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'view'); }}
+                        className="flex-1 py-2 text-xs font-medium text-gray-600 hover:text-[#4CAF50] hover:bg-green-50 rounded-lg transition-colors flex items-center justify-center gap-1"
+                      >
+                        <Eye size={14} />
+                        {t.view}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'download'); }}
+                        className="flex-1 py-2 text-xs font-medium text-white bg-[#4CAF50] rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center justify-center gap-1 shadow-sm"
+                      >
+                        <Download size={14} />
+                        {t.download}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredDocuments.map((doc) => {
+              const title = currentLang === "km" ? doc.titleKh : doc.titleEn;
+              const description = currentLang === "km" ? doc.descriptionKh : doc.descriptionEn;
+              const thumbnail = getThumbnail(doc);
+              
+              return (
+                <div
+                  key={doc.id}
+                  className="bg-white rounded-xl border border-gray-100 hover:shadow-md hover:border-[#4CAF50]/30 transition-all duration-200 cursor-pointer overflow-hidden"
+                  onClick={() => handleDocumentClick(doc)}
+                >
+                  <div className="flex flex-col sm:flex-row p-4 gap-4">
+                    {/* Thumbnail - Left side */}
+                    <div className="relative w-full sm:w-36 h-32 sm:h-full min-h-[128px] bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
+                      <img
+                        src={thumbnail}
+                        alt={title}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        onError={(e) => { e.target.src = defaultThumbnail; }}
+                      />
+                      <div className="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-1.5 py-0.5 rounded-md text-[10px] font-medium">
+                        PDF
+                      </div>
+                      <div className="absolute bottom-2 left-2">
+                        <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border ${getCategoryColor(doc.category)}`}>
+                          {getCategoryIcon(doc.category)}
+                          <span className="hidden sm:inline">{getCategoryDisplayName(doc.category)}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center text-xs text-gray-400 mb-2">
+                        <Calendar size={12} className="mr-1 flex-shrink-0" />
+                        <span>{formatDate(doc.publishedDate)}</span>
+                        {doc.documentNumber && (
+                          <>
+                            <span className="mx-2">•</span>
+                            <FileText size={12} className="mr-1" />
+                            <span>{doc.documentNumber}</span>
+                          </>
+                        )}
+                      </div>
+
+                      <h3 className="font-semibold text-gray-900 text-base mb-2 line-clamp-2 hover:text-[#2E7D32] transition-colors">
+                        {title}
+                      </h3>
+
+                      {description && (
+                        <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                          {description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'view'); }}
+                          className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
+                        >
+                          <Eye size={13} />
+                          {t.view}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'download', 'km'); }}
+                          className="px-3 py-1.5 text-xs bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center gap-1 shadow-sm"
+                        >
+                          <Download size={13} />
+                          {t.downloadKh}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, 'download', 'en'); }}
+                          className="px-3 py-1.5 text-xs border border-[#4CAF50] text-[#4CAF50] rounded-lg hover:bg-[#4CAF50] hover:text-white transition-colors flex items-center gap-1"
+                        >
+                          <Download size={13} />
+                          {t.downloadEn}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleShare(doc); }}
+                          className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
+                        >
+                          <Share2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center gap-1">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            
+            {[...Array(Math.min(5, totalPages))].map((_, i) => {
               let pageNum;
               if (totalPages <= 5) {
                 pageNum = i + 1;
-              } else if (currentPage <= 3) {
+              } else if (page <= 3) {
                 pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
+              } else if (page >= totalPages - 2) {
                 pageNum = totalPages - 4 + i;
               } else {
-                pageNum = currentPage - 2 + i;
+                pageNum = page - 2 + i;
               }
-
+              
               return (
                 <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg font-medium border text-xs sm:text-sm ${
-                    currentPage === pageNum
-                      ? "bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white border-transparent"
-                      : "border-gray-300 text-gray-600 hover:bg-[#4CAF50] hover:bg-opacity-10 hover:border-[#4CAF50] hover:text-[#2E7D32]"
+                  key={i}
+                  onClick={() => setPage(pageNum)}
+                  className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-colors ${
+                    page === pageNum
+                      ? "bg-[#4CAF50] text-white shadow-md"
+                      : "border border-gray-200 hover:bg-gray-50 text-gray-700"
                   }`}
                 >
                   {pageNum}
                 </button>
               );
             })}
-
+            
             <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border ${
-                currentPage === totalPages
-                  ? "border-gray-200 text-gray-300 cursor-not-allowed"
-                  : "border-gray-300 text-gray-600 hover:bg-[#4CAF50] hover:bg-opacity-10 hover:border-[#4CAF50] hover:text-[#2E7D32]"
-              }`}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronRightIcon size={14} className="sm:w-4 sm:h-4" />
+              <ChevronRight size={18} />
             </button>
           </div>
         )}
       </Container>
 
-      {/* Detail Modal - Responsive */}
-      {showDetail && selectedDoc && (
-        <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
-          <div className="min-h-screen px-3 sm:px-4 py-4 sm:py-8">
-            <div className="max-w-4xl mx-auto">
-              {/* Modal Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-100 z-10 py-3 sm:py-4 mb-4 sm:mb-6">
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => setShowDetail(false)}
-                    className="flex items-center space-x-1 sm:space-x-2 text-gray-500 hover:text-[#2E7D32] transition-colors group"
-                  >
-                    <ChevronRight
-                      size={16}
-                      className="rotate-180 group-hover:-translate-x-1 transition-transform sm:w-5 sm:h-5"
-                    />
-                    <span className="text-xs sm:text-sm">{t.back}</span>
-                  </button>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleShare(selectedDoc)}
-                      className="p-1.5 sm:p-2 hover:bg-[#4CAF50] hover:bg-opacity-10 rounded-lg transition-colors"
-                    >
-                      <Share2
-                        size={14}
-                        className="text-gray-500 hover:text-[#2E7D32] sm:w-4 sm:h-4"
-                      />
-                    </button>
-                  </div>
+      {/* Document Detail Modal */}
+      {showModal && selectedDocument && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto scrollbar-hide"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-white/95 backdrop-blur-sm p-5 border-b border-gray-100 flex justify-between items-center">
+              <h2 className="text-lg font-medium text-gray-900 pr-4 line-clamp-1">
+                {currentLang === "km" ? selectedDocument.titleKh : selectedDocument.titleEn}
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-xl transition-colors flex-shrink-0"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-5">
+              {selectedDocument.coverImage && (
+                <div className="mb-5">
+                  <img
+                    src={selectedDocument.coverImage}
+                    alt={currentLang === "km" ? selectedDocument.titleKh : selectedDocument.titleEn}
+                    className="w-full rounded-xl"
+                    onError={(e) => { e.target.src = defaultThumbnail; }}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-4 mb-6">
+                {(selectedDocument.descriptionKh || selectedDocument.descriptionEn) && (
+                  <div 
+                    className="text-gray-600 text-sm leading-relaxed"
+                    dangerouslySetInnerHTML={{ 
+                      __html: currentLang === "km" 
+                        ? selectedDocument.descriptionKh 
+                        : selectedDocument.descriptionEn 
+                    }}
+                  />
+                )}
+                <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border ${getCategoryColor(selectedDocument.category)}`}>
+                    <Tag size={12} />
+                    {getCategoryDisplayName(selectedDocument.category)}
+                  </span>
+                  {selectedDocument.documentNumber && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                      <FileText size={12} />
+                      {selectedDocument.documentNumber}
+                    </span>
+                  )}
+                  {selectedDocument.publishedDate && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                      <Calendar size={12} />
+                      {formatDate(selectedDocument.publishedDate)}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Document Details */}
-              <div className="space-y-4 sm:space-y-6">
-                {/* Header with Thumbnail */}
-                <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-                  <div className="relative w-40 sm:w-56 h-48 sm:h-72 bg-gray-100 rounded-xl overflow-hidden shadow-lg flex-shrink-0 mx-auto md:mx-0">
-                    <img
-                      src={selectedDoc.thumbnail}
-                      alt={selectedDoc.title[currentLang]}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-gradient-to-r from-green-500 to-green-600 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-medium">
-                      PDF
-                    </div>
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${getCategoryColor(selectedDoc.category)}`}
-                      >
-                        {getCategoryLabel(selectedDoc.category)}
-                      </span>
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-medium text-gray-900 mb-2">
-                      {selectedDoc.title[currentLang]}
-                    </h2>
-                    <p className="text-xs sm:text-sm text-gray-500 mb-4">
-                      {selectedDoc.description[currentLang]}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Meta Info Grid */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                    <Calendar
-                      size={14}
-                      className="text-[#4CAF50] mb-1 sm:mb-2 sm:w-4 sm:h-4"
-                    />
-                    <div className="text-[10px] sm:text-xs text-gray-500">
-                      {t.publishedDate}
-                    </div>
-                    <div className="text-xs sm:text-sm font-medium text-gray-900">
-                      {currentLang === "km"
-                        ? selectedDoc.date
-                        : selectedDoc.dateEn}
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                    <Clock
-                      size={14}
-                      className="text-[#4CAF50] mb-1 sm:mb-2 sm:w-4 sm:h-4"
-                    />
-                    <div className="text-[10px] sm:text-xs text-gray-500">
-                      {t.effectiveDate}
-                    </div>
-                    <div className="text-xs sm:text-sm font-medium text-gray-900">
-                      {currentLang === "km"
-                        ? selectedDoc.effectiveDate
-                        : selectedDoc.effectiveDateEn}
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                    <Building2
-                      size={14}
-                      className="text-[#4CAF50] mb-1 sm:mb-2 sm:w-4 sm:h-4"
-                    />
-                    <div className="text-[10px] sm:text-xs text-gray-500">
-                      {t.department}
-                    </div>
-                    <div className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2">
-                      {selectedDoc.department[currentLang]}
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                    <FileText
-                      size={14}
-                      className="text-[#4CAF50] mb-1 sm:mb-2 sm:w-4 sm:h-4"
-                    />
-                    <div className="text-[10px] sm:text-xs text-gray-500">
-                      {t.format}
-                    </div>
-                    <div className="text-xs sm:text-sm font-medium text-gray-900">
-                      {selectedDoc.format} • {selectedDoc.fileSize} •{" "}
-                      {selectedDoc.pages} {t.pages}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Keywords */}
-                <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2 sm:mb-3">
-                    {t.keywords}
-                  </h3>
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                    {selectedDoc.keywords.map((keyword, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 sm:px-3 py-1 bg-white border border-gray-200 rounded-full text-[10px] sm:text-xs text-gray-600"
-                      >
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Download & View Section */}
-                <div className="bg-[#4CAF50] bg-opacity-5 rounded-lg p-4 sm:p-6 border border-[#4CAF50] border-opacity-20">
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center space-x-2 sm:space-x-3">
-                      <FileText
-                        size={20}
-                        className="text-[#4CAF50] sm:w-6 sm:h-6"
-                      />
-                      <div>
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-1">
-                          {selectedDoc.title[currentLang]}
-                        </h4>
-                        <p className="text-[10px] sm:text-xs text-gray-500">
-                          {selectedDoc.format} • {selectedDoc.fileSize}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <button
-                        onClick={() =>
-                          handleViewPdf(getPdfFile(selectedDoc, currentLang))
-                        }
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white border border-[#4CAF50] text-[#2E7D32] text-xs sm:text-sm rounded-lg hover:bg-[#4CAF50] hover:text-white transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
-                      >
-                        <Eye size={12} className="sm:w-4 sm:h-4" />
-                        <span>{t.viewPdf}</span>
-                      </button>
-                      <button
-                        onClick={() => handleDownload(selectedDoc, "km")}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white text-xs sm:text-sm rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
-                      >
-                        <Download size={12} className="sm:w-4 sm:h-4" />
-                        <span className="hidden xs:inline">{t.downloadKh}</span>
-                        <span className="xs:hidden">ខ្មែរ</span>
-                      </button>
-                      <button
-                        onClick={() => handleDownload(selectedDoc, "en")}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 border border-[#4CAF50] text-[#2E7D32] text-xs sm:text-sm rounded-lg hover:bg-[#4CAF50] hover:text-white transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
-                      >
-                        <Download size={12} className="sm:w-4 sm:h-4" />
-                        <span className="hidden xs:inline">{t.downloadEn}</span>
-                        <span className="xs:hidden">EN</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handlePdfAction(selectedDocument, 'view')}
+                  className="flex-1 py-2.5 border border-[#4CAF50] text-[#4CAF50] rounded-xl hover:bg-[#4CAF50] hover:text-white transition-all duration-200 font-medium text-sm"
+                >
+                  {t.viewPdf}
+                </button>
+                <button
+                  onClick={() => handlePdfAction(selectedDocument, 'download')}
+                  className="flex-1 py-2.5 bg-[#4CAF50] text-white rounded-xl hover:bg-[#2E7D32] transition-all duration-200 font-medium text-sm shadow-sm hover:shadow"
+                >
+                  {t.downloadPdf}
+                </button>
               </div>
             </div>
           </div>
@@ -988,83 +795,43 @@ const LegalPage = () => {
       )}
 
       {/* Share Modal */}
-      {showShareModal && selectedDoc && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h3 className="text-base sm:text-lg font-medium text-gray-900">
-                {t.shareVia}
-              </h3>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X size={18} className="text-gray-500 sm:w-5 sm:h-5" />
+      {showShareModal && selectedDocument && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">{t.shareVia}</h3>
+              <button onClick={() => setShowShareModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X size={20} className="text-gray-500" />
               </button>
             </div>
-
+            
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <button
-                  onClick={() => handleShareToSocial("facebook")}
-                  className="flex items-center justify-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-[#1877F2] text-white rounded-lg hover:bg-[#0e63c9] transition-colors"
-                >
-                  <Facebook size={14} className="sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm font-medium">
-                    Facebook
-                  </span>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => handleShareToSocial('facebook')} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#1877F2] text-white rounded-lg">
+                  <Facebook size={16} /><span className="text-sm">Facebook</span>
                 </button>
-                <button
-                  onClick={() => handleShareToSocial("twitter")}
-                  className="flex items-center justify-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-[#1DA1F2] text-white rounded-lg hover:bg-[#0c8ed9] transition-colors"
-                >
-                  <Twitter size={14} className="sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm font-medium">
-                    Twitter
-                  </span>
+                <button onClick={() => handleShareToSocial('twitter')} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#1DA1F2] text-white rounded-lg">
+                  <Twitter size={16} /><span className="text-sm">Twitter</span>
                 </button>
-                <button
-                  onClick={() => handleShareToSocial("linkedin")}
-                  className="flex items-center justify-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-[#0077B5] text-white rounded-lg hover:bg-[#005e8c] transition-colors"
-                >
-                  <Linkedin size={14} className="sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm font-medium">
-                    LinkedIn
-                  </span>
+                <button onClick={() => handleShareToSocial('linkedin')} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#0077B5] text-white rounded-lg">
+                  <Linkedin size={16} /><span className="text-sm">LinkedIn</span>
                 </button>
-                <button
-                  onClick={() => handleShareToSocial("telegram")}
-                  className="flex items-center justify-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-[#26A5E4] text-white rounded-lg hover:bg-[#1e8fc7] transition-colors"
-                >
-                  <MessageCircle size={14} className="sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm font-medium">
-                    Telegram
-                  </span>
+                <button onClick={() => handleShareToSocial('telegram')} className="flex items-center justify-center space-x-2 px-4 py-3 bg-[#26A5E4] text-white rounded-lg">
+                  <MessageCircle size={16} /><span className="text-sm">Telegram</span>
                 </button>
               </div>
-
-              <div className="border-t border-gray-100 pt-3 sm:pt-4 mt-2">
+              
+              <div className="border-t border-gray-100 pt-4 mt-2">
                 <div className="flex items-center space-x-2">
-                  <div className="flex-1 relative">
-                    <input
-                      type="text"
-                      value={`${window.location.origin}/legal/${selectedDoc.id}`}
-                      readOnly
-                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-200 rounded-lg text-xs sm:text-sm bg-gray-50 text-gray-600"
-                    />
-                  </div>
-                  <button
-                    onClick={handleCopyLink}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center space-x-1 sm:space-x-2"
-                  >
-                    {copySuccess ? (
-                      <Check size={14} className="sm:w-4 sm:h-4" />
-                    ) : (
-                      <Copy size={14} className="sm:w-4 sm:h-4" />
-                    )}
-                    <span className="text-xs sm:text-sm">
-                      {copySuccess ? t.copied : t.copyLink}
-                    </span>
+                  <input
+                    type="text"
+                    value={`${window.location.origin}/legal/${selectedDocument.id}`}
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-600"
+                  />
+                  <button onClick={handleCopyLink} className="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center space-x-2">
+                    {copySuccess ? <Check size={16} /> : <Copy size={16} />}
+                    <span className="text-sm">{copySuccess ? t.copied : t.copyLink}</span>
                   </button>
                 </div>
               </div>
@@ -1074,43 +841,26 @@ const LegalPage = () => {
       )}
 
       <style jsx>{`
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
-
-        .animate-marquee {
-          animation: marquee 40s linear infinite;
-          display: inline-block;
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
-
-        .animate-marquee:hover {
-          animation-play-state: paused;
+        
+        .line-clamp-1 {
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
-
-        @media (max-width: 480px) {
-          .animate-marquee {
-            animation-duration: 60s;
-          }
-        }
-
-        @media (min-width: 481px) and (max-width: 768px) {
-          .animate-marquee {
-            animation-duration: 50s;
-          }
-        }
-
-        @media (min-width: 480px) {
-          .xs\\:inline {
-            display: inline;
-          }
-          .xs\\:hidden {
-            display: none;
-          }
+        
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
     </div>

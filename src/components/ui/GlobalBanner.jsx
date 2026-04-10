@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, ChevronRight } from "lucide-react";
-import bannerImage from "../../images/Banner-1.jpg";
+import { useHeader } from "../../hooks/useHeader";
+import fallbackBanner from "../../images/Banner-1.jpg";
 
 const GlobalBanner = ({
   title,
@@ -14,6 +15,9 @@ const GlobalBanner = ({
 }) => {
   const [currentLang, setCurrentLang] = useState("km");
   const location = useLocation();
+
+  // Use header hook to get banner
+  const { loading, banner } = useHeader(currentLang);
 
   useEffect(() => {
     const handleLanguageChange = (e) => {
@@ -41,6 +45,9 @@ const GlobalBanner = ({
   };
 
   const t = translations[currentLang];
+
+  // Get banner URL - use API banner or fallback
+  const bannerUrl = banner && banner.trim() !== '' ? banner : fallbackBanner;
 
   // Generate breadcrumbs from location if not provided
   const generateBreadcrumbs = () => {
@@ -94,16 +101,28 @@ const GlobalBanner = ({
     <div className={`relative w-full ${height} overflow-hidden`}>
       {/* Background Image */}
       <div className="absolute inset-0 w-full h-full">
-        <img
-          src={bannerImage}
-          alt={title}
-          className="w-full h-full object-cover"
-        />
+        {!loading && (
+          <img
+            src={bannerUrl}
+            alt={title || "Banner"}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.src = fallbackBanner;
+            }}
+          />
+        )}
         {/* Overlay for better text readability */}
         <div
           className={`absolute inset-0 bg-gradient-to-t ${overlayOpacity}`}
         ></div>
       </div>
+
+      {/* Loading state */}
+      {loading && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent"></div>
+        </div>
+      )}
 
       {/* Breadcrumb */}
       {showBreadcrumb && breadcrumbItems.length > 0 && (
@@ -142,9 +161,11 @@ const GlobalBanner = ({
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="max-w-4xl mx-auto">
             {/* Title */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 drop-shadow-lg">
-              {title}
-            </h1>
+            {title && (
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                {title}
+              </h1>
+            )}
 
             {/* Subtitle */}
             {subtitle && (
@@ -154,7 +175,9 @@ const GlobalBanner = ({
             )}
 
             {/* Optional decorative line */}
-            <div className="w-20 h-1 bg-[#4CAF50] mx-auto mt-6 rounded-full"></div>
+            {(title || subtitle) && (
+              <div className="w-20 h-1 bg-[#4CAF50] mx-auto mt-6 rounded-full"></div>
+            )}
           </div>
         </div>
       </div>

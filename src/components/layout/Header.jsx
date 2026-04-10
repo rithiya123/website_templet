@@ -1,17 +1,35 @@
 // src/components/layout/Header.jsx
 import React, { useState, useEffect } from "react";
-import { Phone, Mail, Menu, X } from "lucide-react";
+import { Mail, Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Container from "../ui/Container.jsx";
 import Navigation from "./Navigation.jsx";
 import LanguageSwitcher from "../shared/LanguageSwitcher.jsx";
 import Logo from "../ui/Logo.jsx";
+import { useHeader } from "../../hooks/useHeader";
+import { useFooterEmail } from "../../hooks/useFooterEmail";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState("km");
+  const [currentLang, setCurrentLang] = useState(() => {
+    return localStorage.getItem("language") || "km";
+  });
   const location = useLocation();
+
+  // Use the header hook
+  const { 
+    loading: headerLoading, 
+    error,
+    orgNameFull, 
+    orgNameShort, 
+    logo, 
+    runningTexts,
+    isActive 
+  } = useHeader(currentLang);
+
+  // Get email from footer API
+  const { email: footerEmail, loading: emailLoading } = useFooterEmail();
 
   // Add smooth scroll function
   const smoothScrollTo = (elementId, offset = 80) => {
@@ -19,7 +37,6 @@ const Header = () => {
     if (element) {
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
-
       window.scrollTo({
         top: offsetPosition,
         behavior: "smooth",
@@ -40,8 +57,6 @@ const Header = () => {
           const header = document.querySelector("header");
           const headerHeight = header ? header.offsetHeight : 80;
           smoothScrollTo(elementId, headerHeight);
-
-          // Update URL without jumping - using window.history instead of history
           window.history.pushState(null, null, target.hash);
         }
       }
@@ -49,7 +64,6 @@ const Header = () => {
 
     document.addEventListener("click", handleHashLinkClick);
 
-    // Handle initial hash on page load
     if (window.location.hash) {
       setTimeout(() => {
         const elementId = window.location.hash.substring(1);
@@ -71,26 +85,16 @@ const Header = () => {
     };
 
     window.addEventListener("languagechange", handleLanguageChange);
-
-    const savedLang = localStorage.getItem("language");
-    if (savedLang) {
-      setCurrentLang(savedLang);
-    }
-
-    return () =>
-      window.removeEventListener("languagechange", handleLanguageChange);
+    return () => window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
 
-  // Handle scroll effect with throttle for performance
+  // Handle scroll effect
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const isScrolled = window.scrollY > 20;
-          if (isScrolled !== scrolled) {
-            setScrolled(isScrolled);
-          }
+          setScrolled(window.scrollY > 20);
           ticking = false;
         });
         ticking = true;
@@ -99,93 +103,63 @@ const Header = () => {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [scrolled]);
+  }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
-      document.body.style.paddingRight = "15px";
     } else {
-      document.body.style.overflow = "unset";
-      document.body.style.paddingRight = "0";
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = "unset";
-      document.body.style.paddingRight = "0";
+      document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
 
-  // Translations
-  const translations = {
-    km: {
-      hotline: "ទូរស័ព្ទបន្ទាន់",
-      welcome:
-        "សូមស្វាគមន៍មកកាន់គេហទំព័រផ្លូវការរបស់អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
-      department: "អគ្គនាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍",
-      departmentShort: "អ.ដ.ផ",
-      phone: "(+855) xx xxx xxxx",
-      quickLinks: "តំណភ្ជាប់រហ័ស",
-      contactUs: "ទំនាក់ទំនងយើងខ្ញុំ",
-      aboutUs: "អំពីយើងខ្ញុំ",
-      announcements: "សេចក្តីជូនដំណឹង",
-      faq: "សំណួរពេញនិយម",
-    },
-    en: {
-      hotline: "Hotline",
-      welcome:
-        "Welcome to the official website of the General Department of Resettlement!",
-      department: "General Department of Resettlement",
-      departmentShort: "អ.ដ.ផ",
-      phone: "(+855) xx xxx xxxx",
-      quickLinks: "Quick Links",
-      contactUs: "Contact Us",
-      aboutUs: "About Us",
-      announcements: "Announcements",
-      faq: "FAQ",
-    },
-  };
-
-  const t = translations[currentLang];
-
-  // Get current page from location pathname
+  // Get current page
   const getCurrentPage = () => {
     const path = location.pathname;
     if (path === "/") return "home";
     return path.substring(1);
   };
 
+  // Show loading state
+  if (headerLoading) {
+    return (
+      <header className="bg-white shadow-sm py-4 border-b border-gray-100">
+        <Container>
+          <div className="flex justify-between items-center">
+            <div className="h-12 w-48 bg-gray-200 animate-pulse rounded"></div>
+            <div className="h-10 w-10 bg-gray-200 animate-pulse rounded-lg md:hidden"></div>
+          </div>
+        </Container>
+      </header>
+    );
+  }
+
   return (
     <>
-      {/* Top Bar - Green gradient */}
+      {/* Top Bar */}
       <div
-        className={`bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white py-1.5 sm:py-2 hidden md:block transition-all duration-300 ${
+        className={`bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white py-1.5 hidden md:block transition-all duration-300 ${
           scrolled ? "-translate-y-full" : "translate-y-0"
         }`}
       >
         <Container>
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <LanguageSwitcher variant="minimal" />
-            </div>
-
-            <div className="flex items-center space-x-4 sm:space-x-6 md:space-x-8">
-              
-              <a
-                href="mailto:info@gdpir.gov.kh"
-                className="flex items-center space-x-1.5 sm:space-x-2 text-xs group"
-              >
-                <span className="p-1 sm:p-1.5 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
-                  <Mail
-                    size={10}
-                    className="text-white/80 group-hover:text-white sm:w-3 sm:h-3"
-                  />
-                </span>
-                <span className="text-white/80 group-hover:text-white font-medium text-[11px] sm:text-xs">
-                  xxxx@mef.gov.kh
-                </span>
-              </a>
-            </div>
+            <LanguageSwitcher variant="minimal" />
+            <a
+              href={`mailto:${footerEmail}`}
+              className="flex items-center space-x-2 text-xs group"
+            >
+              <span className="p-1.5 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
+                <Mail size={12} className="text-white/80 group-hover:text-white" />
+              </span>
+              <span className="text-white/80 group-hover:text-white font-medium">
+                {emailLoading ? '...' : footerEmail}
+              </span>
+            </a>
           </div>
         </Container>
       </div>
@@ -194,82 +168,49 @@ const Header = () => {
       <header
         className={`sticky top-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-white/95 backdrop-blur-md shadow-lg py-2 sm:py-2 border-b border-green-100"
-            : "bg-white shadow-sm py-3 sm:py-4 border-b border-transparent"
+            ? "bg-white/95 backdrop-blur-md shadow-lg py-2 border-b border-green-100"
+            : "bg-white shadow-sm py-3 border-b border-transparent"
         }`}
       >
         <Container>
-          <div className="flex justify-between items-center gap-3 sm:gap-4">
-            {/* Logo - Link to home */}
-            <Link
-              to="/"
-              className="flex-shrink-0 group max-w-[70%] sm:max-w-full"
-            >
+          <div className="flex justify-between items-center gap-4">
+            {/* Logo */}
+            <Link to="/" className="flex-shrink-0 group max-w-[70%] sm:max-w-full">
               <Logo
                 variant="default"
                 showText={true}
-                departmentName={t.department}
-                departmentShort={t.departmentShort}
+                departmentName={orgNameFull}
+                departmentShort={orgNameShort}
+                logoSrc={logo}
               />
             </Link>
 
-            {/* Desktop Actions - Removed e-service button */}
-            <div className="hidden md:flex items-center space-x-3 flex-shrink-0">
-              {/* E-service button removed */}
-            </div>
-
             {/* Mobile Menu Button */}
-            <div className="flex items-center md:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(true)}
-                className="p-2 sm:p-2.5 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
-                <Menu
-                  size={20}
-                  className="relative z-10 sm:w-[22px] sm:h-[22px]"
-                />
-              </button>
-            </div>
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="p-2.5 md:hidden bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              <Menu size={20} />
+            </button>
           </div>
-
-          {/* Welcome Message */}
-          {/* <div
-            className={`hidden md:block transition-all duration-500 ease-in-out overflow-hidden ${
-              scrolled
-                ? "max-h-0 opacity-0 mt-0"
-                : "max-h-20 opacity-100 mt-3 sm:mt-4"
-            }`}
-          >
-            <div className="bg-green-50 rounded-lg p-2 sm:p-3 border border-green-100">
-              <p className="text-xs sm:text-sm text-green-800 flex items-center">
-                <span className="w-1.5 h-1.5 bg-green-600 rounded-full mr-2 animate-pulse flex-shrink-0"></span>
-                <span className="font-light line-clamp-1">{t.welcome}</span>
-              </p>
-            </div>
-          </div> */}
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
-            <div
-              className={`transition-all duration-500 transform ${
-                scrolled ? "mt-2" : "mt-3 sm:mt-4"
-              }`}
-            >
+            <div className={`transition-all duration-500 ${scrolled ? "mt-2" : "mt-4"}`}>
               <Navigation currentPage={getCurrentPage()} />
             </div>
           </div>
         </Container>
 
-        {/* Progress bar - Green gradient */}
+        {/* Progress bar */}
         <div
-          className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-[#4CAF50] via-[#2E7D32] to-[#4CAF50] transition-all duration-300 ease-out ${
+          className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-[#4CAF50] via-[#2E7D32] to-[#4CAF50] transition-all duration-300 ${
             scrolled ? "w-full" : "w-0"
           }`}
-        ></div>
+        />
       </header>
 
-      {/* Mobile Menu Panel */}
+      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <Navigation
           mobileMenuOpen={mobileMenuOpen}
@@ -277,6 +218,33 @@ const Header = () => {
           currentPage={getCurrentPage()}
         />
       )}
+
+      {/* Marquee Animation Styles */}
+      <style jsx>{`
+        .marquee-wrapper {
+          width: 100%;
+          overflow: hidden;
+        }
+        
+        .marquee-content {
+          display: inline-block;
+          white-space: nowrap;
+          animation: marquee 35s linear infinite;
+        }
+        
+        .marquee-content:hover {
+          animation-play-state: paused;
+        }
+        
+        @keyframes marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+      `}</style>
     </>
   );
 };
