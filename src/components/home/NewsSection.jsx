@@ -1,277 +1,238 @@
 // src/components/home/NewsSection.jsx
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   Calendar, ChevronRight, Eye, Heart, ArrowLeft, Share2,
-  Facebook, Twitter, Linkedin, Link2, X, ChevronLeft, ChevronRightIcon,
-  Zap, Newspaper
+  Facebook, Twitter, Linkedin, Link2, X, ChevronLeft,
+  ChevronRight as ChevronRightIcon, Zap, Newspaper,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNews } from '../../hooks/useNews';
 import defaultImg from '../../images/defuat_img.jpg';
 
+// ── localStorage helpers ────────────────────────────────────────────────────
+const getCount = (key) => parseInt(localStorage.getItem(key) || "0");
+const setCount = (key, val) => localStorage.setItem(key, String(val));
+const hasLiked  = (id) => localStorage.getItem(`news_liked_${id}`)  === "1";
+const hasShared = (id) => localStorage.getItem(`news_shared_${id}`) === "1";
+
+const mergeLocalCounts = (items) =>
+  items.map((item) => ({
+    ...item,
+    views:  Math.max(item.views  || 0, getCount(`news_views_${item.id}`)),
+    likes:  Math.max(item.likes  || 0, getCount(`news_likes_${item.id}`)),
+    shares: Math.max(item.shares || 0, getCount(`news_shares_${item.id}`)),
+    liked:  hasLiked(item.id),
+    shared: hasShared(item.id),
+  }));
+// ───────────────────────────────────────────────────────────────────────────
+
 const NewsSection = ({ onViewAll }) => {
   const navigate = useNavigate();
   const [currentLang, setCurrentLang] = useState('km');
   const [selectedNews, setSelectedNews] = useState(null);
-  const [showDetail, setShowDetail] = useState(false);
+  const [showDetail, setShowDetail]     = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
-  const [shareModal, setShareModal] = useState(false);
-  
-  // Pagination state
-  const [leftPage, setLeftPage] = useState(1);
+  const [shareModal, setShareModal]     = useState(false);
+
+  const [localLeftNews, setLocalLeftNews]   = useState([]);
+  const [localRightNews, setLocalRightNews] = useState([]);
+
+  const [leftPage, setLeftPage]   = useState(1);
   const [rightPage, setRightPage] = useState(1);
 
-  // Fetch news for left column (featured + grid) - 4 items
-  const { 
-    loading: leftLoading, 
-    news: leftNews,
-    totalPages: leftTotalPages,
-    categories
-  } = useNews({ page: leftPage, limit: 4 });
-
-  // Fetch news for right column (recent list) - 5 items, different page offset
-  const { 
-    loading: rightLoading, 
-    news: rightNews,
-    totalPages: rightTotalPages
-  } = useNews({ page: rightPage, limit: 5 });
-
+  const { loading: leftLoading,  news: rawLeftNews,  totalPages: leftTotalPages,  categories } = useNews({ page: leftPage,  limit: 4 });
+  const { loading: rightLoading, news: rawRightNews, totalPages: rightTotalPages }              = useNews({ page: rightPage, limit: 5 });
   const loading = leftLoading || rightLoading;
 
+  useEffect(() => { setLocalLeftNews(rawLeftNews.length   > 0 ? mergeLocalCounts(rawLeftNews)  : []); }, [rawLeftNews]);
+  useEffect(() => { setLocalRightNews(rawRightNews.length > 0 ? mergeLocalCounts(rawRightNews) : []); }, [rawRightNews]);
+
   useEffect(() => {
-    const handleLanguageChange = (e) => {
-      setCurrentLang(e.detail.language);
-    };
-
-    window.addEventListener('languagechange', handleLanguageChange);
-    
-    const savedLang = localStorage.getItem('language');
-    if (savedLang) {
-      setCurrentLang(savedLang);
-    }
-
-    return () => window.removeEventListener('languagechange', handleLanguageChange);
+    const handler = (e) => setCurrentLang(e.detail.language);
+    window.addEventListener('languagechange', handler);
+    const saved = localStorage.getItem('language');
+    if (saved) setCurrentLang(saved);
+    return () => window.removeEventListener('languagechange', handler);
   }, []);
 
   useEffect(() => {
-    if (showDetail || showLightbox) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showDetail, showLightbox]);
+    document.body.style.overflow = (showDetail || showLightbox || shareModal) ? 'hidden' : 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [showDetail, showLightbox, shareModal]);
 
-  const translations = {
-    km: {
-      title: 'ព័ត៌មានថ្មីៗ',
-      viewAll: 'មើលទាំងអស់',
-      readMore: 'អានបន្ត',
-      share: 'ចែករំលែក',
-      views: 'មើល',
-      back: 'ត្រលប់ក្រោយ',
-      related: 'ព័ត៌មានពាក់ព័ន្ធ',
-      likes: 'ចូលចិត្ត',
-      shareVia: 'ចែករំលែកតាមរយៈ',
-      copyLink: 'ចម្លងតំណ',
-      copied: 'បានចម្លង!',
-      viewImages: 'មើលរូបភាពទាំងអស់',
-      close: 'បិទ',
-      recentNews: 'ព័ត៌មានថ្មីៗ',
-      published: 'ចេញផ្សាយ',
-      event: 'ព្រឹត្តិការណ៍',
-      news: 'ព័ត៌មាន',
-      announcement: 'សេចក្តីជូនដំណឹង',
-      other: 'ផ្សេងៗ',
-    },
-    en: {
-      title: 'Latest News',
-      viewAll: 'View All',
-      readMore: 'Read More',
-      share: 'Share',
-      views: 'views',
-      back: 'Back',
-      related: 'Related News',
-      likes: 'Likes',
-      shareVia: 'Share via',
-      copyLink: 'Copy Link',
-      copied: 'Copied!',
-      viewImages: 'View All Images',
-      close: 'Close',
-      recentNews: 'Recent News',
-      published: 'Published',
-      event: 'Event',
-      news: 'News',
-      announcement: 'Announcement',
-      other: 'Other',
-    }
+  // ── state patcher ──────────────────────────────────────────────────────────
+  const patchItem = (id, patch) => {
+    setLocalLeftNews( (prev) => prev.map((n) => n.id === id ? { ...n, ...patch } : n));
+    setLocalRightNews((prev) => prev.map((n) => n.id === id ? { ...n, ...patch } : n));
+    setSelectedNews(  (prev) => prev?.id === id ? { ...prev, ...patch } : prev);
   };
 
-  const t = translations[currentLang];
-
-  // Regular function to get category display name
-  const getCategoryLabel = (categoryKey) => {
-    // Default fallbacks
-    const defaults = {
-      event: currentLang === 'km' ? 'ព្រឹត្តិការណ៍' : 'Event',
-      news: currentLang === 'km' ? 'ព័ត៌មាន' : 'News',
-      announcement: currentLang === 'km' ? 'សេចក្តីជូនដំណឹង' : 'Announcement',
-      other: currentLang === 'km' ? 'ផ្សេងៗ' : 'Other',
-    };
-    
-    if (!categories || !Array.isArray(categories)) {
-      return defaults[categoryKey] || categoryKey;
-    }
-    
-    const categoryObj = categories.find(cat => cat[categoryKey]);
-    if (categoryObj && categoryObj[categoryKey]) {
-      return categoryObj[categoryKey][currentLang] || defaults[categoryKey] || categoryKey;
-    }
-    
-    return defaults[categoryKey] || categoryKey;
-  };
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    
-    if (currentLang === 'km') {
-      const khmerMonths = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
-      const day = date.getDate();
-      const month = khmerMonths[date.getMonth()];
-      const year = date.getFullYear();
-      return `${day} ${month} ${year}`;
-    }
-    
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  };
-
-  const handleReadMore = (news) => {
-    setSelectedNews(news);
+  // ── action handlers ────────────────────────────────────────────────────────
+  const handleReadMore = (newsItem) => {
+    const key = `news_views_${newsItem.id}`;
+    const newViews = getCount(key) + 1;
+    setCount(key, newViews);
+    const patch = { views: newViews };
+    patchItem(newsItem.id, patch);
+    setSelectedNews({ ...newsItem, ...patch });
     setShowDetail(true);
     setSelectedImageIndex(null);
     window.scrollTo(0, 0);
   };
 
-  const handleCloseDetail = () => {
-    setShowDetail(false);
-    setSelectedNews(null);
-    setSelectedImageIndex(null);
+  const handleLike = (newsItem) => {
+    const key      = `news_likes_${newsItem.id}`;
+    const likedKey = `news_liked_${newsItem.id}`;
+    const already  = hasLiked(newsItem.id);
+    const newLikes = already ? Math.max(0, getCount(key) - 1) : getCount(key) + 1;
+    setCount(key, newLikes);
+    localStorage.setItem(likedKey, already ? "0" : "1");
+    patchItem(newsItem.id, { likes: newLikes, liked: !already });
   };
 
-  const handleOpenLightbox = (index) => {
-    setSelectedImageIndex(index);
-    setShowLightbox(true);
-  };
-
-  const handleCloseLightbox = () => {
-    setShowLightbox(false);
-    setSelectedImageIndex(null);
-  };
-
-  const handlePrevImage = () => {
-    if (selectedNews && selectedImageIndex > 0) {
-      setSelectedImageIndex(selectedImageIndex - 1);
+  const handleShare = (newsItem) => {
+    if (!hasShared(newsItem.id)) {
+      const key = `news_shares_${newsItem.id}`;
+      const newShares = getCount(key) + 1;
+      setCount(key, newShares);
+      localStorage.setItem(`news_shared_${newsItem.id}`, "1");
+      patchItem(newsItem.id, { shares: newShares, shared: true });
     }
-  };
-
-  const handleNextImage = () => {
-    if (selectedNews && selectedImageIndex < selectedNews.images.length - 1) {
-      setSelectedImageIndex(selectedImageIndex + 1);
-    }
+    setShareModal(true);
   };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
+    if (selectedNews) handleShare(selectedNews);
+    setShareModal(false);
     alert(t.copied);
   };
 
-  const handleViewAll = () => {
-    navigate('/news');
+  const handleCloseDetail   = () => { setShowDetail(false); setSelectedNews(null); setSelectedImageIndex(null); };
+  const handleOpenLightbox  = (i) => { setSelectedImageIndex(i); setShowLightbox(true); };
+  const handleCloseLightbox = () => { setShowLightbox(false); setSelectedImageIndex(null); };
+  const handlePrevImage = () => { if (selectedImageIndex > 0) setSelectedImageIndex(selectedImageIndex - 1); };
+  const handleNextImage = () => { if (selectedImageIndex < selectedNews.images.length - 1) setSelectedImageIndex(selectedImageIndex + 1); };
+  const handleViewAll   = () => navigate('/news');
+
+  const featuredNews  = localLeftNews[0] || null;
+  const remainingNews = localLeftNews.slice(1, 4);
+
+  // ── i18n ───────────────────────────────────────────────────────────────────
+  const translations = {
+    km: {
+      title: 'ព័ត៌មានថ្មីៗ', viewAll: 'មើលទាំងអស់', readMore: 'អានបន្ត',
+      views: 'មើល', likes: 'ចូលចិត្ត', shares: 'ចែករំលែក',
+      back: 'ត្រលប់ក្រោយ', related: 'ព័ត៌មានពាក់ព័ន្ធ',
+      shareVia: 'ចែករំលែកតាមរយៈ', copyLink: 'ចម្លងតំណ', copied: 'បានចម្លង!',
+      viewImages: 'មើលរូបភាពទាំងអស់', recentNews: 'ព័ត៌មានថ្មីៗ',
+      event: 'ព្រឹត្តិការណ៍', news: 'ព័ត៌មាន', announcement: 'សេចក្តីជូនដំណឹង', other: 'ផ្សេងៗ',
+    },
+    en: {
+      title: 'Latest News', viewAll: 'View All', readMore: 'Read More',
+      views: 'views', likes: 'likes', shares: 'shares',
+      back: 'Back', related: 'Related News',
+      shareVia: 'Share via', copyLink: 'Copy Link', copied: 'Copied!',
+      viewImages: 'View All Images', recentNews: 'Recent News',
+      event: 'Event', news: 'News', announcement: 'Announcement', other: 'Other',
+    },
+  };
+  const t = translations[currentLang];
+
+  const getCategoryLabel = (key) => {
+    const defaults = { event: t.event, news: t.news, announcement: t.announcement, other: t.other };
+    if (!categories || !Array.isArray(categories)) return defaults[key] || key;
+    const obj = categories.find((c) => c[key]);
+    return obj?.[key]?.[currentLang] || defaults[key] || key;
   };
 
-  // Get left column data (featured + remaining)
-  const featuredNews = leftNews[0] || null;
-  const remainingNews = leftNews.slice(1, 4);
+  const formatDate = (ds) => {
+    if (!ds) return '';
+    const d = new Date(ds);
+    if (currentLang === 'km') {
+      const m = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
+      return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`;
+    }
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
 
-  // List Item Component for Right Side
+  // ── reusable action bar for cards ─────────────────────────────────────────
+  const CardActions = ({ item, size = 7 }) => (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={(e) => { e.stopPropagation(); handleLike(item); }}
+        className={`flex items-center gap-0.5 text-[8px] sm:text-[9px] transition-all duration-200 ${item.liked ? "text-red-500 font-medium" : "text-gray-400 hover:text-red-400"}`}
+      >
+        <Heart size={size} className={item.liked ? "fill-red-500 text-red-500" : ""} />
+        {item.likes || 0}
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); handleShare(item); }}
+        className={`flex items-center gap-0.5 text-[8px] sm:text-[9px] transition-all duration-200 ${item.shared ? "text-green-600 font-medium" : "text-gray-400 hover:text-green-500"}`}
+      >
+        <Share2 size={size} />{item.shares || 0}
+      </button>
+    </div>
+  );
+
+  // ── list item (right column) ───────────────────────────────────────────────
   const ListItem = ({ item, onClick }) => {
     const title = currentLang === 'km' ? item.titleKh : item.titleEn;
-    const mainImage = item.mainImage || defaultImg;
-    
     return (
-      <div
-        className="group cursor-pointer border-b border-gray-100 last:border-0 py-3 transition-all duration-300 hover:bg-gray-50 rounded-lg px-2"
-        onClick={() => onClick(item)}
-      >
-        <div className="flex gap-3">
-          <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
-            <img
-              src={mainImage}
-              alt={title}
+      <div className="group cursor-pointer border-b border-gray-100 last:border-0 py-2 transition-all duration-300 hover:bg-gray-50 rounded-lg px-2"
+        onClick={() => onClick(item)}>
+        <div className="flex gap-2">
+          <div className="flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100">
+            <img src={item.mainImage || defaultImg} alt={title}
               className="w-full h-full object-cover"
-              onError={(e) => { e.target.src = defaultImg; }}
-            />
+              onError={(e) => { e.target.src = defaultImg; }} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full">
-                {getCategoryLabel(item.category)}
-              </span>
-              <span className="text-[10px] text-gray-400 flex items-center gap-1">
-                <Calendar size={8} />
-                {formatDate(item.publishedDate)}
-              </span>
+            <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
+              <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full">{getCategoryLabel(item.category)}</span>
+              <span className="text-[9px] sm:text-[10px] text-gray-400 flex items-center gap-0.5"><Calendar size={7} />{formatDate(item.publishedDate)}</span>
             </div>
-            <h3 className="text-sm font-medium text-gray-800 line-clamp-2 mb-1">
-              {title}
-            </h3>
-            <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-400">
-              <span className="flex items-center gap-1"><Eye size={8} />{item.views || 0}</span>
-              <span className="flex items-center gap-1"><Heart size={8} />{item.likes || 0}</span>
+            <h3 className="text-xs sm:text-sm font-medium text-gray-800 line-clamp-2 mb-0.5 leading-snug">{title}</h3>
+            <div className="flex items-center gap-2 mt-0.5 text-[8px] sm:text-[9px] text-gray-400">
+              <span className="flex items-center gap-0.5"><Eye size={7} />{item.views || 0}</span>
+              <button onClick={(e) => { e.stopPropagation(); handleLike(item); }}
+                className={`flex items-center gap-0.5 transition-colors ${item.liked ? "text-red-500" : "hover:text-red-400"}`}>
+                <Heart size={7} className={item.liked ? "fill-red-500 text-red-500" : ""} />{item.likes || 0}
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); handleShare(item); }}
+                className={`flex items-center gap-0.5 transition-colors ${item.shared ? "text-green-600" : "hover:text-green-500"}`}>
+                <Share2 size={7} />{item.shares || 0}
+              </button>
             </div>
           </div>
-          <ChevronRight size={16} className="text-gray-400 flex-shrink-0 group-hover:text-green-600 transition-colors" />
+          <ChevronRight size={14} className="text-gray-400 flex-shrink-0 mt-1 group-hover:text-green-600 transition-colors" />
         </div>
       </div>
     );
   };
 
-  // Loading skeleton
+  // ── loading skeleton ───────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="py-12">
+      <div className="py-8 sm:py-12">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <div className="h-96 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-64 bg-gray-200 rounded-xl animate-pulse"></div>
-                ))}
+              <div className="h-64 sm:h-80 md:h-96 bg-gray-200 rounded-xl animate-pulse mb-6"></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {[1,2,3].map((i) => <div key={i} className="h-56 sm:h-64 bg-gray-200 rounded-xl animate-pulse"></div>)}
               </div>
             </div>
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl border p-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="py-3">
-                    <div className="flex gap-3">
-                      <div className="w-20 h-20 bg-gray-200 rounded-lg animate-pulse"></div>
-                      <div className="flex-1">
-                        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2"></div>
-                        <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-1"></div>
-                        <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse"></div>
-                      </div>
+              <div className="bg-white rounded-xl border p-3 sm:p-4">
+                {[1,2,3,4,5].map((i) => (
+                  <div key={i} className="py-2 flex gap-2">
+                    <div className="w-14 h-14 bg-gray-200 rounded-lg animate-pulse"></div>
+                    <div className="flex-1 space-y-1">
+                      <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-3 w-full bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-3 w-2/3 bg-gray-200 rounded animate-pulse"></div>
                     </div>
                   </div>
                 ))}
@@ -284,139 +245,121 @@ const NewsSection = ({ onViewAll }) => {
   }
 
   return (
-    <div className="py-12">
+    <div className="py-8 sm:py-12">
       <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-8 bg-green-600 rounded-full"></div>
-              <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">
-                {t.title}
-              </h2>
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-1 h-6 sm:h-8 bg-green-600 rounded-full"></div>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800">{t.title}</h2>
             </div>
-            <button 
-              onClick={handleViewAll}
-              className="flex items-center text-sm text-green-600 hover:text-green-700 transition-colors group font-medium"
-            >
-              {t.viewAll}
-              <ChevronRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
+            <button onClick={handleViewAll}
+              className="flex items-center text-xs sm:text-sm text-green-600 hover:text-green-700 transition-colors group font-medium">
+              {t.viewAll}<ChevronRight size={14} className="ml-0.5 sm:ml-1 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Featured + Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Left column */}
           <div className="lg:col-span-2">
             {featuredNews && (
-              <div 
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden cursor-pointer border border-gray-100 mb-6"
-                onClick={() => handleReadMore(featuredNews)}
-              >
-                <div className="relative h-96 overflow-hidden bg-gray-100">
-                  <img 
-                    src={featuredNews.mainImage || defaultImg} 
+              <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden cursor-pointer border border-gray-100 mb-6"
+                onClick={() => handleReadMore(featuredNews)}>
+                <div className="relative h-56 sm:h-64 md:h-80 lg:h-96 overflow-hidden bg-gray-100">
+                  <img src={featuredNews.mainImage || defaultImg}
                     alt={currentLang === 'km' ? featuredNews.titleKh : featuredNews.titleEn}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { e.target.src = defaultImg; }}
-                  />
+                    onError={(e) => { e.target.src = defaultImg; }} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                  
-                  <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-full shadow-md flex items-center gap-1">
-                      <Zap size={12} />
-                      <span>{getCategoryLabel(featuredNews.category)}</span>
+                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
+                    <span className="px-2 py-1 sm:px-3 sm:py-1.5 bg-green-600 text-white text-[10px] sm:text-xs font-medium rounded-full shadow-md flex items-center gap-1">
+                      <Zap size={10} />{getCategoryLabel(featuredNews.category)}
                     </span>
                   </div>
-
-                  {featuredNews.images && featuredNews.images.length > 1 && (
-                    <div className="absolute top-4 right-4">
-                      <span className="px-2 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded-md flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                  {featuredNews.images?.length > 1 && (
+                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+                      <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-black/50 backdrop-blur-sm text-white text-[9px] sm:text-xs rounded-md flex items-center gap-1">
+                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         {featuredNews.images.length}
                       </span>
                     </div>
                   )}
-
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex items-center gap-1.5 text-white/90 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
-                        <Calendar size={10} />
-                        <span>{formatDate(featuredNews.publishedDate)}</span>
+                  <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
+                    <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
+                      <div className="flex items-center gap-1 text-white/80 text-[9px] sm:text-[10px] bg-black/30 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
+                        <Calendar size={8} />{formatDate(featuredNews.publishedDate)}
                       </div>
+                      <div className="flex items-center gap-1 text-white/80 text-[9px] sm:text-[10px] bg-black/30 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
+                        <Eye size={8} />{featuredNews.views || 0}
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); handleLike(featuredNews); }}
+                        className={`flex items-center gap-1 text-[9px] sm:text-[10px] bg-black/30 backdrop-blur-sm px-1.5 py-0.5 rounded-full transition-colors ${featuredNews.liked ? "text-red-400" : "text-white/80 hover:text-red-300"}`}>
+                        <Heart size={8} className={featuredNews.liked ? "fill-red-400" : ""} />{featuredNews.likes || 0}
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleShare(featuredNews); }}
+                        className={`flex items-center gap-1 text-[9px] sm:text-[10px] bg-black/30 backdrop-blur-sm px-1.5 py-0.5 rounded-full transition-colors ${featuredNews.shared ? "text-green-400" : "text-white/80 hover:text-green-300"}`}>
+                        <Share2 size={8} />{featuredNews.shares || 0}
+                      </button>
                     </div>
-                    <h3 className="text-xl md:text-2xl font-bold text-white leading-tight line-clamp-2">
+                    <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white leading-tight line-clamp-2">
                       {currentLang === 'km' ? featuredNews.titleKh : featuredNews.titleEn}
                     </h3>
-                    <p className="text-white/80 text-sm mt-2 line-clamp-2">
+                    <p className="text-white/70 text-[11px] sm:text-xs mt-1 sm:mt-2 line-clamp-2 hidden sm:block">
                       {currentLang === 'km' ? featuredNews.summaryKh : featuredNews.summaryEn}
                     </p>
-                    <button className="mt-3 flex items-center gap-1 text-white text-sm font-medium hover:underline">
-                      {t.readMore} <ChevronRight size={14} />
+                    <button className="mt-1.5 sm:mt-2 flex items-center gap-0.5 text-white text-[11px] sm:text-xs font-medium hover:underline">
+                      {t.readMore}<ChevronRight size={10} />
                     </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Remaining News Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Remaining grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
               {remainingNews.map((item) => (
-                <div
-                  key={item.id}
+                <div key={item.id}
                   className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden cursor-pointer border border-gray-100"
-                  onClick={() => handleReadMore(item)}
-                >
-                  <div className="relative h-48 overflow-hidden bg-gray-100">
-                    <img 
-                      src={item.mainImage || defaultImg} 
+                  onClick={() => handleReadMore(item)}>
+                  <div className="relative h-36 sm:h-40 md:h-48 overflow-hidden bg-gray-100">
+                    <img src={item.mainImage || defaultImg}
                       alt={currentLang === 'km' ? item.titleKh : item.titleEn}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      onError={(e) => { e.target.src = defaultImg; }}
-                    />
+                      onError={(e) => { e.target.src = defaultImg; }} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                    
-                    <div className="absolute top-3 left-3">
-                      <span className="px-2.5 py-1 bg-green-600 text-white text-xs font-medium rounded-full shadow-md flex items-center gap-1">
-                        <Zap size={10} />
-                        <span>{getCategoryLabel(item.category)}</span>
+                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+                      <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-green-600 text-white text-[9px] sm:text-[10px] font-medium rounded-full flex items-center gap-0.5">
+                        <Zap size={8} />{getCategoryLabel(item.category)}
                       </span>
                     </div>
-
-                    {item.images && item.images.length > 1 && (
-                      <div className="absolute top-3 right-3">
-                        <span className="px-2 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded-md flex items-center gap-1">
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
+                    {item.images?.length > 1 && (
+                      <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+                        <span className="px-1 py-0.5 bg-black/50 backdrop-blur-sm text-white text-[8px] rounded-md flex items-center gap-0.5">
+                          <svg className="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                           {item.images.length}
                         </span>
                       </div>
                     )}
-
-                    <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-white/90 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
-                      <Calendar size={10} />
-                      <span>{formatDate(item.publishedDate)}</span>
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 text-white/80 text-[8px] sm:text-[9px] bg-black/30 backdrop-blur-sm px-1 py-0.5 rounded-full">
+                      <Calendar size={7} />{formatDate(item.publishedDate)}
                     </div>
                   </div>
-
-                  <div className="p-4">
-                    <h3 className="text-base font-semibold text-gray-800 mb-2 leading-relaxed line-clamp-2">
+                  <div className="p-2 sm:p-3">
+                    <h3 className="text-xs sm:text-sm font-semibold text-gray-800 mb-1 leading-snug line-clamp-2">
                       {currentLang === 'km' ? item.titleKh : item.titleEn}
                     </h3>
-                    <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                    <p className="text-[10px] sm:text-xs text-gray-500 mb-2 line-clamp-2 hidden sm:block">
                       {currentLang === 'km' ? item.summaryKh : item.summaryEn}
                     </p>
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                      <button className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium">
-                        {t.readMore} <ChevronRight size={12} />
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+                      <button className="flex items-center gap-0.5 text-[9px] sm:text-[10px] text-green-600 hover:text-green-700 font-medium">
+                        {t.readMore}<ChevronRight size={8} />
                       </button>
-                      <div className="flex items-center gap-3 text-xs text-gray-400">
-                        <span className="flex items-center gap-1"><Eye size={12} />{item.views || 0}</span>
-                        <span className="flex items-center gap-1"><Heart size={12} />{item.likes || 0}</span>
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px]">
+                        <span className="flex items-center gap-0.5 text-gray-400"><Eye size={7} />{item.views || 0}</span>
+                        <CardActions item={item} size={7} />
                       </div>
                     </div>
                   </div>
@@ -424,156 +367,125 @@ const NewsSection = ({ onViewAll }) => {
               ))}
             </div>
 
-            {/* Left Pagination */}
             {leftTotalPages > 1 && (
               <div className="flex justify-center mt-6 gap-2">
-                <button
-                  onClick={() => setLeftPage(p => Math.max(1, p - 1))}
-                  disabled={leftPage === 1}
-                  className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <span className="px-4 py-2 text-sm text-gray-600">
-                  {leftPage} / {leftTotalPages}
-                </span>
-                <button
-                  onClick={() => setLeftPage(p => Math.min(leftTotalPages, p + 1))}
-                  disabled={leftPage === leftTotalPages}
-                  className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
-                >
-                  <ChevronRight size={16} />
-                </button>
+                <button onClick={() => setLeftPage(p => Math.max(1, p - 1))} disabled={leftPage === 1}
+                  className="p-1.5 sm:p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"><ChevronLeft size={14} /></button>
+                <span className="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-600">{leftPage} / {leftTotalPages}</span>
+                <button onClick={() => setLeftPage(p => Math.min(leftTotalPages, p + 1))} disabled={leftPage === leftTotalPages}
+                  className="p-1.5 sm:p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"><ChevronRight size={14} /></button>
               </div>
             )}
           </div>
 
-          {/* Right Column - Recent News List */}
+          {/* Right column */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden sticky top-24">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
-                <div className="flex items-center gap-2">
-                  <Newspaper size={18} className="text-green-600" />
-                  <h3 className="text-base font-semibold text-gray-800">
-                    {t.recentNews}
-                  </h3>
+              <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 border-b border-gray-100 bg-gray-50">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Newspaper size={14} className="sm:w-4 sm:h-4 text-green-600" />
+                  <h3 className="text-sm sm:text-base font-semibold text-gray-800">{t.recentNews}</h3>
                 </div>
-                {/* Right Pagination */}
                 {rightTotalPages > 1 && (
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setRightPage(p => Math.max(1, p - 1))}
-                      disabled={rightPage === 1}
-                      className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
-                    >
-                      <ChevronLeft size={14} />
-                    </button>
-                    <span className="text-xs text-gray-500">{rightPage}/{rightTotalPages}</span>
-                    <button
-                      onClick={() => setRightPage(p => Math.min(rightTotalPages, p + 1))}
-                      disabled={rightPage === rightTotalPages}
-                      className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
-                    >
-                      <ChevronRight size={14} />
-                    </button>
+                  <div className="flex items-center gap-0.5 sm:gap-1">
+                    <button onClick={() => setRightPage(p => Math.max(1, p - 1))} disabled={rightPage === 1}
+                      className="p-0.5 sm:p-1 hover:bg-gray-100 rounded disabled:opacity-50"><ChevronLeft size={12} /></button>
+                    <span className="text-[10px] sm:text-xs text-gray-500">{rightPage}/{rightTotalPages}</span>
+                    <button onClick={() => setRightPage(p => Math.min(rightTotalPages, p + 1))} disabled={rightPage === rightTotalPages}
+                      className="p-0.5 sm:p-1 hover:bg-gray-100 rounded disabled:opacity-50"><ChevronRight size={12} /></button>
                   </div>
                 )}
               </div>
-              <div className="p-2">
-                {rightNews.map((item) => (
-                  <ListItem key={item.id} item={item} onClick={handleReadMore} />
-                ))}
+              <div className="p-1 sm:p-2">
+                {localRightNews.map((item) => <ListItem key={item.id} item={item} onClick={handleReadMore} />)}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* News Detail Modal */}
+      {/* ── Detail modal ──────────────────────────────────────────────────── */}
       {showDetail && selectedNews && (
         <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
           <div className="sticky top-0 bg-white border-b border-gray-100 z-10">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-              <div className="flex items-center justify-between">
-                <button onClick={handleCloseDetail} className="flex items-center space-x-2 text-gray-500 hover:text-green-600 transition-colors group">
-                  <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                  <span className="text-sm">{t.back}</span>
-                </button>
-                <button onClick={() => setShareModal(true)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
-                  <Share2 size={16} />
-                </button>
-              </div>
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+              <button onClick={handleCloseDetail} className="flex items-center space-x-1.5 text-gray-500 hover:text-green-600 transition-colors group">
+                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /><span className="text-xs sm:text-sm">{t.back}</span>
+              </button>
+              <button onClick={() => handleShare(selectedNews)} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+                <Share2 size={14} className="sm:w-4 sm:h-4" />
+              </button>
             </div>
           </div>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-            <div className="relative h-[400px] rounded-xl overflow-hidden mb-8 bg-gray-100">
-              <img 
-                src={selectedNews.mainImage || defaultImg} 
-                alt={currentLang === 'km' ? selectedNews.titleKh : selectedNews.titleEn} 
+
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+            <div className="relative h-56 sm:h-80 md:h-96 lg:h-[400px] rounded-xl overflow-hidden mb-6 sm:mb-8 bg-gray-100">
+              <img src={selectedNews.mainImage || defaultImg}
+                alt={currentLang === 'km' ? selectedNews.titleKh : selectedNews.titleEn}
                 className="w-full h-full object-cover"
-                onError={(e) => { e.target.src = defaultImg; }}
-              />
+                onError={(e) => { e.target.src = defaultImg; }} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-              <div className="absolute top-6 left-6">
-                <span className="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg shadow-lg">
+              <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
+                <span className="px-2 py-1 sm:px-3 sm:py-1.5 bg-green-600 text-white text-[10px] sm:text-sm font-medium rounded-lg shadow-lg">
                   {getCategoryLabel(selectedNews.category)}
                 </span>
               </div>
-              {selectedNews.images && selectedNews.images.length > 1 && (
-                <div className="absolute top-6 right-6">
-                  <span className="px-2.5 py-1.5 bg-black/60 backdrop-blur-sm text-white text-xs rounded-lg flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+              {selectedNews.images?.length > 1 && (
+                <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+                  <span className="px-1.5 py-1 sm:px-2.5 sm:py-1.5 bg-black/60 backdrop-blur-sm text-white text-[9px] sm:text-xs rounded-lg flex items-center gap-1">
+                    <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     {selectedNews.images.length}
                   </span>
                 </div>
               )}
-              <div className="absolute bottom-6 left-6 right-6">
-                <h1 className="text-2xl md:text-3xl font-semibold text-white leading-tight">
+              <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
+                <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-white leading-tight">
                   {currentLang === 'km' ? selectedNews.titleKh : selectedNews.titleEn}
                 </h1>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-6 mb-8 pb-6 border-b border-gray-100">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Calendar size={14} className="text-green-600" />
-                <span>{formatDate(selectedNews.publishedDate)}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Eye size={14} className="text-green-600" />
-                <span>{selectedNews.views || 0} {t.views}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Heart size={14} className="text-green-600" />
-                <span>{selectedNews.likes || 0} {t.likes}</span>
-              </div>
+
+            {/* Stats + interactive like/share */}
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 pb-4 sm:pb-6 border-b border-gray-100">
+              <span className="flex items-center gap-1.5 text-[11px] sm:text-sm text-gray-500">
+                <Calendar size={14} className="text-green-600" />{formatDate(selectedNews.publishedDate)}
+              </span>
+              <span className="flex items-center gap-1.5 text-[11px] sm:text-sm text-gray-500">
+                <Eye size={14} className="text-green-600" />{selectedNews.views || 0} {t.views}
+              </span>
+              {/* Like button */}
+              <button onClick={() => handleLike(selectedNews)}
+                className={`flex items-center gap-1.5 text-[11px] sm:text-sm px-2.5 py-1.5 rounded-lg border transition-all duration-200 ${
+                  selectedNews.liked ? "bg-red-50 border-red-200 text-red-500 font-medium" : "border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-400"
+                }`}>
+                <Heart size={14} className={selectedNews.liked ? "fill-red-500 text-red-500" : ""} />
+                {selectedNews.likes || 0} {t.likes}
+              </button>
+              {/* Share button */}
+              <button onClick={() => handleShare(selectedNews)}
+                className={`flex items-center gap-1.5 text-[11px] sm:text-sm px-2.5 py-1.5 rounded-lg border transition-all duration-200 ${
+                  selectedNews.shared ? "bg-green-50 border-green-200 text-green-600 font-medium" : "border-gray-200 text-gray-500 hover:bg-green-50 hover:border-green-200 hover:text-green-500"
+                }`}>
+                <Share2 size={14} />{selectedNews.shares || 0} {t.shares}
+              </button>
             </div>
-            <div 
-              className="prose prose-sm max-w-none mb-8 text-gray-600 leading-relaxed" 
-              dangerouslySetInnerHTML={{ 
-                __html: currentLang === 'km' ? selectedNews.contentKh : selectedNews.contentEn 
-              }} 
-            />
-            {selectedNews.images && selectedNews.images.length > 1 && (
+
+            <div className="prose prose-sm max-w-none mb-8 text-gray-600 leading-relaxed text-sm sm:text-base"
+              dangerouslySetInnerHTML={{ __html: currentLang === 'km' ? selectedNews.contentKh : selectedNews.contentEn }} />
+
+            {selectedNews.images?.length > 1 && (
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.viewImages}</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <h3 className="text-base sm:text-lg font-semibold text-green-600 mb-3 sm:mb-4">{t.viewImages}</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                   {selectedNews.images.slice(0, 8).map((img, idx) => (
-                    <div 
-                      key={idx} 
-                      onClick={() => handleOpenLightbox(idx)} 
-                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-gray-100"
-                    >
-                      <img 
-                        src={img} 
-                        alt={`${currentLang === 'km' ? selectedNews.titleKh : selectedNews.titleEn} - ${idx + 1}`} 
+                    <div key={idx} onClick={() => handleOpenLightbox(idx)}
+                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-gray-100">
+                      <img src={img} alt={`img-${idx + 1}`}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        onError={(e) => { e.target.src = defaultImg; }}
-                      />
+                        onError={(e) => { e.target.src = defaultImg; }} />
                       {idx === 7 && selectedNews.images.length > 8 && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white font-medium">+{selectedNews.images.length - 8}</span>
+                          <span className="text-white text-xs sm:text-sm font-medium">+{selectedNews.images.length - 8}</span>
                         </div>
                       )}
                     </div>
@@ -581,95 +493,57 @@ const NewsSection = ({ onViewAll }) => {
                 </div>
               </div>
             )}
-            <div className="mb-8">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">{t.shareVia}</h3>
-              <div className="flex items-center space-x-2">
-                <button className="w-8 h-8 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
-                  <Facebook size={14} />
-                </button>
-                <button className="w-8 h-8 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors flex items-center justify-center">
-                  <Twitter size={14} />
-                </button>
-                <button className="w-8 h-8 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors flex items-center justify-center">
-                  <Linkedin size={14} />
-                </button>
-                <button onClick={handleCopyLink} className="w-8 h-8 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center">
-                  <Link2 size={14} />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}
 
-      {/* Lightbox Modal */}
+      {/* ── Lightbox ──────────────────────────────────────────────────────── */}
       {showLightbox && selectedNews && selectedImageIndex !== null && (
         <div className="fixed inset-0 bg-black/95 z-[60] flex items-center justify-center">
-          <button onClick={handleCloseLightbox} className="absolute top-4 right-4 z-10 text-white hover:text-gray-300">
-            <X size={32} />
+          <button onClick={handleCloseLightbox} className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-white hover:text-gray-300"><X size={24} className="sm:w-8 sm:h-8" /></button>
+          <button onClick={handlePrevImage} disabled={selectedImageIndex === 0}
+            className={`absolute left-2 sm:left-4 z-10 text-white hover:text-gray-300 ${selectedImageIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+            <ChevronLeft size={32} className="sm:w-12 sm:h-12" />
           </button>
-          <button 
-            onClick={handlePrevImage} 
-            disabled={selectedImageIndex === 0} 
-            className={`absolute left-4 z-10 text-white hover:text-gray-300 ${selectedImageIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-            <ChevronLeft size={48} />
+          <button onClick={handleNextImage} disabled={selectedImageIndex === selectedNews.images.length - 1}
+            className={`absolute right-2 sm:right-4 z-10 text-white hover:text-gray-300 ${selectedImageIndex === selectedNews.images.length - 1 ? "opacity-50 cursor-not-allowed" : ""}`}>
+            <ChevronRightIcon size={32} className="sm:w-12 sm:h-12" />
           </button>
-          <button 
-            onClick={handleNextImage} 
-            disabled={selectedImageIndex === selectedNews.images.length - 1} 
-            className={`absolute right-4 z-10 text-white hover:text-gray-300 ${selectedImageIndex === selectedNews.images.length - 1 ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-            <ChevronRightIcon size={48} />
-          </button>
-          <div className="max-w-[90vw] max-h-[90vh]">
-            <img 
-              src={selectedNews.images[selectedImageIndex]} 
-              alt={`${currentLang === 'km' ? selectedNews.titleKh : selectedNews.titleEn} - ${selectedImageIndex + 1}`} 
+          <div className="max-w-[90vw] max-h-[90vh] relative">
+            <img src={selectedNews.images[selectedImageIndex]} alt={`img-${selectedImageIndex + 1}`}
               className="max-w-full max-h-[90vh] object-contain"
-              onError={(e) => { e.target.src = defaultImg; }}
-            />
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+              onError={(e) => { e.target.src = defaultImg; }} />
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-sm">
               {selectedImageIndex + 1} / {selectedNews.images.length}
             </div>
           </div>
         </div>
       )}
 
-      {/* Share Modal */}
+      {/* ── Share modal ───────────────────────────────────────────────────── */}
       {shareModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-5 max-w-sm w-full mx-4 shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-medium text-gray-900">{t.shareVia}</h3>
-              <button onClick={() => setShareModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
-                <X size={16} />
-              </button>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[70]">
+          <div className="bg-white rounded-xl p-4 sm:p-5 max-w-sm w-full mx-4 shadow-2xl">
+            <div className="flex justify-between items-center mb-3 sm:mb-4">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-900">{t.shareVia}</h3>
+              <button onClick={() => setShareModal(false)} className="p-1 hover:bg-gray-100 rounded-lg"><X size={14} /></button>
             </div>
-            <div className="grid grid-cols-4 gap-3">
-              <button className="flex flex-col items-center space-y-1 p-2 hover:bg-blue-50 rounded-lg">
-                <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center">
-                  <Facebook size={16} />
-                </div>
-                <span className="text-[10px] text-gray-500">Facebook</span>
-              </button>
-              <button className="flex flex-col items-center space-y-1 p-2 hover:bg-sky-50 rounded-lg">
-                <div className="w-10 h-10 bg-sky-500 text-white rounded-full flex items-center justify-center">
-                  <Twitter size={16} />
-                </div>
-                <span className="text-[10px] text-gray-500">Twitter</span>
-              </button>
-              <button className="flex flex-col items-center space-y-1 p-2 hover:bg-blue-50 rounded-lg">
-                <div className="w-10 h-10 bg-blue-700 text-white rounded-full flex items-center justify-center">
-                  <Linkedin size={16} />
-                </div>
-                <span className="text-[10px] text-gray-500">LinkedIn</span>
-              </button>
-              <button onClick={handleCopyLink} className="flex flex-col items-center space-y-1 p-2 hover:bg-gray-100 rounded-lg">
-                <div className="w-10 h-10 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center">
-                  <Link2 size={16} />
-                </div>
-                <span className="text-[10px] text-gray-500">{t.copyLink}</span>
+            <div className="grid grid-cols-4 gap-2 sm:gap-3">
+              {[
+                { label: "Facebook", bg: "bg-blue-600 hover:bg-blue-700", icon: <Facebook size={14} /> },
+                { label: "Twitter",  bg: "bg-sky-500 hover:bg-sky-600",   icon: <Twitter  size={14} /> },
+                { label: "LinkedIn", bg: "bg-blue-700 hover:bg-blue-800", icon: <Linkedin size={14} /> },
+              ].map((s) => (
+                <button key={s.label}
+                  onClick={() => { if (selectedNews) handleShare(selectedNews); setShareModal(false); }}
+                  className="flex flex-col items-center space-y-1 p-1.5 sm:p-2 hover:bg-gray-50 rounded-lg">
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 ${s.bg} text-white rounded-full flex items-center justify-center transition-colors`}>{s.icon}</div>
+                  <span className="text-[9px] sm:text-[10px] text-gray-500">{s.label}</span>
+                </button>
+              ))}
+              <button onClick={handleCopyLink} className="flex flex-col items-center space-y-1 p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full flex items-center justify-center transition-colors"><Link2 size={14} /></div>
+                <span className="text-[9px] sm:text-[10px] text-gray-500">{t.copyLink}</span>
               </button>
             </div>
           </div>

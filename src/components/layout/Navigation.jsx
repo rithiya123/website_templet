@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, ChevronDown, Home, Globe, ChevronRight, 
   Info, Users, Building2, FileText, Shield,
-  Mail, Menu
+  Mail, Menu, BarChart3, BookOpen, FileCheck, ScrollText, Megaphone
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../ui/Logo.jsx';
@@ -41,26 +41,6 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
       dropdown: false
     },
     { 
-      id: 'news',
-      label: 'ព័ត៌មាន និង ព្រឹត្តិការណ៍', 
-      labelEn: 'NEWS & EVENTS',
-      path: '/news',
-      icon: Globe,
-      dropdown: true,
-      subItems: {
-        km: [
-          { label: 'ព័ត៌មាន', path: '/news' },
-          { label: 'កម្រងរូបភាព', path: '/news/photos' },
-          { label: 'កម្រងវីដេអូ', path: '/news/videos' },
-        ],
-        en: [
-          { label: 'News', path: '/news' },
-          { label: 'Photo Gallery', path: '/news/photos' },
-          { label: 'Video Gallery', path: '/news/videos' },
-        ]
-      }
-    },
-    { 
       id: 'about',
       label: 'អំពីអគ្គនាយកដ្ឋាន', 
       labelEn: 'ABOUT DEPARTMENT',
@@ -81,12 +61,69 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
       }
     },
     { 
+      id: 'news',
+      label: 'ព័ត៌មាន និង ព្រឹត្តិការណ៍', 
+      labelEn: 'NEWS & EVENTS',
+      path: '/news',
+      icon: Globe,
+      dropdown: true,
+      subItems: {
+        km: [
+          { label: 'ព័ត៌មាន', path: '/news' },
+          { label: 'កម្រងរូបភាព', path: '/news/photos' },
+          { label: 'កម្រងវីដេអូ', path: '/news/videos' },
+        ],
+        en: [
+          { label: 'News', path: '/news' },
+          { label: 'Photo Gallery', path: '/news/photos' },
+          { label: 'Video Gallery', path: '/news/videos' },
+        ]
+      }
+    },
+    
+    { 
       id: 'legal',
       label: 'លិខិតបទដ្ឋានគតិយុត្ត', 
       labelEn: 'LEGAL DOCUMENTS',
       path: '/legal',
       icon: FileText,
-      dropdown: false
+      dropdown: true,
+      subItems: {
+        km: [
+          { label: 'ច្បាប់', path: '/legal/law' },
+          { label: 'អនុក្រឹត្យ', path: '/legal/sub-decree' },
+          { label: 'សារាចរ', path: '/legal/circular' },
+          { label: 'ប្រកាស', path: '/legal/declaration' },
+        ],
+        en: [
+          { label: 'Law', path: '/legal/law' },
+          { label: 'Sub-Decree', path: '/legal/sub-decree' },
+          { label: 'Circular', path: '/legal/circular' },
+          { label: 'Declaration', path: '/legal/declaration' },
+        ]
+      }
+    },
+    { 
+      id: 'reports',
+      label: 'របាយការណ៍', 
+      labelEn: 'REPORTS',
+      path: '/reports',
+      icon: BarChart3,
+      dropdown: false,
+      // subItems: {
+      //   km: [
+      //     { label: 'របាយការណ៍ប្រចាំឆ្នាំ', path: '/reports/annual' },
+      //     { label: 'របាយការណ៍ប្រចាំត្រីមាស', path: '/reports/quarterly' },
+      //     { label: 'របាយការណ៍ស្ថិតិ', path: '/reports/statistics' },
+      //     { label: 'របាយការណ៍សកម្មភាព', path: '/reports/activities' },
+      //   ],
+      //   en: [
+      //     { label: 'Annual Report', path: '/reports/annual' },
+      //     { label: 'Quarterly Report', path: '/reports/quarterly' },
+      //     { label: 'Statistics Report', path: '/reports/statistics' },
+      //     { label: 'Activity Report', path: '/reports/activities' },
+      //   ]
+      // }
     },
   ];
 

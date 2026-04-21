@@ -101,7 +101,7 @@ const LegalPage = () => {
 
   const translations = {
     km: {
-      title: "ឯកសារច្បាប់",
+      title: "បណ្តុំឯកសារ",
       subtitle: "លិខិតបទដ្ឋានគតិយុត្ត និងឯកសារពាក់ព័ន្ធ",
       search: "ស្វែងរកតាមចំណងជើង ឬខ្លឹមសារ...",
       allCategories: "គ្រប់ប្រភេទ",
@@ -143,7 +143,7 @@ const LegalPage = () => {
       keywords: "ពាក្យគន្លឹះ",
     },
     en: {
-      title: "Legal Documents",
+      title: "Document collection",
       subtitle: "Legal standards and related documents",
       search: "Search by title or content...",
       allCategories: "All Categories",

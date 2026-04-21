@@ -19,6 +19,25 @@ import { useFooter } from "../../hooks/useFooter";
 import { useHeader } from "../../hooks/useHeader";
 import logoImage from "../../images/logo.png";
 
+// Social media SVG icons
+const FacebookIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+  </svg>
+);
+
+const XIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+);
+
+const TelegramIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+  </svg>
+);
+
 const Footer = () => {
   const [currentLang, setCurrentLang] = useState("km");
   const location = useLocation();
@@ -29,15 +48,21 @@ const Footer = () => {
     email, 
     address,
     copyright,
-    mapUrl 
+    mapUrl,
   } = useFooter(currentLang);
 
   const { logo: apiLogo, loading: headerLoading } = useHeader(currentLang);
 
   const loading = footerLoading || headerLoading;
 
-  // Same email validation as Header
   const hasValidEmail = email && email.trim() !== '';
+
+  // Hardcoded links
+  const WEBSITE_URL = 'https://gdr.mef.gov.kh';
+  const WEBSITE_DISPLAY = 'gdr.mef.gov.kh';
+  const FACEBOOK_URL = 'https://www.facebook.com';
+  const X_URL = 'https://www.x.com';
+  const TELEGRAM_URL = 'https://www.telegram.org';
 
   const getEmbedMapUrl = (url) => {
     if (!url) return '';
@@ -69,6 +94,7 @@ const Footer = () => {
     km: {
       address: "អាសយដ្ឋាន",
       email: "អ៊ីមែល",
+      website: "គេហទំព័រ",
       quickLinks: "តំណភ្ជាប់រហ័ស",
       home: "ទំព័រដើម",
       news: "ព័ត៌មាន និង ព្រឹត្តិការណ៍",
@@ -80,10 +106,12 @@ const Footer = () => {
       location: "ទីតាំង",
       viewMap: "មើលផែនទីធំ",
       contactUs: "ទំនាក់ទំនង",
+      followUs: "តាមដានពួកយើង",
     },
     en: {
       address: "Address",
       email: "Email",
+      website: "Website",
       quickLinks: "Quick Links",
       home: "Home",
       news: "News & Events",
@@ -95,6 +123,7 @@ const Footer = () => {
       location: "Location",
       viewMap: "View larger map",
       contactUs: "Contact Us",
+      followUs: "Follow Us",
     },
   };
 
@@ -110,6 +139,12 @@ const Footer = () => {
   const aboutSubLinks = [
     { label: t.aboutSub2, path: "/about/roles", icon: <Shield size={12} /> },
     { label: t.aboutSub3, path: "/about/director-message", icon: <Info size={12} /> },
+  ];
+
+  const socialMediaList = [
+    { href: FACEBOOK_URL, icon: <FacebookIcon />, label: "Facebook", color: "hover:bg-[#1877F2]" },
+    { href: X_URL, icon: <XIcon />, label: "X (Twitter)", color: "hover:bg-[#000000]" },
+    { href: TELEGRAM_URL, icon: <TelegramIcon />, label: "Telegram", color: "hover:bg-[#0088CC]" },
   ];
 
   if (loading) {
@@ -161,6 +196,27 @@ const Footer = () => {
                 </h3>
               </div>
             </div>
+
+            {/* Social Media Icons */}
+            <div className="space-y-3">
+              <p className="text-xs text-green-300 font-medium uppercase tracking-wider">
+                {t.followUs}
+              </p>
+              <div className="flex items-center gap-2">
+                {socialMediaList.map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className={`bg-white/10 ${social.color} text-white p-2.5 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-lg flex items-center justify-center`}
+                  >
+                    {social.icon}
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Contact Column */}
@@ -171,7 +227,7 @@ const Footer = () => {
             </h4>
 
             <div className="space-y-4">
-              {/* Address - Always show if exists */}
+              {/* Address */}
               {(address.km || address.en) && (
                 <div className="flex items-start space-x-3 group">
                   <div className="bg-white/10 p-2 rounded-lg group-hover:bg-[#4CAF50] transition-colors flex-shrink-0">
@@ -186,7 +242,7 @@ const Footer = () => {
                 </div>
               )}
 
-              {/* Email - Only show if valid (same condition as Header) */}
+              {/* Email */}
               {hasValidEmail && (
                 <div className="flex items-start space-x-3 group">
                   <div className="bg-white/10 p-2 rounded-lg group-hover:bg-[#4CAF50] transition-colors flex-shrink-0">
@@ -203,6 +259,24 @@ const Footer = () => {
                   </div>
                 </div>
               )}
+
+              {/* Website — hardcoded, always shown below email */}
+              <div className="flex items-start space-x-3 group">
+                <div className="bg-white/10 p-2 rounded-lg group-hover:bg-[#4CAF50] transition-colors flex-shrink-0">
+                  <Globe size={16} className="text-[#4CAF50] group-hover:text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-green-300 mb-1">{t.website}</p>
+                  <a
+                    href={WEBSITE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-green-100 hover:text-white transition-colors break-words"
+                  >
+                    {WEBSITE_DISPLAY}
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
 
