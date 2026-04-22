@@ -1,5 +1,5 @@
 // src/pages/NewsPhotos.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import ImageLogo from "../images/logo_white.png";
 import {
   Camera,
@@ -77,17 +77,167 @@ const post4ImageArray = sortImages(post4Images);
 const post5ImageArray = sortImages(post5Images);
 const post6ImageArray = sortImages(post6Images);
 
+// Base albums data without counts
+const basePhotoAlbums = [
+  {
+    id: 1,
+    title: {
+      km: "ឯកឧត្តម អ៊ឹម សិទ្ធីរ៉ា ជួបពិភាក្សាការងារជាមួយធនាគារអភិវឌ្ឍន៍អាស៊ី (ADB)",
+      en: "H.E. Im Sitthyra Meets with Asian Development Bank (ADB)",
+    },
+    date: "20 មករា 2026",
+    dateSort: "2026-01-20",
+    images: post1ImageArray,
+    coverImage: post1ImageArray[0],
+    description: {
+      km: "ក្នុងជំនួបនេះ ភាគីទាំងពីរបានពិភាក្សាអំពីកិច្ចសហប្រតិបត្តិការនាពេលខាងមុខ",
+      en: "During this meeting, both parties discussed future cooperation",
+    },
+    year: "2026",
+  },
+  {
+    id: 2,
+    title: {
+      km: "សិក្ខាសាលាស្តីពីការគ្រប់គ្រងលទ្ធកម្មដីធ្លី និងការរឹតបន្តឹងលើការប្រើប្រាស់ដីធ្លី",
+      en: "Workshop on Land Acquisition and Land Use Restriction Management",
+    },
+    date: "5 មីនា 2026",
+    dateSort: "2026-03-05",
+    images: post2ImageArray,
+    coverImage: post2ImageArray[0],
+    description: {
+      km: "សិក្ខាសាលាធ្វើឡើងក្រោមការដឹកនាំរបស់ឯកឧត្តម អុឹម សិទ្ធីរ៉ា",
+      en: "Workshop held under the leadership of H.E. Im Sitthyra",
+    },
+    year: "2026",
+  },
+  {
+    id: 3,
+    title: {
+      km: "សិក្ខាសាលាស្តីពីការអនុវត្តគោលនយោបាយដោះស្រាយផលប៉ះពាល់",
+      en: "Workshop on Impact Resolution Policy Implementation",
+    },
+    date: "15 មីនា 2026",
+    dateSort: "2026-03-15",
+    images: post3ImageArray,
+    coverImage: post3ImageArray[0],
+    description: {
+      km: "សិក្ខាសាលាស្តីពីការអនុវត្តគោលនយោបាយដោះស្រាយផលប៉ះពាល់ពីគម្រោងអភិវឌ្ឍន៍",
+      en: "Workshop on the implementation of impact resolution policies from development projects",
+    },
+    year: "2026",
+  },
+  {
+    id: 4,
+    title: {
+      km: "ពិធីបើកការដ្ឋានសាងសង់ហេដ្ឋារចនាសម្ព័ន្ធសហគមន៍",
+      en: "Community Infrastructure Construction Site Opening Ceremony",
+    },
+    date: "22 មីនា 2026",
+    dateSort: "2026-03-22",
+    images: post4ImageArray,
+    coverImage: post4ImageArray[0],
+    description: {
+      km: "ពិធីបើកការដ្ឋានសាងសង់ហេដ្ឋារចនាសម្ព័ន្ធសហគមន៍ក្រោមគម្រោងអភិវឌ្ឍន៍",
+      en: "Community infrastructure construction site opening ceremony under development projects",
+    },
+    year: "2026",
+  },
+  {
+    id: 5,
+    title: {
+      km: "កិច្ចប្រជុំប្រចាំខែរបស់អគ្គនាយកដ្ឋាន",
+      en: "General Department Monthly Meeting",
+    },
+    date: "28 មីនា 2026",
+    dateSort: "2026-03-28",
+    images: post5ImageArray,
+    coverImage: post5ImageArray[0],
+    description: {
+      km: "កិច្ចប្រជុំប្រចាំខែ ដើម្បីពិនិត្យវឌ្ឍនភាពការងារ និងរៀបចំផែនការសកម្មភាពបន្ត",
+      en: "Monthly meeting to review work progress and plan future activities",
+    },
+    year: "2026",
+  },
+  {
+    id: 6,
+    title: {
+      km: "ដំណើរទស្សនកិច្ចសិក្សានៅខេត្តព្រះសីហនុ",
+      en: "Study Visit to Preah Sihanouk Province",
+    },
+    date: "5 មេសា 2026",
+    dateSort: "2026-04-05",
+    images: post6ImageArray,
+    coverImage: post6ImageArray[0],
+    description: {
+      km: "ដំណើរទស្សនកិច្ចសិក្សារបស់មន្រ្តីអគ្គនាយកដ្ឋាននៅខេត្តព្រះសីហនុ",
+      en: "Study visit of General Department officials to Preah Sihanouk Province",
+    },
+    year: "2026",
+  },
+];
+
 const NewsPhotos = () => {
   const [selectedAlbum, setSelectedAlbum] = useState(null);
   const [showLightbox, setShowLightbox] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
-  const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
+  const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
-  const [sortBy, setSortBy] = useState("latest"); // "latest", "popular", "oldest"
+  const [sortBy, setSortBy] = useState("latest");
   const [showFilters, setShowFilters] = useState(false);
   const [currentLang, setCurrentLang] = useState("km");
+
+  // Load counts from localStorage
+  const [albumViews, setAlbumViews] = useState(() => {
+    const saved = localStorage.getItem('album_views');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const [albumLikes, setAlbumLikes] = useState(() => {
+    const saved = localStorage.getItem('album_likes');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const [albumShares, setAlbumShares] = useState(() => {
+    const saved = localStorage.getItem('album_shares');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  // Track which albums the user has liked (for like/unlike functionality)
+  const [userLikedAlbums, setUserLikedAlbums] = useState(() => {
+    const saved = localStorage.getItem('user_liked_albums');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  // Save counts to localStorage
+  useEffect(() => {
+    localStorage.setItem('album_views', JSON.stringify(albumViews));
+  }, [albumViews]);
+
+  useEffect(() => {
+    localStorage.setItem('album_likes', JSON.stringify(albumLikes));
+  }, [albumLikes]);
+
+  useEffect(() => {
+    localStorage.setItem('album_shares', JSON.stringify(albumShares));
+  }, [albumShares]);
+
+  useEffect(() => {
+    localStorage.setItem('user_liked_albums', JSON.stringify(userLikedAlbums));
+  }, [userLikedAlbums]);
+
+  // Merge base albums with stored counts - using useMemo to update when counts change
+  const photoAlbums = useMemo(() => {
+    return basePhotoAlbums.map(album => ({
+      ...album,
+      views: albumViews[album.id] || 0,
+      likes: albumLikes[album.id] || 0,
+      shares: albumShares[album.id] || 0,
+      userLiked: userLikedAlbums[album.id] || false,
+    }));
+  }, [albumViews, albumLikes, albumShares, userLikedAlbums]);
 
   // Touch swipe refs
   const touchStartX = useRef(0);
@@ -109,118 +259,6 @@ const NewsPhotos = () => {
     return () =>
       window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
-
-  // Photo albums data with all 6 posts
-  const photoAlbums = [
-    {
-      id: 1,
-      title: {
-        km: "ឯកឧត្តម អ៊ឹម សិទ្ធីរ៉ា ជួបពិភាក្សាការងារជាមួយធនាគារអភិវឌ្ឍន៍អាស៊ី (ADB)",
-        en: "H.E. Im Sitthyra Meets with Asian Development Bank (ADB)",
-      },
-      date: "20 មករា 2026",
-      dateSort: "2026-01-20",
-      views: 1247,
-      likes: 89,
-      images: post1ImageArray,
-      coverImage: post1ImageArray[0],
-      description: {
-        km: "ក្នុងជំនួបនេះ ភាគីទាំងពីរបានពិភាក្សាអំពីកិច្ចសហប្រតិបត្តិការនាពេលខាងមុខ",
-        en: "During this meeting, both parties discussed future cooperation",
-      },
-      year: "2026",
-    },
-    {
-      id: 2,
-      title: {
-        km: "សិក្ខាសាលាស្តីពីការគ្រប់គ្រងលទ្ធកម្មដីធ្លី និងការរឹតបន្តឹងលើការប្រើប្រាស់ដីធ្លី",
-        en: "Workshop on Land Acquisition and Land Use Restriction Management",
-      },
-      date: "5 មីនា 2026",
-      dateSort: "2026-03-05",
-      views: 856,
-      likes: 67,
-      images: post2ImageArray,
-      coverImage: post2ImageArray[0],
-      description: {
-        km: "សិក្ខាសាលាធ្វើឡើងក្រោមការដឹកនាំរបស់ឯកឧត្តម អុឹម សិទ្ធីរ៉ា",
-        en: "Workshop held under the leadership of H.E. Im Sitthyra",
-      },
-      year: "2026",
-    },
-    {
-      id: 3,
-      title: {
-        km: "សិក្ខាសាលាស្តីពីការអនុវត្តគោលនយោបាយដោះស្រាយផលប៉ះពាល់",
-        en: "Workshop on Impact Resolution Policy Implementation",
-      },
-      date: "15 មីនា 2026",
-      dateSort: "2026-03-15",
-      views: 2341,
-      likes: 156,
-      images: post3ImageArray,
-      coverImage: post3ImageArray[0],
-      description: {
-        km: "សិក្ខាសាលាស្តីពីការអនុវត្តគោលនយោបាយដោះស្រាយផលប៉ះពាល់ពីគម្រោងអភិវឌ្ឍន៍",
-        en: "Workshop on the implementation of impact resolution policies from development projects",
-      },
-      year: "2026",
-    },
-    {
-      id: 4,
-      title: {
-        km: "ពិធីបើកការដ្ឋានសាងសង់ហេដ្ឋារចនាសម្ព័ន្ធសហគមន៍",
-        en: "Community Infrastructure Construction Site Opening Ceremony",
-      },
-      date: "22 មីនា 2026",
-      dateSort: "2026-03-22",
-      views: 1876,
-      likes: 123,
-      images: post4ImageArray,
-      coverImage: post4ImageArray[0],
-      description: {
-        km: "ពិធីបើកការដ្ឋានសាងសង់ហេដ្ឋារចនាសម្ព័ន្ធសហគមន៍ក្រោមគម្រោងអភិវឌ្ឍន៍",
-        en: "Community infrastructure construction site opening ceremony under development projects",
-      },
-      year: "2026",
-    },
-    {
-      id: 5,
-      title: {
-        km: "កិច្ចប្រជុំប្រចាំខែរបស់អគ្គនាយកដ្ឋាន",
-        en: "General Department Monthly Meeting",
-      },
-      date: "28 មីនា 2026",
-      dateSort: "2026-03-28",
-      views: 567,
-      likes: 45,
-      images: post5ImageArray,
-      coverImage: post5ImageArray[0],
-      description: {
-        km: "កិច្ចប្រជុំប្រចាំខែ ដើម្បីពិនិត្យវឌ្ឍនភាពការងារ និងរៀបចំផែនការសកម្មភាពបន្ត",
-        en: "Monthly meeting to review work progress and plan future activities",
-      },
-      year: "2026",
-    },
-    {
-      id: 6,
-      title: {
-        km: "ដំណើរទស្សនកិច្ចសិក្សានៅខេត្តព្រះសីហនុ",
-        en: "Study Visit to Preah Sihanouk Province",
-      },
-      date: "5 មេសា 2026",
-      dateSort: "2026-04-05",
-      views: 945,
-      likes: 78,
-      images: post6ImageArray,
-      coverImage: post6ImageArray[0],
-      description: {
-        km: "ដំណើរទស្សនកិច្ចសិក្សារបស់មន្រ្តីអគ្គនាយកដ្ឋាននៅខេត្តព្រះសីហនុ",
-        en: "Study visit of General Department officials to Preah Sihanouk Province",
-      },
-      year: "2026",
-    },
-  ];
 
   // Translations
   const translations = {
@@ -247,9 +285,14 @@ const NewsPhotos = () => {
       photos: "រូបភាព",
       views: "មើល",
       likes: "ចូលចិត្ត",
+      shares: "ចែករំលែក",
       grid: "ទម្រង់ក្រឡា",
       list: "ទម្រង់បញ្ជី",
       itemsPerPage: "ចំនួនក្នុងមួយទំព័រ",
+      share: "ចែករំលែក",
+      shareVia: "ចែករំលែកតាម",
+      copyLink: "ចម្លងតំណ",
+      copied: "បានចម្លង!",
     },
     en: {
       title: "News Photo Gallery",
@@ -273,9 +316,14 @@ const NewsPhotos = () => {
       photos: "photos",
       views: "views",
       likes: "likes",
+      shares: "shares",
       grid: "Grid View",
       list: "List View",
       itemsPerPage: "Items per page",
+      share: "Share",
+      shareVia: "Share via",
+      copyLink: "Copy Link",
+      copied: "Copied!",
     },
   };
 
@@ -293,7 +341,7 @@ const NewsPhotos = () => {
       if (sortBy === "popular") return b.views - a.views;
       if (sortBy === "oldest")
         return new Date(a.dateSort) - new Date(b.dateSort);
-      return new Date(b.dateSort) - new Date(a.dateSort); // latest
+      return new Date(b.dateSort) - new Date(a.dateSort);
     });
 
   // Pagination
@@ -304,6 +352,11 @@ const NewsPhotos = () => {
   );
 
   const handleOpenAlbum = (album) => {
+    // Update view count when opening album
+    setAlbumViews(prev => ({
+      ...prev,
+      [album.id]: (prev[album.id] || 0) + 1
+    }));
     setSelectedAlbum(album);
     setSelectedImageIndex(null);
   };
@@ -312,6 +365,50 @@ const NewsPhotos = () => {
     setSelectedAlbum(null);
     setShowLightbox(false);
     setSelectedImageIndex(null);
+  };
+
+  // Toggle like/unlike for an album
+  const handleToggleLike = (albumId, e) => {
+    e.stopPropagation();
+    
+    const isLiked = userLikedAlbums[albumId];
+    
+    if (isLiked) {
+      // Unlike: decrease like count and remove from userLikedAlbums
+      setAlbumLikes(prev => ({
+        ...prev,
+        [albumId]: Math.max(0, (prev[albumId] || 0) - 1)
+      }));
+      setUserLikedAlbums(prev => {
+        const newState = { ...prev };
+        delete newState[albumId];
+        return newState;
+      });
+    } else {
+      // Like: increase like count and add to userLikedAlbums
+      setAlbumLikes(prev => ({
+        ...prev,
+        [albumId]: (prev[albumId] || 0) + 1
+      }));
+      setUserLikedAlbums(prev => ({
+        ...prev,
+        [albumId]: true
+      }));
+    }
+  };
+
+  const handleShare = (album, e) => {
+    e.stopPropagation();
+    // Update share count
+    setAlbumShares(prev => ({
+      ...prev,
+      [album.id]: (prev[album.id] || 0) + 1
+    }));
+    
+    // Copy link to clipboard
+    const url = `${window.location.origin}/photos/${album.id}`;
+    navigator.clipboard.writeText(url);
+    alert(t.copied);
   };
 
   const handleOpenLightbox = (index) => {
@@ -453,10 +550,24 @@ const NewsPhotos = () => {
                   <Eye size={12} />
                   <span>{album.views}</span>
                 </div>
-                <div className="flex items-center space-x-1 text-xs text-gray-500">
-                  <Heart size={12} />
+                <button
+                  onClick={(e) => handleToggleLike(album.id, e)}
+                  className={`flex items-center space-x-1 text-xs transition-colors ${
+                    album.userLiked 
+                      ? "text-red-500" 
+                      : "text-gray-500 hover:text-red-500"
+                  }`}
+                >
+                  <Heart size={12} fill={album.userLiked ? "currentColor" : "none"} />
                   <span>{album.likes}</span>
-                </div>
+                </button>
+                <button
+                  onClick={(e) => handleShare(album, e)}
+                  className="flex items-center space-x-1 text-xs text-gray-500 hover:text-[#4CAF50] transition-colors"
+                >
+                  <Share2 size={12} />
+                  <span>{album.shares || 0}</span>
+                </button>
               </div>
               <span className="text-xs text-[#4CAF50] font-medium flex items-center group-hover:translate-x-1 transition-transform">
                 {t.viewPhotos}
@@ -512,10 +623,24 @@ const NewsPhotos = () => {
                   <Eye size={12} />
                   <span>{album.views}</span>
                 </div>
-                <div className="flex items-center space-x-1 text-xs text-gray-500">
-                  <Heart size={12} />
+                <button
+                  onClick={(e) => handleToggleLike(album.id, e)}
+                  className={`flex items-center space-x-1 text-xs transition-colors ${
+                    album.userLiked 
+                      ? "text-red-500" 
+                      : "text-gray-500 hover:text-red-500"
+                  }`}
+                >
+                  <Heart size={12} fill={album.userLiked ? "currentColor" : "none"} />
                   <span>{album.likes}</span>
-                </div>
+                </button>
+                <button
+                  onClick={(e) => handleShare(album, e)}
+                  className="flex items-center space-x-1 text-xs text-gray-500 hover:text-[#4CAF50] transition-colors"
+                >
+                  <Share2 size={12} />
+                  <span>{album.shares || 0}</span>
+                </button>
               </div>
               <span className="text-xs text-[#4CAF50] font-medium flex items-center group-hover:translate-x-1 transition-transform">
                 {t.viewPhotos}
@@ -605,15 +730,13 @@ const NewsPhotos = () => {
             height: "20px",
             width: "20px",
             objectFit: "cover",
-            display: "inline", // Add this
+            display: "inline",
           }}
         />
       );
     }
     return (
       <>
-        {/* ✅ RUNNING TEXT FIXED UNDER HEADER */}
-
         <div
           className="
             running-text-bar
@@ -657,7 +780,6 @@ const NewsPhotos = () => {
           </div>
         </div>
 
-        {/* ✅ MARQUEE CSS */}
         <style jsx>{`
           @keyframes marquee {
             0% {
@@ -902,12 +1024,28 @@ const NewsPhotos = () => {
                     {selectedAlbum.views} {t.views}
                   </span>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <Heart size={14} />
+                <button
+                  onClick={(e) => handleToggleLike(selectedAlbum.id, e)}
+                  className={`flex items-center space-x-1 transition-colors ${
+                    selectedAlbum.userLiked 
+                      ? "text-red-500" 
+                      : "text-gray-500 hover:text-red-500"
+                  }`}
+                >
+                  <Heart size={14} fill={selectedAlbum.userLiked ? "currentColor" : "none"} />
                   <span>
                     {selectedAlbum.likes} {t.likes}
                   </span>
-                </div>
+                </button>
+                <button
+                  onClick={(e) => handleShare(selectedAlbum, e)}
+                  className="flex items-center space-x-1 hover:text-[#4CAF50] transition-colors"
+                >
+                  <Share2 size={14} />
+                  <span>
+                    {selectedAlbum.shares || 0} {t.shares}
+                  </span>
+                </button>
               </div>
             </div>
 

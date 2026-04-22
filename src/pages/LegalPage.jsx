@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   FileText, Search, Download, Eye, Calendar, Tag,
@@ -25,6 +24,8 @@ const LegalPage = () => {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [shareCount, setShareCount] = useState(0);
+  const [downloadCounts, setDownloadCounts] = useState({});
 
   const { loading, documents, totalPages, categories, total } =
     useLegalDocuments(page, 10, selectedCategory);
@@ -62,6 +63,16 @@ const LegalPage = () => {
     if (!html) return '';
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || '';
+  };
+
+  // Check if document has Khmer file
+  const hasKhmerFile = (doc) => {
+    return doc.pdfFileKh && doc.pdfFileKh !== '#';
+  };
+
+  // Check if document has English file
+  const hasEnglishFile = (doc) => {
+    return doc.pdfFileEn && doc.pdfFileEn !== '#';
   };
 
   const getCategoryDisplayName = (categoryKey) => {
@@ -141,6 +152,8 @@ const LegalPage = () => {
       pages: "ទំព័រ",
       description: "សេចក្តីសង្ខេប",
       keywords: "ពាក្យគន្លឹះ",
+      shares: "ចែករំលែក",
+      downloads: "ទាញយក",
     },
     en: {
       title: "Document collection",
@@ -183,6 +196,8 @@ const LegalPage = () => {
       pages: "Pages",
       description: "Description",
       keywords: "Keywords",
+      shares: "Shares",
+      downloads: "Downloads",
     },
   };
 
@@ -223,6 +238,12 @@ const LegalPage = () => {
   const handlePdfAction = (doc, action = "view", language = currentLang) => {
     const pdfUrl = language === "km" ? doc.pdfFileKh : doc.pdfFileEn;
     if (pdfUrl && pdfUrl !== "#") {
+      // Update download count
+      setDownloadCounts(prev => ({
+        ...prev,
+        [doc.id]: (prev[doc.id] || 0) + 1
+      }));
+      
       if (action === "download") {
         const link = document.createElement("a");
         link.href = pdfUrl;
@@ -237,6 +258,8 @@ const LegalPage = () => {
   const handleShare = (doc) => {
     setSelectedDocument(doc);
     setShowShareModal(true);
+    // Update share count
+    setShareCount(prev => prev + 1);
   };
 
   const handleCopyLink = () => {
@@ -453,6 +476,9 @@ const LegalPage = () => {
                 : doc.descriptionEn || doc.descriptionKh;
               const plainDescription = stripHtmlTags(description);
               const thumbnail = getThumbnail(doc);
+              const hasKh = hasKhmerFile(doc);
+              const hasEn = hasEnglishFile(doc);
+              const downloadCount = downloadCounts[doc.id] || 0;
 
               return (
                 <div
@@ -513,24 +539,34 @@ const LegalPage = () => {
                         >
                           <Eye size={13} />{t.view}
                         </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "km"); }}
-                          className="px-3 py-1.5 text-xs bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center gap-1"
-                        >
-                          <Download size={13} />{t.downloadKh}
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "en"); }}
-                          className="px-3 py-1.5 text-xs border border-[#4CAF50] text-[#4CAF50] rounded-lg hover:bg-[#4CAF50] hover:text-white transition-colors flex items-center gap-1"
-                        >
-                          <Download size={13} />{t.downloadEn}
-                        </button>
+                        {hasKh && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "km"); }}
+                            className="px-3 py-1.5 text-xs bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center gap-1"
+                          >
+                            <Download size={13} />{t.downloadKh}
+                          </button>
+                        )}
+                        {hasEn && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "en"); }}
+                            className="px-3 py-1.5 text-xs border border-[#4CAF50] text-[#4CAF50] rounded-lg hover:bg-[#4CAF50] hover:text-white transition-colors flex items-center gap-1"
+                          >
+                            <Download size={13} />{t.downloadEn}
+                          </button>
+                        )}
                         <button
                           onClick={(e) => { e.stopPropagation(); handleShare(doc); }}
                           className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
                         >
                           <Share2 size={13} />
                         </button>
+                        {downloadCount > 0 && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            <Download size={10} />
+                            {downloadCount}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -677,22 +713,26 @@ const LegalPage = () => {
                         <Eye size={12} className="sm:w-4 sm:h-4" />
                         <span>{t.viewPdf}</span>
                       </button>
-                      <button 
-                        onClick={() => handlePdfAction(selectedDocument, "download", "km")}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white text-xs sm:text-sm rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
-                      >
-                        <Download size={12} className="sm:w-4 sm:h-4" />
-                        <span className="hidden xs:inline">{t.downloadKh}</span>
-                        <span className="xs:hidden">ខ្មែរ</span>
-                      </button>
-                      <button 
-                        onClick={() => handlePdfAction(selectedDocument, "download", "en")}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 border border-[#4CAF50] text-[#2E7D32] text-xs sm:text-sm rounded-lg hover:bg-[#4CAF50] hover:text-white transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
-                      >
-                        <Download size={12} className="sm:w-4 sm:h-4" />
-                        <span className="hidden xs:inline">{t.downloadEn}</span>
-                        <span className="xs:hidden">EN</span>
-                      </button>
+                      {hasKhmerFile(selectedDocument) && (
+                        <button 
+                          onClick={() => handlePdfAction(selectedDocument, "download", "km")}
+                          className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white text-xs sm:text-sm rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
+                        >
+                          <Download size={12} className="sm:w-4 sm:h-4" />
+                          <span className="hidden xs:inline">{t.downloadKh}</span>
+                          <span className="xs:hidden">ខ្មែរ</span>
+                        </button>
+                      )}
+                      {hasEnglishFile(selectedDocument) && (
+                        <button 
+                          onClick={() => handlePdfAction(selectedDocument, "download", "en")}
+                          className="px-3 sm:px-4 py-1.5 sm:py-2 border border-[#4CAF50] text-[#2E7D32] text-xs sm:text-sm rounded-lg hover:bg-[#4CAF50] hover:text-white transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
+                        >
+                          <Download size={12} className="sm:w-4 sm:h-4" />
+                          <span className="hidden xs:inline">{t.downloadEn}</span>
+                          <span className="xs:hidden">EN</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

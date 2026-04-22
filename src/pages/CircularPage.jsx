@@ -20,7 +20,36 @@ const CircularPage = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
+  // Load counts from localStorage
+  const [shareCounts, setShareCounts] = useState(() => {
+    const saved = localStorage.getItem('circular_share_counts');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const [downloadCounts, setDownloadCounts] = useState(() => {
+    const saved = localStorage.getItem('circular_download_counts');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const [viewCounts, setViewCounts] = useState(() => {
+    const saved = localStorage.getItem('circular_view_counts');
+    return saved ? JSON.parse(saved) : {};
+  });
+
   const { loading, documents, totalPages, total } = useLegalDocuments(page, 10, "circular");
+
+  // Save counts to localStorage
+  useEffect(() => {
+    localStorage.setItem('circular_share_counts', JSON.stringify(shareCounts));
+  }, [shareCounts]);
+
+  useEffect(() => {
+    localStorage.setItem('circular_download_counts', JSON.stringify(downloadCounts));
+  }, [downloadCounts]);
+
+  useEffect(() => {
+    localStorage.setItem('circular_view_counts', JSON.stringify(viewCounts));
+  }, [viewCounts]);
 
   useEffect(() => {
     const handleLanguageChange = (e) => setCurrentLang(e.detail.language);
@@ -36,6 +65,49 @@ const CircularPage = () => {
     }
     return () => { document.body.style.overflow = "unset"; };
   }, [showModal, showShareModal]);
+
+  // Check if document has Khmer file
+  const hasKhmerFile = (doc) => {
+    return doc.pdfFileKh && doc.pdfFileKh !== '#';
+  };
+
+  // Check if document has English file
+  const hasEnglishFile = (doc) => {
+    return doc.pdfFileEn && doc.pdfFileEn !== '#';
+  };
+
+  // Check if title is in Khmer (has Khmer Unicode characters)
+  const isTitleKhmer = (title) => {
+    const khmerRegex = /[\u1780-\u17FF]/;
+    return khmerRegex.test(title);
+  };
+
+  // Get the appropriate download button configuration based on title language
+  const getDownloadButtonConfig = (doc) => {
+    const title = currentLang === 'km' ? doc.titleKh : doc.titleEn;
+    const isKhmerTitle = isTitleKhmer(title);
+    const hasKh = hasKhmerFile(doc);
+    const hasEn = hasEnglishFile(doc);
+    
+    // Priority 1: Khmer title + Khmer file exists
+    if (isKhmerTitle && hasKh) {
+      return { show: true, language: 'km', text: t.downloadKh };
+    }
+    // Priority 2: English title + English file exists
+    else if (!isKhmerTitle && hasEn) {
+      return { show: true, language: 'en', text: t.downloadEn };
+    }
+    // Priority 3: Fallback - Khmer file exists
+    else if (hasKh) {
+      return { show: true, language: 'km', text: t.downloadKh };
+    }
+    // Priority 4: Fallback - English file exists
+    else if (hasEn) {
+      return { show: true, language: 'en', text: t.downloadEn };
+    }
+    // No file available
+    return { show: false, language: null, text: '' };
+  };
 
   const stripHtmlTags = (html) => {
     if (!html) return '';
@@ -58,6 +130,7 @@ const CircularPage = () => {
       documents: "សារាចរ", clearFilters: "សម្អាតតម្រង", totalDocuments: "សារាចរសរុប",
       loading: "កំពុងផ្ទុក...", shareVia: "ចែករំលែកតាម", copyLink: "ចម្លងតំណ",
       copied: "បានចម្លង!", back: "ត្រលប់ក្រោយ", publishedDate: "ថ្ងៃចេញផ្សាយ",
+      shares: "ចែករំលែក", downloads: "ទាញយក", views: "ទស្សនា",
     },
     en: {
       title: "Circulars", subtitle: "Circulars and guidelines",
@@ -67,6 +140,7 @@ const CircularPage = () => {
       documents: "circulars", clearFilters: "Clear Filters", totalDocuments: "Total Circulars",
       loading: "Loading...", shareVia: "Share via", copyLink: "Copy Link",
       copied: "Copied!", back: "Back", publishedDate: "Published Date",
+      shares: "Shares", downloads: "Downloads", views: "Views",
     },
   };
 
@@ -93,27 +167,67 @@ const CircularPage = () => {
   const startItem = filteredDocuments.length > 0 ? (page - 1) * itemsPerPage + 1 : 0;
   const endItem = Math.min(page * itemsPerPage, filteredDocuments.length);
 
-  const handleDocumentClick = (doc) => { setSelectedDocument(doc); setShowModal(true); };
-  const handlePdfAction = (doc, action = "view", language = currentLang) => {
+  const handleDocumentClick = (doc) => {
+    // Update view count
+    setViewCounts(prev => ({
+      ...prev,
+      [doc.id]: (prev[doc.id] || 0) + 1
+    }));
+    setSelectedDocument(doc);
+    setShowModal(true);
+  };
+
+  const handleViewPdf = (doc, language = currentLang) => {
     const pdfUrl = language === "km" ? doc.pdfFileKh : doc.pdfFileEn;
     if (pdfUrl && pdfUrl !== "#") {
-      if (action === "download") {
-        const link = document.createElement("a");
-        link.href = pdfUrl;
-        link.download = `${language === "km" ? doc.titleKh : doc.titleEn}.pdf`;
-        link.click();
-      } else {
-        window.open(pdfUrl, "_blank");
-      }
+      // Update view count for PDF view
+      setViewCounts(prev => ({
+        ...prev,
+        [doc.id]: (prev[doc.id] || 0) + 1
+      }));
+      window.open(pdfUrl, "_blank");
     }
   };
-  const handleShare = (doc) => { setSelectedDocument(doc); setShowShareModal(true); };
+
+  const handleDownload = (doc, language) => {
+    const pdfUrl = language === "km" ? doc.pdfFileKh : doc.pdfFileEn;
+    if (pdfUrl && pdfUrl !== "#") {
+      // Update download count
+      setDownloadCounts(prev => ({
+        ...prev,
+        [doc.id]: (prev[doc.id] || 0) + 1
+      }));
+      
+      const fileName = language === "km" ? doc.titleKh : doc.titleEn;
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = `${fileName}.pdf`;
+      link.click();
+    }
+  };
+
+  const handleShare = (doc) => {
+    setSelectedDocument(doc);
+    setShowShareModal(true);
+  };
+
+  const handleShareConfirm = () => {
+    if (selectedDocument) {
+      setShareCounts(prev => ({
+        ...prev,
+        [selectedDocument.id]: (prev[selectedDocument.id] || 0) + 1
+      }));
+    }
+  };
+
   const handleCopyLink = () => {
     const url = `${window.location.origin}/legal/circular/${selectedDocument?.id}`;
     navigator.clipboard.writeText(url);
     setCopySuccess(true);
+    handleShareConfirm();
     setTimeout(() => setCopySuccess(false), 2000);
   };
+
   const handleShareToSocial = (platform) => {
     const url = `${window.location.origin}/legal/circular/${selectedDocument?.id}`;
     const title = currentLang === "km" ? selectedDocument?.titleKh : selectedDocument?.titleEn;
@@ -123,8 +237,12 @@ const CircularPage = () => {
       linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`,
       telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
     };
-    if (shareUrls[platform]) window.open(shareUrls[platform], "_blank", "width=600,height=500");
+    if (shareUrls[platform]) {
+      handleShareConfirm();
+      window.open(shareUrls[platform], "_blank", "width=600,height=500");
+    }
   };
+
   const clearFilters = () => { setSearchTerm(""); setPage(1); };
 
   return (
@@ -161,6 +279,13 @@ const CircularPage = () => {
               const description = currentLang === "km" ? doc.descriptionKh || doc.descriptionEn : doc.descriptionEn || doc.descriptionKh;
               const plainDescription = stripHtmlTags(description);
               const thumbnail = getThumbnail(doc);
+              const downloadCount = downloadCounts[doc.id] || 0;
+              const shareCount = shareCounts[doc.id] || 0;
+              const viewCount = viewCounts[doc.id] || 0;
+              
+              // Get download button config based on title language
+              const btnConfig = getDownloadButtonConfig(doc);
+              
               return (
                 <div key={doc.id} className="bg-white rounded-xl border border-gray-200 hover:shadow-md hover:border-[#4CAF50]/30 transition-all duration-200 cursor-pointer overflow-hidden" onClick={() => handleDocumentClick(doc)}>
                   <div className="flex flex-col sm:flex-row p-4 gap-4">
@@ -173,11 +298,44 @@ const CircularPage = () => {
                       <div className="flex items-center text-xs text-gray-400 mb-2"><Calendar size={12} className="mr-1" /><span>{formatDate(doc.publishedDate)}</span>{doc.documentNumber && <><span className="mx-2">•</span><ScrollText size={12} className="mr-1" /><span>{doc.documentNumber}</span></>}</div>
                       <h3 className="font-semibold text-gray-900 text-base mb-2 line-clamp-2 hover:text-[#2E7D32] transition-colors">{title}</h3>
                       {plainDescription && <p className="text-sm text-gray-500 mb-3 line-clamp-2">{plainDescription}</p>}
+                      <div className="flex items-center gap-3 mb-3 text-[10px] sm:text-xs text-gray-400">
+                        <span className="flex items-center gap-1"><Eye size={10} />{viewCount + (doc.views || 0)} {t.views}</span>
+                      </div>
                       <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                        <button onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "view"); }} className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-1"><Eye size={13} />{t.view}</button>
-                        <button onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "km"); }} className="px-3 py-1.5 text-xs bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] flex items-center gap-1"><Download size={13} />{t.downloadKh}</button>
-                        <button onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "en"); }} className="px-3 py-1.5 text-xs border border-[#4CAF50] text-[#4CAF50] rounded-lg hover:bg-[#4CAF50] hover:text-white flex items-center gap-1"><Download size={13} />{t.downloadEn}</button>
+                        <button onClick={(e) => { e.stopPropagation(); handleViewPdf(doc); }} className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-1"><Eye size={13} />{t.view}</button>
+                        
+                        {/* Single conditional download button based on title language */}
+                        {btnConfig.show && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDownload(doc, btnConfig.language); }}
+                            className={`px-3 py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1 ${
+                              btnConfig.language === 'km'
+                                ? 'bg-[#4CAF50] text-white hover:bg-[#2E7D32]'
+                                : 'border border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white'
+                            }`}
+                          >
+                            <Download size={13} />
+                            {btnConfig.text}
+                          </button>
+                        )}
+                        
                         <button onClick={(e) => { e.stopPropagation(); handleShare(doc); }} className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50"><Share2 size={13} /></button>
+                        
+                        {/* Stats counters */}
+                        <div className="flex items-center gap-2 ml-auto">
+                          {downloadCount > 0 && (
+                            <span className="text-xs text-gray-400 flex items-center gap-1" title={t.downloads}>
+                              <Download size={10} />
+                              {downloadCount}
+                            </span>
+                          )}
+                          {shareCount > 0 && (
+                            <span className="text-xs text-gray-400 flex items-center gap-1" title={t.shares}>
+                              <Share2 size={10} />
+                              {shareCount}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -198,22 +356,165 @@ const CircularPage = () => {
         )}
       </Container>
 
-      {/* Modal and Share Modal similar to LawPage but with cyan colors */}
+      {/* Document Detail Modal - Updated with conditional download button and stats */}
       {showModal && selectedDocument && (
         <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
-          <div className="min-h-screen px-4 py-8"><div className="max-w-4xl mx-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-100 z-10 py-4 mb-6"><div className="flex items-center justify-between"><button onClick={() => setShowModal(false)} className="flex items-center space-x-2 text-gray-500 hover:text-[#2E7D32] group"><ChevronRightIcon size={16} className="rotate-180 group-hover:-translate-x-1 transition-transform" /><span className="text-sm">{t.back}</span></button><button onClick={() => handleShare(selectedDocument)} className="p-2 hover:bg-[#4CAF50] hover:bg-opacity-10 rounded-lg"><Share2 size={14} /></button></div></div>
-            <div className="flex flex-col md:flex-row gap-6"><div className="relative w-56 h-auto min-h-[288px] bg-gray-100 rounded-xl overflow-hidden shadow-lg flex-shrink-0 mx-auto md:mx-0"><img src={getThumbnail(selectedDocument)} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.src = defaultThumbnail; }} /><div className="absolute top-3 right-3 bg-cyan-500 text-white px-2 py-1 rounded-lg text-xs font-medium">PDF</div></div><div className="flex-1"><span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${getCategoryColor()}`}>{getCategoryIcon()}{getCategoryDisplayName()}</span><h2 className="text-2xl font-medium text-gray-900 mt-2 mb-4">{currentLang === 'km' ? selectedDocument.titleKh : selectedDocument.titleEn}</h2></div></div>
-            <div className="mt-6 bg-cyan-50 rounded-lg p-6 border border-cyan-200"><div className="flex flex-col sm:flex-row items-center justify-between gap-4"><div className="flex items-center space-x-3"><ScrollText size={20} className="text-cyan-600" /><div><h4 className="text-sm font-medium text-gray-900">{currentLang === 'km' ? selectedDocument.titleKh : selectedDocument.titleEn}</h4><p className="text-xs text-gray-500">PDF</p></div></div><div className="flex gap-3"><button onClick={() => handlePdfAction(selectedDocument, "view")} className="px-4 py-2 bg-white border border-cyan-500 text-cyan-600 text-sm rounded-lg hover:bg-cyan-500 hover:text-white flex items-center gap-2"><Eye size={14} />{t.viewPdf}</button><button onClick={() => handlePdfAction(selectedDocument, "download", "km")} className="px-4 py-2 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white text-sm rounded-lg hover:shadow-lg flex items-center gap-2"><Download size={14} />{t.downloadKh}</button></div></div></div>
-          </div></div>
+          <div className="min-h-screen px-4 py-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-100 z-10 py-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <button onClick={() => setShowModal(false)} className="flex items-center space-x-2 text-gray-500 hover:text-[#2E7D32] group">
+                    <ChevronRightIcon size={16} className="rotate-180 group-hover:-translate-x-1 transition-transform" />
+                    <span className="text-sm">{t.back}</span>
+                  </button>
+                  <button onClick={() => handleShare(selectedDocument)} className="p-2 hover:bg-[#4CAF50] hover:bg-opacity-10 rounded-lg">
+                    <Share2 size={14} />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="relative w-56 h-auto min-h-[288px] bg-gray-100 rounded-xl overflow-hidden shadow-lg flex-shrink-0 mx-auto md:mx-0">
+                  <img src={getThumbnail(selectedDocument)} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.src = defaultThumbnail; }} />
+                  <div className="absolute top-3 right-3 bg-cyan-500 text-white px-2 py-1 rounded-lg text-xs font-medium">PDF</div>
+                </div>
+                <div className="flex-1">
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${getCategoryColor()}`}>
+                    {getCategoryIcon()}{getCategoryDisplayName()}
+                  </span>
+                  <h2 className="text-2xl font-medium text-gray-900 mt-2 mb-4">
+                    {currentLang === 'km' ? selectedDocument.titleKh : selectedDocument.titleEn}
+                  </h2>
+                </div>
+              </div>
+              
+              {/* Meta Info Grid */}
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <Calendar size={14} className="text-[#4CAF50] mb-2" />
+                  <div className="text-xs text-gray-500">{t.publishedDate}</div>
+                  <div className="text-sm font-medium text-gray-900">{formatDate(selectedDocument.publishedDate)}</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <ScrollText size={14} className="text-[#4CAF50] mb-2" />
+                  <div className="text-xs text-gray-500">{t.documentNumber}</div>
+                  <div className="text-sm font-medium text-gray-900">{selectedDocument.documentNumber || '-'}</div>
+                </div>
+              </div>
+              
+              {/* Stats Row */}
+              <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg mt-4">
+                <div className="flex items-center gap-2">
+                  <Eye size={14} className="text-[#4CAF50]" />
+                  <span className="text-sm text-gray-600">
+                    {t.views}: {(viewCounts[selectedDocument.id] || 0) + (selectedDocument.views || 0)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Download size={14} className="text-[#4CAF50]" />
+                  <span className="text-sm text-gray-600">
+                    {t.downloads}: {downloadCounts[selectedDocument.id] || 0}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Share2 size={14} className="text-[#4CAF50]" />
+                  <span className="text-sm text-gray-600">
+                    {t.shares}: {shareCounts[selectedDocument.id] || 0}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Download & View Section - Now follows title language rule */}
+              <div className="mt-6 bg-cyan-50 rounded-lg p-6 border border-cyan-200">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center space-x-3">
+                    <ScrollText size={20} className="text-cyan-600" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">
+                        {currentLang === 'km' ? selectedDocument.titleKh : selectedDocument.titleEn}
+                      </h4>
+                      <p className="text-xs text-gray-500">PDF</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button 
+                      onClick={() => handleViewPdf(selectedDocument)} 
+                      className="px-4 py-2 bg-white border border-cyan-500 text-cyan-600 text-sm rounded-lg hover:bg-cyan-500 hover:text-white flex items-center gap-2"
+                    >
+                      <Eye size={14} />{t.viewPdf}
+                    </button>
+                    
+                    {/* Single conditional download button based on title language */}
+                    {(() => {
+                      const btnConfig = getDownloadButtonConfig(selectedDocument);
+                      if (btnConfig.show) {
+                        return (
+                          <button 
+                            onClick={() => handleDownload(selectedDocument, btnConfig.language)}
+                            className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 flex items-center gap-2 ${
+                              btnConfig.language === 'km'
+                                ? 'bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white hover:shadow-lg'
+                                : 'border border-cyan-500 text-cyan-600 hover:bg-cyan-500 hover:text-white'
+                            }`}
+                          >
+                            <Download size={14} />
+                            <span className="hidden xs:inline">{btnConfig.text}</span>
+                            <span className="xs:hidden">{btnConfig.language === 'km' ? 'ខ្មែរ' : 'EN'}</span>
+                          </button>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
+      {/* Share Modal */}
       {showShareModal && selectedDocument && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"><div className="bg-white rounded-2xl max-w-md w-full p-6"><div className="flex items-center justify-between mb-4"><h3 className="text-lg font-medium text-gray-900">{t.shareVia}</h3><button onClick={() => setShowShareModal(false)} className="p-1 hover:bg-gray-100 rounded-lg"><X size={18} /></button></div><div className="grid grid-cols-2 gap-3 mb-4"><button onClick={() => handleShareToSocial('facebook')} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1877F2] text-white rounded-lg"><Facebook size={14} />Facebook</button><button onClick={() => handleShareToSocial('twitter')} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1DA1F2] text-white rounded-lg"><Twitter size={14} />Twitter</button><button onClick={() => handleShareToSocial('linkedin')} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#0077B5] text-white rounded-lg"><Linkedin size={14} />LinkedIn</button><button onClick={() => handleShareToSocial('telegram')} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#26A5E4] text-white rounded-lg"><MessageCircle size={14} />Telegram</button></div><div className="flex items-center gap-2"><input type="text" value={`${window.location.origin}/legal/circular/${selectedDocument.id}`} readOnly className="flex-1 px-3 py-2 border rounded-lg text-sm bg-gray-50" /><button onClick={handleCopyLink} className="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] flex items-center gap-2">{copySuccess ? <Check size={14} /> : <Copy size={14} />}<span>{copySuccess ? t.copied : t.copyLink}</span></button></div></div></div>
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">{t.shareVia}</h3>
+              <button onClick={() => setShowShareModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <button onClick={() => handleShareToSocial('facebook')} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1877F2] text-white rounded-lg">
+                <Facebook size={14} />Facebook
+              </button>
+              <button onClick={() => handleShareToSocial('twitter')} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1DA1F2] text-white rounded-lg">
+                <Twitter size={14} />Twitter
+              </button>
+              <button onClick={() => handleShareToSocial('linkedin')} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#0077B5] text-white rounded-lg">
+                <Linkedin size={14} />LinkedIn
+              </button>
+              <button onClick={() => handleShareToSocial('telegram')} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#26A5E4] text-white rounded-lg">
+                <MessageCircle size={14} />Telegram
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="text" value={`${window.location.origin}/legal/circular/${selectedDocument.id}`} readOnly className="flex-1 px-3 py-2 border rounded-lg text-sm bg-gray-50" />
+              <button onClick={handleCopyLink} className="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] flex items-center gap-2">
+                {copySuccess ? <Check size={14} /> : <Copy size={14} />}
+                <span>{copySuccess ? t.copied : t.copyLink}</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
-      <style jsx>{`.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }`}</style>
+      <style jsx>{`
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        @media (min-width: 480px) {
+          .xs\\:inline { display: inline; }
+          .xs\\:hidden { display: none; }
+        }
+      `}</style>
     </div>
   );
 };

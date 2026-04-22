@@ -82,17 +82,17 @@ const RolesResponsibilitiesPage = () => {
 
   // Department data (can be moved to API later)
   const departmentList = [
-    { name: currentLang === "km" ? "នាយកដ្ឋានកិច្ចការទូទៅ" : "Department of General Affairs", icon: <Building2 size={20} /> },
-    { name: currentLang === "km" ? "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ១" : "Impact Resolution Department 1", icon: <Building2 size={20} /> },
-    { name: currentLang === "km" ? "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ២" : "Impact Resolution Department 2", icon: <Building2 size={20} /> },
-    { name: currentLang === "km" ? "នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ៣" : "Impact Resolution Department 3", icon: <Building2 size={20} /> },
-    { name: currentLang === "km" ? "នាយកដ្ឋានត្រួតពិនិត្យផ្ទៃក្នុង និងគ្រប់គ្រងទិន្នន័យ" : "Department of Internal Inspection and Data Management", icon: <Building2 size={20} /> },
+    { name: currentLang === "km" ? "១.នាយកដ្ឋានកិច្ចការទូទៅ" : "1.Department of General Affairs", icon: <Building2 size={20} /> },
+    { name: currentLang === "km" ? "២.នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ១" : "2.Impact Resolution Department 1", icon: <Building2 size={20} /> },
+    { name: currentLang === "km" ? "៣.នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ២" : "3.Impact Resolution Department 2", icon: <Building2 size={20} /> },
+    { name: currentLang === "km" ? "៤.នាយកដ្ឋានដោះស្រាយផលប៉ះពាល់ទី ៣" : "4.Impact Resolution Department 3", icon: <Building2 size={20} /> },
+    { name: currentLang === "km" ? "៥.នាយកដ្ឋានត្រួតពិនិត្យផ្ទៃក្នុង និងគ្រប់គ្រងទិន្នន័យ" : "5.Department of Internal Inspection and Data Management", icon: <Building2 size={20} /> },
   ];
 
   const leadershipList = [
-    { role: currentLang === "km" ? "អគ្គនាយក" : "Director General", icon: <Users size={20} /> },
-    { role: currentLang === "km" ? "អគ្គនាយករង" : "Deputy Director General", icon: <Users size={20} /> },
-    { role: currentLang === "km" ? "ប្រធាននាយកដ្ឋាន" : "Department Director", icon: <Users size={20} /> },
+    { role: currentLang === "km" ? "៦.អគ្គនាយក" : "6.Director General", icon: <Users size={20} /> },
+    { role: currentLang === "km" ? "៧.អគ្គនាយករង" : "7.Deputy Director General", icon: <Users size={20} /> },
+    { role: currentLang === "km" ? "៨.ប្រធាននាយកដ្ឋាន" : "8.Department Director", icon: <Users size={20} /> },
   ];
 
   // Show loading state

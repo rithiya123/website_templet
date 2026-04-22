@@ -13,6 +13,35 @@ import {
   Users,
   FileText,
   Building2,
+  BarChart3,
+  Library,
+  Mic,
+  Briefcase,
+  MessageCircle,
+  Calendar,
+  Image,
+  Video,
+  Book,
+  FileSignature,
+  Megaphone,
+  FileCheck,
+  ScrollText,
+  ChevronDown,
+  Scale,
+  Newspaper,
+  FolderTree,
+  PieChart,
+  Phone,
+  Link2,
+  Camera,
+  PlayCircle,
+  Gavel,
+  CheckSquare,
+  Scroll,
+  Building,
+  Target,
+  HeartHandshake,
+  Map
 } from "lucide-react";
 import Container from "../ui/Container";
 import { useFooter } from "../../hooks/useFooter";
@@ -40,6 +69,13 @@ const TelegramIcon = () => (
 
 const Footer = () => {
   const [currentLang, setCurrentLang] = useState("km");
+  const [openSections, setOpenSections] = useState({
+    about: false,
+    news: false,
+    documents: false,
+    legalDocuments: false,
+    reports: false
+  });
   const location = useLocation();
 
   const { 
@@ -90,6 +126,13 @@ const Footer = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   const translations = {
     km: {
       address: "អាសយដ្ឋាន",
@@ -99,9 +142,22 @@ const Footer = () => {
       home: "ទំព័រដើម",
       news: "ព័ត៌មាន និង ព្រឹត្តិការណ៍",
       about: "អំពីអគ្គនាយកដ្ឋាន",
-      legal: "លិខិតបទដ្ឋានគតិយុត្ត",
-      aboutSub2: "តួនាទី និងភារកិច្ច",
-      aboutSub3: "សារអគ្គនាយក",
+      documents: "បណ្តុំឯកសារ",
+      legalDocuments: "លិខិតបទដ្ឋានគតិយុត្ត",
+      reports: "របាយការណ៍",
+      ssmr: "របាយការណ៍ SSMR",
+      drp: "របាយការណ៍ DRP",
+      management: "រចនាសម្ព័ន្ធនៃការគ្រប់គ្រង",
+      roles: "តួនាទី និងភារកិច្ច",
+      directorMessage: "សារអគ្គនាយក",
+      speech: "សុន្ទរកថា",
+      newsMain: "ព័ត៌មាន",
+      photos: "កម្រងរូបភាព",
+      videos: "កម្រងវីដេអូ",
+      law: "ច្បាប់",
+      subDecree: "អនុក្រឹត្យ",
+      circular: "សារាចរ",
+      declaration: "ប្រកាស",
       backToTop: "ត្រលប់ទៅកំពូល",
       location: "ទីតាំង",
       viewMap: "មើលផែនទីធំ",
@@ -116,9 +172,22 @@ const Footer = () => {
       home: "Home",
       news: "News & Events",
       about: "About Department",
-      legal: "Legal Documents",
-      aboutSub2: "Roles & Responsibilities",
-      aboutSub3: "Director's Message",
+      documents: "Document Collection",
+      legalDocuments: "Legal Documents",
+      reports: "Reports",
+      ssmr: "SSMR Report",
+      drp: "DRP Report",
+      management: "Management Structure",
+      roles: "Roles & Responsibilities",
+      directorMessage: "Director's Message",
+      speech: "Speech",
+      newsMain: "News",
+      photos: "Photo Gallery",
+      videos: "Video Gallery",
+      law: "Law",
+      subDecree: "Sub-Decree",
+      circular: "Circular",
+      declaration: "Declaration",
       backToTop: "Back to top",
       location: "Location",
       viewMap: "View larger map",
@@ -129,16 +198,38 @@ const Footer = () => {
 
   const t = translations[currentLang];
 
+  // Quick links based on Navigation menu structure with icons
   const quickLinksList = [
     { label: t.home, path: "/", icon: <Home size={14} /> },
-    { label: t.news, path: "/news", icon: <Globe size={14} /> },
-    { label: t.about, path: "/about", icon: <Info size={14} /> },
-    { label: t.legal, path: "/legal", icon: <FileText size={14} /> },
   ];
 
+  // About sub-links with icons
   const aboutSubLinks = [
-    { label: t.aboutSub2, path: "/about/roles", icon: <Shield size={12} /> },
-    { label: t.aboutSub3, path: "/about/director-message", icon: <Info size={12} /> },
+    { label: t.management, path: "/about/management", icon: <Building size={12} /> },
+    { label: t.roles, path: "/about/roles", icon: <Briefcase size={12} /> },
+    { label: t.directorMessage, path: "/about/director-message", icon: <MessageCircle size={12} /> },
+    { label: t.speech, path: "/about/speech", icon: <Mic size={12} /> },
+  ];
+
+  // News sub-links with icons
+  const newsSubLinks = [
+    { label: t.newsMain, path: "/news", icon: <Newspaper size={12} /> },
+    { label: t.photos, path: "/news/photos", icon: <Camera size={12} /> },
+    { label: t.videos, path: "/news/videos", icon: <PlayCircle size={12} /> },
+  ];
+
+  // Legal Documents nested items with icons
+  const legalNestedItems = [
+    { label: t.law, path: "/legal/law", icon: <Gavel size={12} /> },
+    { label: t.subDecree, path: "/legal/sub-decree", icon: <FileText size={12} /> },
+    { label: t.circular, path: "/legal/circular", icon: <FileSignature size={12} /> },
+    { label: t.declaration, path: "/legal/declaration", icon: <Megaphone size={12} /> },
+  ];
+
+  // Reports sub-links with icons
+  const reportsSubLinks = [
+    { label: t.ssmr, path: "/reports?type=ssmr", icon: <CheckSquare size={12} /> },
+    { label: t.drp, path: "/reports?type=drp", icon: <Scroll size={12} /> },
   ];
 
   const socialMediaList = [
@@ -181,8 +272,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Column */}
           <div className="space-y-5">
-            <div className="flex flex-col items-start gap-3 group">
-              <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm">
+            <Link to="/" className="flex flex-col items-start gap-3 group transition-all duration-300 hover:opacity-90">
+              <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm transition-all duration-300 group-hover:bg-white/20 group-hover:shadow-lg">
                 <img
                   src={apiLogo || logoImage}
                   alt={currentLang === "km" ? contact.titleKh : contact.titleEn}
@@ -191,17 +282,14 @@ const Footer = () => {
                 />
               </div>
               <div className="min-w-0">
-                <h3 className="font-bold text-base sm:text-lg leading-tight text-white break-words">
+                <h3 className="font-bold text-base sm:text-lg leading-tight text-white break-words transition-all duration-300 group-hover:text-green-200">
                   {currentLang === "km" ? contact.titleKh : contact.titleEn}
                 </h3>
               </div>
-            </div>
+            </Link>
 
             {/* Social Media Icons */}
             <div className="space-y-3">
-              <p className="text-xs text-green-300 font-medium uppercase tracking-wider">
-                {t.followUs}
-              </p>
               <div className="flex items-center gap-2">
                 {socialMediaList.map((social) => (
                   <a
@@ -252,7 +340,7 @@ const Footer = () => {
                     <p className="text-xs text-green-300 mb-1">{t.email}</p>
                     <a
                       href={`mailto:${email}`}
-                      className="text-sm text-green-100 hover:text-white transition-colors break-words"
+                      className="text-sm text-green-100 hover:text-white transition-colors break-words flex items-center gap-1"
                     >
                       {email}
                     </a>
@@ -260,7 +348,7 @@ const Footer = () => {
                 </div>
               )}
 
-              {/* Website — hardcoded, always shown below email */}
+              {/* Website */}
               <div className="flex items-start space-x-3 group">
                 <div className="bg-white/10 p-2 rounded-lg group-hover:bg-[#4CAF50] transition-colors flex-shrink-0">
                   <Globe size={16} className="text-[#4CAF50] group-hover:text-white" />
@@ -271,7 +359,7 @@ const Footer = () => {
                     href={WEBSITE_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-green-100 hover:text-white transition-colors break-words"
+                    className="text-sm text-green-100 hover:text-white transition-colors break-words flex items-center gap-1"
                   >
                     {WEBSITE_DISPLAY}
                   </a>
@@ -280,41 +368,168 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links Column */}
-          <div className="space-y-5">
+          {/* Quick Links Column with Dropdowns */}
+          <div className="space-y-4">
             <h4 className="font-semibold text-white flex items-center text-base sm:text-lg">
               <span className="w-8 h-0.5 bg-[#4CAF50] mr-2"></span>
               {t.quickLinks}
             </h4>
 
-            <ul className="space-y-3">
+            {/* Main Quick Links */}
+            <ul className="space-y-2">
               {quickLinksList.map((link, index) => (
                 <li key={index}>
                   <Link to={link.path} className="group flex items-center text-sm text-green-200 hover:text-white transition-colors">
                     <ChevronRight size={14} className="mr-2 text-[#4CAF50] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                    <span className="mr-2">{link.icon}</span>
                     <span className="break-words">{link.label}</span>
                   </Link>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-6">
-              <div className="flex items-center space-x-2 mb-3">
-                <span className="w-6 h-px bg-[#4CAF50]"></span>
-                <span className="text-xs text-green-300 font-medium uppercase tracking-wider">
-                  {t.about}
-                </span>
+            {/* About Dropdown Section */}
+            <div className="mt-4">
+              <button
+                onClick={() => toggleSection('about')}
+                className="w-full flex items-center justify-between text-sm text-green-200 hover:text-white transition-colors group py-1"
+              >
+                <div className="flex items-center">
+                  <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span>
+                  <Info size={12} className="mr-2 text-[#4CAF50]" />
+                  <span className="font-medium">{t.about}</span>
+                </div>
+                <ChevronDown 
+                  size={14} 
+                  className={`transition-transform duration-200 ${openSections.about ? 'rotate-180' : ''}`}
+                />
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSections.about ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                <ul className="space-y-2 pl-4 border-l-2 border-[#4CAF50]/30">
+                  {aboutSubLinks.map((link, index) => (
+                    <li key={index}>
+                      <Link to={link.path} className="group flex items-center text-xs text-green-300 hover:text-white transition-colors">
+                        <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span>
+                        <span className="mr-2">{link.icon}</span>
+                        <span className="break-words">{link.label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-2 pl-2">
-                {aboutSubLinks.map((link, index) => (
-                  <li key={index}>
-                    <Link to={link.path} className="group flex items-center text-sm text-green-300 hover:text-white transition-colors">
-                      <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span>
-                      <span className="break-words">{link.label}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            </div>
+
+            {/* News Dropdown Section */}
+            <div>
+              <button
+                onClick={() => toggleSection('news')}
+                className="w-full flex items-center justify-between text-sm text-green-200 hover:text-white transition-colors group py-1"
+              >
+                <div className="flex items-center">
+                  <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span>
+                  <Newspaper size={12} className="mr-2 text-[#4CAF50]" />
+                  <span className="font-medium">{t.news}</span>
+                </div>
+                <ChevronDown 
+                  size={14} 
+                  className={`transition-transform duration-200 ${openSections.news ? 'rotate-180' : ''}`}
+                />
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSections.news ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                <ul className="space-y-2 pl-4 border-l-2 border-[#4CAF50]/30">
+                  {newsSubLinks.map((link, index) => (
+                    <li key={index}>
+                      <Link to={link.path} className="group flex items-center text-xs text-green-300 hover:text-white transition-colors">
+                        <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span>
+                        <span className="mr-2">{link.icon}</span>
+                        <span className="break-words">{link.label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Documents Dropdown Section with Nested Legal Documents */}
+            <div>
+              <button
+                onClick={() => toggleSection('documents')}
+                className="w-full flex items-center justify-between text-sm text-green-200 hover:text-white transition-colors group py-1"
+              >
+                <div className="flex items-center">
+                  <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span>
+                  <FolderTree size={12} className="mr-2 text-[#4CAF50]" />
+                  <span className="font-medium">{t.documents}</span>
+                </div>
+                <ChevronDown 
+                  size={14} 
+                  className={`transition-transform duration-200 ${openSections.documents ? 'rotate-180' : ''}`}
+                />
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSections.documents ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                <div className="pl-4">
+                  {/* Legal Documents - Nested Dropdown */}
+                  <div>
+                    <button
+                      onClick={() => toggleSection('legalDocuments')}
+                      className="w-full flex items-center justify-between text-xs text-green-300 hover:text-white transition-colors group py-1.5"
+                    >
+                      <div className="flex items-center">
+                        <Scale size={12} className="mr-2 text-[#4CAF50]" />
+                        <span>{t.legalDocuments}</span>
+                      </div>
+                      <ChevronDown 
+                        size={12} 
+                        className={`transition-transform duration-200 ${openSections.legalDocuments ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSections.legalDocuments ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                      <ul className="space-y-1.5 pl-6 border-l-2 border-[#4CAF50]/20">
+                        {legalNestedItems.map((link, index) => (
+                          <li key={index}>
+                            <Link to={link.path} className="group flex items-center text-[11px] text-green-400 hover:text-white transition-colors">
+                              <span className="mr-1.5 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span>
+                              <span className="mr-1.5">{link.icon}</span>
+                              <span className="break-words">{link.label}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Reports Dropdown Section */}
+            <div>
+              <button
+                onClick={() => toggleSection('reports')}
+                className="w-full flex items-center justify-between text-sm text-green-200 hover:text-white transition-colors group py-1"
+              >
+                <div className="flex items-center">
+                  <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span>
+                  <PieChart size={12} className="mr-2 text-[#4CAF50]" />
+                  <span className="font-medium">{t.reports}</span>
+                </div>
+                <ChevronDown 
+                  size={14} 
+                  className={`transition-transform duration-200 ${openSections.reports ? 'rotate-180' : ''}`}
+                />
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSections.reports ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                <ul className="space-y-2 pl-4 border-l-2 border-[#4CAF50]/30">
+                  {reportsSubLinks.map((link, index) => (
+                    <li key={index}>
+                      <Link to={link.path} className="group flex items-center text-xs text-green-300 hover:text-white transition-colors">
+                        <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span>
+                        <span className="mr-2">{link.icon}</span>
+                        <span className="break-words">{link.label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -322,6 +537,7 @@ const Footer = () => {
           <div className="space-y-5">
             <h4 className="font-semibold text-white flex items-center text-base sm:text-lg">
               <span className="w-8 h-0.5 bg-[#4CAF50] mr-2"></span>
+              <Map size={16} className="mr-2 text-[#4CAF50]" />
               {t.location}
             </h4>
 
@@ -329,7 +545,7 @@ const Footer = () => {
               <iframe
                 src={getEmbedMapUrl(mapUrl)}
                 width="100%"
-                height="180"
+                height="200"
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"

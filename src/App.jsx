@@ -18,6 +18,7 @@ import HistoryPage from './pages/HistoryPage.jsx';
 import NewsPhotos from './pages/NewsPhotos.jsx';
 import NewsVideos from './pages/NewsVideos.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
+import Speech from './pages/Speech.jsx';
 
 // Legal sub-pages
 import LawPage from './pages/LawPage.jsx';
@@ -40,6 +41,8 @@ function App() {
           <Route path="/about/director-message" element={<DirectorMessagePage />} />
           <Route path="/about/vision-mission" element={<VisionMissionPage />} />
           <Route path="/about/history" element={<HistoryPage />} />
+          <Route path="/about/speech" element={<Speech />} />
+
           
           {/* Leadership */}
           <Route path="/leadership" element={<LeadershipPage />} />

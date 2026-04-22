@@ -23,11 +23,40 @@ const LawPage = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
+  // Load counts from localStorage
+  const [shareCounts, setShareCounts] = useState(() => {
+    const saved = localStorage.getItem('law_share_counts');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const [downloadCounts, setDownloadCounts] = useState(() => {
+    const saved = localStorage.getItem('law_download_counts');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const [viewCounts, setViewCounts] = useState(() => {
+    const saved = localStorage.getItem('law_view_counts');
+    return saved ? JSON.parse(saved) : {};
+  });
+
   const { loading, documents, totalPages, total } = useLegalDocuments(
     page, 
     10, 
-    "law" // Filter by law category
+    "law"
   );
+
+  // Save counts to localStorage
+  useEffect(() => {
+    localStorage.setItem('law_share_counts', JSON.stringify(shareCounts));
+  }, [shareCounts]);
+
+  useEffect(() => {
+    localStorage.setItem('law_download_counts', JSON.stringify(downloadCounts));
+  }, [downloadCounts]);
+
+  useEffect(() => {
+    localStorage.setItem('law_view_counts', JSON.stringify(viewCounts));
+  }, [viewCounts]);
 
   useEffect(() => {
     const handleLanguageChange = (e) => {
@@ -45,6 +74,49 @@ const LawPage = () => {
     }
     return () => { document.body.style.overflow = "unset"; };
   }, [showModal, showShareModal]);
+
+  // Check if document has Khmer file
+  const hasKhmerFile = (doc) => {
+    return doc.pdfFileKh && doc.pdfFileKh !== '#';
+  };
+
+  // Check if document has English file
+  const hasEnglishFile = (doc) => {
+    return doc.pdfFileEn && doc.pdfFileEn !== '#';
+  };
+
+  // Check if title is in Khmer
+  const isTitleKhmer = (title) => {
+    const khmerRegex = /[\u1780-\u17FF]/;
+    return khmerRegex.test(title);
+  };
+
+  // Get the appropriate download button configuration based on title language
+  const getDownloadButtonConfig = (doc) => {
+    const title = currentLang === 'km' ? doc.titleKh : doc.titleEn;
+    const isKhmerTitle = isTitleKhmer(title);
+    const hasKh = hasKhmerFile(doc);
+    const hasEn = hasEnglishFile(doc);
+    
+    // Priority 1: Khmer title + Khmer file exists
+    if (isKhmerTitle && hasKh) {
+      return { show: true, language: 'km', text: t.downloadKh };
+    }
+    // Priority 2: English title + English file exists
+    else if (!isKhmerTitle && hasEn) {
+      return { show: true, language: 'en', text: t.downloadEn };
+    }
+    // Priority 3: Fallback - Khmer file exists
+    else if (hasKh) {
+      return { show: true, language: 'km', text: t.downloadKh };
+    }
+    // Priority 4: Fallback - English file exists
+    else if (hasEn) {
+      return { show: true, language: 'en', text: t.downloadEn };
+    }
+    // No file available
+    return { show: false, language: null, text: '' };
+  };
 
   const stripHtmlTags = (html) => {
     if (!html) return '';
@@ -115,6 +187,9 @@ const LawPage = () => {
       pages: "ទំព័រ",
       description: "សេចក្តីសង្ខេប",
       keywords: "ពាក្យគន្លឹះ",
+      shares: "ចែករំលែក",
+      downloads: "ទាញយក",
+      views: "ទស្សនា",
     },
     en: {
       title: "Laws",
@@ -155,6 +230,9 @@ const LawPage = () => {
       pages: "Pages",
       description: "Description",
       keywords: "Keywords",
+      shares: "Shares",
+      downloads: "Downloads",
+      views: "Views",
     },
   };
 
@@ -188,21 +266,41 @@ const LawPage = () => {
   const endItem = Math.min(page * itemsPerPage, filteredDocuments.length);
 
   const handleDocumentClick = (doc) => {
+    // Update view count
+    setViewCounts(prev => ({
+      ...prev,
+      [doc.id]: (prev[doc.id] || 0) + 1
+    }));
     setSelectedDocument(doc);
     setShowModal(true);
   };
 
-  const handlePdfAction = (doc, action = "view", language = currentLang) => {
+  const handleViewPdf = (doc, language = currentLang) => {
     const pdfUrl = language === "km" ? doc.pdfFileKh : doc.pdfFileEn;
     if (pdfUrl && pdfUrl !== "#") {
-      if (action === "download") {
-        const link = document.createElement("a");
-        link.href = pdfUrl;
-        link.download = `${language === "km" ? doc.titleKh : doc.titleEn}.pdf`;
-        link.click();
-      } else {
-        window.open(pdfUrl, "_blank");
-      }
+      // Update view count for PDF view
+      setViewCounts(prev => ({
+        ...prev,
+        [doc.id]: (prev[doc.id] || 0) + 1
+      }));
+      window.open(pdfUrl, "_blank");
+    }
+  };
+
+  const handleDownload = (doc, language) => {
+    const pdfUrl = language === "km" ? doc.pdfFileKh : doc.pdfFileEn;
+    if (pdfUrl && pdfUrl !== "#") {
+      // Update download count
+      setDownloadCounts(prev => ({
+        ...prev,
+        [doc.id]: (prev[doc.id] || 0) + 1
+      }));
+      
+      const fileName = language === "km" ? doc.titleKh : doc.titleEn;
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = `${fileName}.pdf`;
+      link.click();
     }
   };
 
@@ -211,10 +309,20 @@ const LawPage = () => {
     setShowShareModal(true);
   };
 
+  const handleShareConfirm = () => {
+    if (selectedDocument) {
+      setShareCounts(prev => ({
+        ...prev,
+        [selectedDocument.id]: (prev[selectedDocument.id] || 0) + 1
+      }));
+    }
+  };
+
   const handleCopyLink = () => {
     const url = `${window.location.origin}/legal/law/${selectedDocument?.id}`;
     navigator.clipboard.writeText(url);
     setCopySuccess(true);
+    handleShareConfirm();
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
@@ -228,6 +336,7 @@ const LawPage = () => {
       telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
     };
     if (shareUrls[platform]) {
+      handleShareConfirm();
       window.open(shareUrls[platform], "_blank", "width=600,height=500");
     }
   };
@@ -355,6 +464,12 @@ const LawPage = () => {
                 : doc.descriptionEn || doc.descriptionKh;
               const plainDescription = stripHtmlTags(description);
               const thumbnail = getThumbnail(doc);
+              const downloadCount = downloadCounts[doc.id] || 0;
+              const shareCount = shareCounts[doc.id] || 0;
+              const viewCount = viewCounts[doc.id] || 0;
+              
+              // Get download button config based on title language
+              const btnConfig = getDownloadButtonConfig(doc);
 
               return (
                 <div
@@ -408,31 +523,58 @@ const LawPage = () => {
                         </p>
                       )}
 
-                      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-3 mb-3 text-[10px] sm:text-xs text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <Eye size={10} />
+                          {viewCount + (doc.views || 0)} {t.views}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-100">
                         <button
-                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "view"); }}
+                          onClick={(e) => { e.stopPropagation(); handleViewPdf(doc); }}
                           className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
                         >
                           <Eye size={13} />{t.view}
                         </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "km"); }}
-                          className="px-3 py-1.5 text-xs bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center gap-1"
-                        >
-                          <Download size={13} />{t.downloadKh}
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "en"); }}
-                          className="px-3 py-1.5 text-xs border border-[#4CAF50] text-[#4CAF50] rounded-lg hover:bg-[#4CAF50] hover:text-white transition-colors flex items-center gap-1"
-                        >
-                          <Download size={13} />{t.downloadEn}
-                        </button>
+                        
+                        {/* Single conditional download button based on title language */}
+                        {btnConfig.show && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDownload(doc, btnConfig.language); }}
+                            className={`px-3 py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1 ${
+                              btnConfig.language === 'km'
+                                ? 'bg-[#4CAF50] text-white hover:bg-[#2E7D32]'
+                                : 'border border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white'
+                            }`}
+                          >
+                            <Download size={13} />
+                            {btnConfig.text}
+                          </button>
+                        )}
+                        
                         <button
                           onClick={(e) => { e.stopPropagation(); handleShare(doc); }}
                           className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
                         >
                           <Share2 size={13} />
                         </button>
+                        
+                        {/* Stats counters */}
+                        <div className="flex items-center gap-2 ml-auto">
+                          {downloadCount > 0 && (
+                            <span className="text-xs text-gray-400 flex items-center gap-1" title={t.downloads}>
+                              <Download size={10} />
+                              {downloadCount}
+                            </span>
+                          )}
+                          {shareCount > 0 && (
+                            <span className="text-xs text-gray-400 flex items-center gap-1" title={t.shares}>
+                              <Share2 size={10} />
+                              {shareCount}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -486,7 +628,7 @@ const LawPage = () => {
         )}
       </Container>
 
-      {/* Document Detail Modal */}
+      {/* Document Detail Modal - Updated with conditional download button */}
       {showModal && selectedDocument && (
         <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
           <div className="min-h-screen px-3 sm:px-4 py-4 sm:py-8">
@@ -560,6 +702,29 @@ const LawPage = () => {
                   </div>
                 </div>
 
+                {/* Stats Row */}
+                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Eye size={14} className="text-[#4CAF50]" />
+                    <span className="text-sm text-gray-600">
+                      {t.views}: {(viewCounts[selectedDocument.id] || 0) + (selectedDocument.views || 0)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Download size={14} className="text-[#4CAF50]" />
+                    <span className="text-sm text-gray-600">
+                      {t.downloads}: {downloadCounts[selectedDocument.id] || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Share2 size={14} className="text-[#4CAF50]" />
+                    <span className="text-sm text-gray-600">
+                      {t.shares}: {shareCounts[selectedDocument.id] || 0}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Download & View Section - Now follows title language rule */}
                 <div className="bg-blue-50 rounded-lg p-4 sm:p-6 border border-blue-200">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center space-x-2 sm:space-x-3">
@@ -573,28 +738,34 @@ const LawPage = () => {
                     </div>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                       <button 
-                        onClick={() => handlePdfAction(selectedDocument, "view")}
+                        onClick={() => handleViewPdf(selectedDocument)}
                         className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white border border-blue-500 text-blue-600 text-xs sm:text-sm rounded-lg hover:bg-blue-500 hover:text-white transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
                       >
                         <Eye size={12} />
                         <span>{t.viewPdf}</span>
                       </button>
-                      <button 
-                        onClick={() => handlePdfAction(selectedDocument, "download", "km")}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white text-xs sm:text-sm rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
-                      >
-                        <Download size={12} />
-                        <span className="hidden xs:inline">{t.downloadKh}</span>
-                        <span className="xs:hidden">ខ្មែរ</span>
-                      </button>
-                      <button 
-                        onClick={() => handlePdfAction(selectedDocument, "download", "en")}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 border border-blue-500 text-blue-600 text-xs sm:text-sm rounded-lg hover:bg-blue-500 hover:text-white transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
-                      >
-                        <Download size={12} />
-                        <span className="hidden xs:inline">{t.downloadEn}</span>
-                        <span className="xs:hidden">EN</span>
-                      </button>
+                      
+                      {/* Single conditional download button based on title language */}
+                      {(() => {
+                        const btnConfig = getDownloadButtonConfig(selectedDocument);
+                        if (btnConfig.show) {
+                          return (
+                            <button 
+                              onClick={() => handleDownload(selectedDocument, btnConfig.language)}
+                              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 flex items-center space-x-1 sm:space-x-2 ${
+                                btnConfig.language === 'km'
+                                  ? 'bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white hover:shadow-lg'
+                                  : 'border border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white'
+                              }`}
+                            >
+                              <Download size={12} />
+                              <span className="hidden xs:inline">{btnConfig.text}</span>
+                              <span className="xs:hidden">{btnConfig.language === 'km' ? 'ខ្មែរ' : 'EN'}</span>
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
                 </div>

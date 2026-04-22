@@ -38,9 +38,57 @@ const GlobalBanner = ({
   const translations = {
     km: {
       home: "ទំព័រដើម",
+      about: "អំពីអគ្គនាយកដ្ឋាន",
+      management: "រចនាសម្ព័ន្ធនៃការគ្រប់គ្រង",
+      roles: "តួនាទី និងភារកិច្ច",
+      directorMessage: "សារអគ្គនាយក",
+      speech: "សុន្ទរកថា",
+      visionMission: "ចក្ខុវិស័យ និងបេសកកម្ម",
+      history: "ប្រវត្តិនៃការបង្កើត",
+      leadership: "ភាពជាអ្នកដឹកនាំ",
+      news: "ព័ត៌មាន",
+      photos: "កម្រងរូបភាព",
+      videos: "កម្រងវីដេអូ",
+      reports: "របាយការណ៍",
+      annual: "របាយការណ៍ប្រចាំឆ្នាំ",
+      quarterly: "របាយការណ៍ប្រចាំត្រីមាស",
+      statistics: "របាយការណ៍ស្ថិតិ",
+      activities: "របាយការណ៍សកម្មភាព",
+      legal: "បណ្តុំឯកសារ",
+      law: "ច្បាប់",
+      subDecree: "អនុក្រឹត្យ",
+      circular: "សារាចរ",
+      declaration: "ប្រកាស",
+      contact: "ទំនាក់ទំនង",
+      ssmr: "របាយការណ៍ SSMR",
+      drp: "របាយការណ៍ DRP",
     },
     en: {
       home: "Home",
+      about: "About Department",
+      management: "Management Structure",
+      roles: "Roles & Responsibilities",
+      directorMessage: "Director's Message",
+      speech: "Speech",
+      visionMission: "Vision & Mission",
+      history: "History",
+      leadership: "Leadership",
+      news: "News",
+      photos: "Photo Gallery",
+      videos: "Video Gallery",
+      reports: "Reports",
+      annual: "Annual Report",
+      quarterly: "Quarterly Report",
+      statistics: "Statistics Report",
+      activities: "Activity Report",
+      legal: "Document Collection",
+      law: "Law",
+      subDecree: "Sub-Decree",
+      circular: "Circular",
+      declaration: "Declaration",
+      contact: "Contact",
+      ssmr: "SSMR Report",
+      drp: "DRP Report",
     },
   };
 
@@ -49,44 +97,62 @@ const GlobalBanner = ({
   // Get banner URL - use API banner or fallback
   const bannerUrl = banner && banner.trim() !== '' ? banner : fallbackBanner;
 
-  // Generate breadcrumbs from location if not provided
+  // Generate breadcrumbs from location based on app routes
   const generateBreadcrumbs = () => {
     if (breadcrumbs.length > 0) return breadcrumbs;
 
     const pathnames = location.pathname.split("/").filter((x) => x);
     const breadcrumbItems = [];
 
+    // Define path to label mapping
+    const getPathLabel = (path, isLast = false) => {
+      const pathMap = {
+        // About section
+        about: t.about,
+        management: t.management,
+        roles: t.roles,
+        "director-message": t.directorMessage,
+        speech: t.speech,
+        "vision-mission": t.visionMission,
+        history: t.history,
+        
+        // Leadership
+        leadership: t.leadership,
+        
+        // News section
+        news: t.news,
+        photos: t.photos,
+        videos: t.videos,
+        
+        // Reports section
+        reports: t.reports,
+        annual: t.annual,
+        quarterly: t.quarterly,
+        statistics: t.statistics,
+        activities: t.activities,
+        ssmr: t.ssmr,
+        drp: t.drp,
+        
+        // Legal section
+        legal: t.legal,
+        law: t.law,
+        "sub-decree": t.subDecree,
+        circular: t.circular,
+        declaration: t.declaration,
+        
+        // Contact
+        contact: t.contact,
+      };
+      
+      return pathMap[path] || path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
+    };
+
     pathnames.forEach((path, index) => {
       const isLast = index === pathnames.length - 1;
       const to = `/${pathnames.slice(0, index + 1).join("/")}`;
-
-      // Format the breadcrumb label
-      let label = path;
-      if (path === "news") label = currentLang === "km" ? "ព័ត៌មាន" : "News";
-      if (path === "legal")
-        label =
-          currentLang === "km" ? "លិខិតបទដ្ឋានគតិយុត្ត" : "Legal Documents";
-      if (path === "management")
-        label =
-          currentLang === "km" ? "រចនាសម្ព័ន្ធនៃការគ្រប់គ្រង" : "Management";
-      if (path === "contact")
-        label = currentLang === "km" ? "ទំនាក់ទំនង" : "Contact";
-      if (path === "photos") label = currentLang === "km" ? "រូបភាព" : "Photos";
-      if (path === "videos") label = currentLang === "km" ? "វីដេអូ" : "Videos";
-      if (path === "about")
-        label =
-          currentLang === "km" ? "អំពីរអគ្គនាយកដ្ឋាន" : "About Department";
-      if (path === "director-message")
-        label =
-          currentLang === "km" ? "សារពីឯកឧត្តម អគ្គនាយក" : "Director-Messages";
-      if (path === "roles")
-        label =
-          currentLang === "km"
-            ? "តួនាទី និងការទទួលខុសត្រូវ"
-            : "Roles & Responsibilities";
-
+      
       breadcrumbItems.push({
-        label,
+        label: getPathLabel(path, isLast),
         to,
         isLast,
       });
@@ -167,12 +233,12 @@ const GlobalBanner = ({
               </h1>
             )}
 
-            {/* Subtitle */}
-            {subtitle && (
+            {/* Subtitle - Uncommented to allow subtitle display */}
+            {/* {subtitle && (
               <p className="text-sm md:text-base lg:text-lg text-white/90 max-w-2xl mx-auto drop-shadow">
                 {subtitle}
               </p>
-            )}
+            )} */}
 
             {/* Optional decorative line */}
             {(title || subtitle) && (
@@ -187,5 +253,5 @@ const GlobalBanner = ({
     </div>
   );
 };
-
+ 
 export default GlobalBanner;
