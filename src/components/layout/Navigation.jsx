@@ -54,7 +54,7 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     { 
       id: 'about',
       label: 'អំពីអគ្គនាយកដ្ឋាន', 
-      labelEn: 'ABOUT DEPARTMENT',
+      labelEn: 'ABOUT GENERAL DEPARTMENT',
       path: '/about',
       icon: Info,
       dropdown: true,
@@ -93,11 +93,13 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
         ]
       }
     },
+    
+
     { 
       id: 'documents',
       label: 'បណ្តុំឯកសារ', 
       labelEn: 'DOCUMENT COLLECTION',
-      path: '/documents',
+      path: '/legal',
       icon: Library,
       dropdown: true,
       hasNested: true,
@@ -106,13 +108,14 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           { 
             label: 'លិខិតបទដ្ឋានគតិយុត្ត', 
             icon: Scale,
-            path: '#',
+            path: '/legal',
             hasNested: true,
             nestedItems: [
-              { label: 'ច្បាប់', path: '/legal/law', icon: Book },
-              { label: 'អនុក្រឹត្យ', path: '/legal/sub-decree', icon: FileText },
-              { label: 'សារាចរ', path: '/legal/circular', icon: FileSignature },
-              { label: 'ប្រកាស', path: '/legal/declaration', icon: Megaphone },
+              { label: 'ច្បាប់', path: '/legal?type=law', icon: Book },
+              { label: 'អនុក្រឹត្យ', path: '/legal?type=sub-decree', icon: FileText },
+              { label: 'សារាចរ', path: '/legal?type=circular', icon: FileSignature },
+              { label: 'ប្រកាស', path: '/legal?type=declaration', icon: Megaphone },
+              { label: 'ផ្សេងៗ', path: '/legal?type=other', icon: FileText }
             ]
           }
         ],
@@ -120,13 +123,14 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           { 
             label: 'Legal Documents', 
             icon: Scale,
-            path: '#',
+            path: '/legal',
             hasNested: true,
             nestedItems: [
-              { label: 'Law', path: '/legal/law', icon: Book },
-              { label: 'Sub-Decree', path: '/legal/sub-decree', icon: FileText },
-              { label: 'Circular', path: '/legal/circular', icon: FileSignature },
-              { label: 'Declaration', path: '/legal/declaration', icon: Megaphone },
+              { label: 'Law', path: '/legal?type=law', icon: Book },
+              { label: 'Sub-Decree', path: '/legal?type=sub-decree', icon: FileText },
+              { label: 'Circular', path: '/legal?type=circular', icon: FileSignature },
+              { label: 'Declaration', path: '/legal?type=declaration', icon: Megaphone },
+              { label: 'Others', path: '/legal?type=other', icon: FileText }
             ]
           }
         ]

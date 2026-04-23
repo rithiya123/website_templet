@@ -26,6 +26,28 @@ const mergeLocalCounts = (items) =>
   }));
 // ───────────────────────────────────────────────────────────────────────────
 
+// Text truncation component - works for both Khmer and English
+const TruncatedText = ({ text, lines = 2, className = "" }) => {
+  if (!text) return null;
+  
+  return (
+    <div 
+      className={className}
+      style={{
+        display: '-webkit-box',
+        WebkitLineClamp: lines,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        wordBreak: 'break-word',
+        wordWrap: 'break-word',
+        whiteSpace: 'normal'
+      }}
+    >
+      {text}
+    </div>
+  );
+};
+
 const NewsSection = ({ onViewAll }) => {
   const navigate = useNavigate();
   const [currentLang, setCurrentLang] = useState('km');
@@ -127,7 +149,6 @@ const NewsSection = ({ onViewAll }) => {
   const handleViewAll   = () => navigate('/news');
 
   const featuredSlides = localLeftNews;
-  const remainingNews = [];
 
   // ── i18n ───────────────────────────────────────────────────────────────────
   const translations = {
@@ -169,13 +190,6 @@ const NewsSection = ({ onViewAll }) => {
     return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  // Helper function for text wrapping
-  const wrapText = (text, maxLength = 100) => {
-    if (!text) return '';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
   // ── reusable action bar for cards ─────────────────────────────────────────
   const CardActions = ({ item, size = 6 }) => (
     <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -196,17 +210,23 @@ const NewsSection = ({ onViewAll }) => {
     </div>
   );
 
-  // ── list item (right column) - With proper text wrapping ──────────────────
+  // ── list item (right column) ──────────────────────────────────────────────
   const ListItem = ({ item, onClick }) => {
     const title = currentLang === 'km' ? item.titleKh : item.titleEn;
+    
     return (
-      <div className="group cursor-pointer border-b border-gray-100 last:border-0 py-3 transition-all duration-300 hover:bg-gray-50 rounded-lg px-2"
-        onClick={() => onClick(item)}>
+      <div 
+        className="group cursor-pointer border-b border-gray-100 last:border-0 py-3 transition-all duration-300 hover:bg-gray-50 rounded-lg px-2"
+        onClick={() => onClick(item)}
+      >
         <div className="flex gap-3">
           <div className="flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100">
-            <img src={item.mainImage || defaultImg} alt={title}
+            <img 
+              src={item.mainImage || defaultImg} 
+              alt={title}
               className="w-full h-full object-cover"
-              onError={(e) => { e.target.src = defaultImg; }} />
+              onError={(e) => { e.target.src = defaultImg; }} 
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
@@ -218,21 +238,27 @@ const NewsSection = ({ onViewAll }) => {
                 <span>{formatDate(item.publishedDate)}</span>
               </span>
             </div>
-            <h3 className="text-[11px] sm:text-xs font-medium text-gray-800 line-clamp-2 mb-1.5 leading-relaxed break-words hyphens-auto">
-              {title}
-            </h3>
+            <TruncatedText 
+              text={title} 
+              lines={2}
+              className="text-[11px] sm:text-xs font-medium text-gray-800 mb-1.5 leading-relaxed"
+            />
             <div className="flex items-center gap-2 mt-0.5 text-[8px] sm:text-[9px] text-gray-400 flex-wrap">
               <span className="flex items-center gap-0.5 whitespace-nowrap">
                 <Eye size={6} className="flex-shrink-0" />
                 <span>{item.views || 0}</span>
               </span>
-              <button onClick={(e) => { e.stopPropagation(); handleLike(item); }}
-                className={`flex items-center gap-0.5 transition-colors whitespace-nowrap ${item.liked ? "text-red-500" : "hover:text-red-400"}`}>
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleLike(item); }}
+                className={`flex items-center gap-0.5 transition-colors whitespace-nowrap ${item.liked ? "text-red-500" : "hover:text-red-400"}`}
+              >
                 <Heart size={6} className={`${item.liked ? "fill-red-500 text-red-500" : ""} flex-shrink-0`} />
                 <span>{item.likes || 0}</span>
               </button>
-              <button onClick={(e) => { e.stopPropagation(); handleShare(item); }}
-                className={`flex items-center gap-0.5 transition-colors whitespace-nowrap ${item.shared ? "text-green-600" : "hover:text-green-500"}`}>
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleShare(item); }}
+                className={`flex items-center gap-0.5 transition-colors whitespace-nowrap ${item.shared ? "text-green-600" : "hover:text-green-500"}`}
+              >
                 <Share2 size={6} className="flex-shrink-0" />
                 <span>{item.shares || 0}</span>
               </button>
@@ -286,8 +312,10 @@ const NewsSection = ({ onViewAll }) => {
               <div className="w-1 h-6 sm:h-8 bg-green-600 rounded-full"></div>
               <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 break-words">{t.title}</h2>
             </div>
-            <button onClick={handleViewAll}
-              className="flex items-center text-xs sm:text-sm text-green-600 hover:text-green-700 transition-colors group font-medium whitespace-nowrap">
+            <button 
+              onClick={handleViewAll}
+              className="flex items-center text-xs sm:text-sm text-green-600 hover:text-green-700 transition-colors group font-medium whitespace-nowrap"
+            >
               {t.viewAll}<ChevronRight size={14} className="ml-0.5 sm:ml-1 group-hover:translate-x-1 transition-transform flex-shrink-0" />
             </button>
           </div>
@@ -313,7 +341,7 @@ const NewsSection = ({ onViewAll }) => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
                       
-                      {/* Slide Content - With proper text wrapping */}
+                      {/* Slide Content */}
                       <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6">
                         <div className="max-w-2xl">
                           <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
@@ -330,24 +358,32 @@ const NewsSection = ({ onViewAll }) => {
                               <span>{item.views || 0} {t.views}</span>
                             </span>
                           </div>
-                          <h3 className="text-white text-[13px] sm:text-sm md:text-base lg:text-lg font-bold leading-tight mb-1 line-clamp-3 break-words hyphens-auto">
-                            {currentLang === 'km' ? item.titleKh : item.titleEn}
-                          </h3>
-                          <p className="text-white/70 text-[9px] sm:text-[10px] md:text-xs mb-2 line-clamp-2 hidden sm:block break-words">
-                            {currentLang === 'km' ? item.summaryKh : item.summaryEn}
-                          </p>
+                          <TruncatedText 
+                            text={currentLang === 'km' ? item.titleKh : item.titleEn} 
+                            lines={2}
+                            className="text-white text-[13px] sm:text-sm md:text-base lg:text-lg font-bold leading-tight mb-1"
+                          />
+                          <TruncatedText 
+                            text={currentLang === 'km' ? item.summaryKh : item.summaryEn} 
+                            lines={2}
+                            className="text-white/70 text-[9px] sm:text-[10px] md:text-xs mb-2 hidden sm:block"
+                          />
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <button className="flex items-center gap-0.5 bg-green-600 hover:bg-green-700 text-white text-[9px] sm:text-[10px] md:text-xs px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg transition-colors whitespace-nowrap">
                               <span>{t.readMore}</span> <ChevronRight size={8} className="flex-shrink-0" />
                             </button>
                             <div className="flex items-center gap-1">
-                              <button onClick={(e) => { e.stopPropagation(); handleLike(item); }}
-                                className={`flex items-center gap-0.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-lg transition-colors whitespace-nowrap ${item.liked ? "text-red-400" : ""}`}>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleLike(item); }}
+                                className={`flex items-center gap-0.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-lg transition-colors whitespace-nowrap ${item.liked ? "text-red-400" : ""}`}
+                              >
                                 <Heart size={7} className={`${item.liked ? "fill-red-400" : ""} flex-shrink-0`} />
                                 <span>{item.likes || 0}</span>
                               </button>
-                              <button onClick={(e) => { e.stopPropagation(); handleShare(item); }}
-                                className={`flex items-center gap-0.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-lg transition-colors whitespace-nowrap ${item.shared ? "text-green-400" : ""}`}>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleShare(item); }}
+                                className={`flex items-center gap-0.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-lg transition-colors whitespace-nowrap ${item.shared ? "text-green-400" : ""}`}
+                              >
                                 <Share2 size={7} className="flex-shrink-0" />
                                 <span>{item.shares || 0}</span>
                               </button>
@@ -394,20 +430,24 @@ const NewsSection = ({ onViewAll }) => {
               </div>
             )}
 
-            {/* Remaining grid - With proper text wrapping */}
+            {/* Grid Cards - 2 lines for title and summary */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-              {featuredSlides.map((item) => {
+              {featuredSlides.slice(0, 6).map((item) => {
                 const title = currentLang === 'km' ? item.titleKh : item.titleEn;
                 const summary = currentLang === 'km' ? item.summaryKh : item.summaryEn;
                 return (
-                  <div key={item.id}
+                  <div 
+                    key={item.id}
                     className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden cursor-pointer border border-gray-100 h-full flex flex-col"
-                    onClick={() => handleReadMore(item)}>
+                    onClick={() => handleReadMore(item)}
+                  >
                     <div className="relative h-32 sm:h-36 md:h-40 overflow-hidden bg-gray-100 flex-shrink-0">
-                      <img src={item.mainImage || defaultImg}
+                      <img 
+                        src={item.mainImage || defaultImg}
                         alt={title}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                        onError={(e) => { e.target.src = defaultImg; }} />
+                        onError={(e) => { e.target.src = defaultImg; }} 
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
                       <div className="absolute top-2 left-2">
                         <span className="px-1.5 py-0.5 bg-green-600 text-white text-[8px] sm:text-[9px] font-medium rounded-full flex items-center gap-0.5 whitespace-nowrap">
@@ -418,7 +458,9 @@ const NewsSection = ({ onViewAll }) => {
                       {item.images?.length > 1 && (
                         <div className="absolute top-2 right-2">
                           <span className="px-1 py-0.5 bg-black/50 backdrop-blur-sm text-white text-[7px] rounded-md flex items-center gap-0.5 whitespace-nowrap">
-                            <svg className="w-1.5 h-1.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <svg className="w-1.5 h-1.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
                             <span>{item.images.length}</span>
                           </span>
                         </div>
@@ -429,12 +471,16 @@ const NewsSection = ({ onViewAll }) => {
                       </div>
                     </div>
                     <div className="p-2 sm:p-3 flex-1 flex flex-col">
-                      <h3 className="text-[11px] sm:text-xs font-semibold text-gray-800 mb-1 leading-relaxed line-clamp-3 break-words hyphens-auto">
-                        {title}
-                      </h3>
-                      <p className="text-[9px] sm:text-[10px] text-gray-500 mb-2 line-clamp-2 hidden sm:block break-words">
-                        {summary}
-                      </p>
+                      <TruncatedText 
+                        text={title} 
+                        lines={2}
+                        className="text-[11px] sm:text-xs font-semibold text-gray-800 mb-1 leading-relaxed"
+                      />
+                      <TruncatedText 
+                        text={summary} 
+                        lines={2}
+                        className="text-[9px] sm:text-[10px] text-gray-500 mb-2 hidden sm:block"
+                      />
                       <div className="flex items-center justify-between pt-1 border-t border-gray-100 mt-auto">
                         <button className="flex items-center gap-0.5 text-[8px] sm:text-[9px] text-green-600 hover:text-green-700 font-medium whitespace-nowrap">
                           <span>{t.readMore}</span><ChevronRight size={7} className="flex-shrink-0" />
@@ -455,16 +501,28 @@ const NewsSection = ({ onViewAll }) => {
 
             {leftTotalPages > 1 && (
               <div className="flex justify-center mt-6 gap-2">
-                <button onClick={() => setLeftPage(p => Math.max(1, p - 1))} disabled={leftPage === 1}
-                  className="p-1.5 sm:p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"><ChevronLeft size={14} /></button>
-                <span className="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{leftPage} / {leftTotalPages}</span>
-                <button onClick={() => setLeftPage(p => Math.min(leftTotalPages, p + 1))} disabled={leftPage === leftTotalPages}
-                  className="p-1.5 sm:p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"><ChevronRight size={14} /></button>
+                <button 
+                  onClick={() => setLeftPage(p => Math.max(1, p - 1))} 
+                  disabled={leftPage === 1}
+                  className="p-1.5 sm:p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-600 whitespace-nowrap">
+                  {leftPage} / {leftTotalPages}
+                </span>
+                <button 
+                  onClick={() => setLeftPage(p => Math.min(leftTotalPages, p + 1))} 
+                  disabled={leftPage === leftTotalPages}
+                  className="p-1.5 sm:p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+                >
+                  <ChevronRight size={14} />
+                </button>
               </div>
             )}
           </div>
 
-          {/* Right column - With proper text wrapping */}
+          {/* Right column - Recent News List */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden sticky top-24">
               <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 border-b border-gray-100 bg-gray-50">
@@ -474,16 +532,30 @@ const NewsSection = ({ onViewAll }) => {
                 </div>
                 {rightTotalPages > 1 && (
                   <div className="flex items-center gap-0.5 sm:gap-1">
-                    <button onClick={() => setRightPage(p => Math.max(1, p - 1))} disabled={rightPage === 1}
-                      className="p-0.5 sm:p-1 hover:bg-gray-100 rounded disabled:opacity-50"><ChevronLeft size={12} /></button>
-                    <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">{rightPage}/{rightTotalPages}</span>
-                    <button onClick={() => setRightPage(p => Math.min(rightTotalPages, p + 1))} disabled={rightPage === rightTotalPages}
-                      className="p-0.5 sm:p-1 hover:bg-gray-100 rounded disabled:opacity-50"><ChevronRight size={12} /></button>
+                    <button 
+                      onClick={() => setRightPage(p => Math.max(1, p - 1))} 
+                      disabled={rightPage === 1}
+                      className="p-0.5 sm:p-1 hover:bg-gray-100 rounded disabled:opacity-50"
+                    >
+                      <ChevronLeft size={12} />
+                    </button>
+                    <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
+                      {rightPage}/{rightTotalPages}
+                    </span>
+                    <button 
+                      onClick={() => setRightPage(p => Math.min(rightTotalPages, p + 1))} 
+                      disabled={rightPage === rightTotalPages}
+                      className="p-0.5 sm:p-1 hover:bg-gray-100 rounded disabled:opacity-50"
+                    >
+                      <ChevronRight size={12} />
+                    </button>
                   </div>
                 )}
               </div>
               <div className="p-1 sm:p-2">
-                {localRightNews.map((item) => <ListItem key={item.id} item={item} onClick={handleReadMore} />)}
+                {localRightNews.map((item) => (
+                  <ListItem key={item.id} item={item} onClick={handleReadMore} />
+                ))}
               </div>
             </div>
           </div>
@@ -495,11 +567,17 @@ const NewsSection = ({ onViewAll }) => {
         <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
           <div className="sticky top-0 bg-white border-b border-gray-100 z-10">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-              <button onClick={handleCloseDetail} className="flex items-center space-x-1.5 text-gray-500 hover:text-green-600 transition-colors group">
+              <button 
+                onClick={handleCloseDetail} 
+                className="flex items-center space-x-1.5 text-gray-500 hover:text-green-600 transition-colors group"
+              >
                 <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform flex-shrink-0" />
                 <span className="text-xs sm:text-sm whitespace-nowrap">{t.back}</span>
               </button>
-              <button onClick={() => handleShare(selectedNews)} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+              <button 
+                onClick={() => handleShare(selectedNews)} 
+                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg text-gray-500"
+              >
                 <Share2 size={14} className="sm:w-4 sm:h-4" />
               </button>
             </div>
@@ -507,10 +585,12 @@ const NewsSection = ({ onViewAll }) => {
 
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
             <div className="relative h-56 sm:h-80 md:h-96 lg:h-[400px] rounded-xl overflow-hidden mb-6 sm:mb-8 bg-gray-100">
-              <img src={selectedNews.mainImage || defaultImg}
+              <img 
+                src={selectedNews.mainImage || defaultImg}
                 alt={currentLang === 'km' ? selectedNews.titleKh : selectedNews.titleEn}
                 className="w-full h-full object-cover"
-                onError={(e) => { e.target.src = defaultImg; }} />
+                onError={(e) => { e.target.src = defaultImg; }} 
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
               <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
                 <span className="px-2 py-1 sm:px-3 sm:py-1.5 bg-green-600 text-white text-[10px] sm:text-sm font-medium rounded-lg shadow-lg whitespace-nowrap">
@@ -520,7 +600,9 @@ const NewsSection = ({ onViewAll }) => {
               {selectedNews.images?.length > 1 && (
                 <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
                   <span className="px-1.5 py-1 sm:px-2.5 sm:py-1.5 bg-black/60 backdrop-blur-sm text-white text-[9px] sm:text-xs rounded-lg flex items-center gap-1 whitespace-nowrap">
-                    <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                     <span>{selectedNews.images.length}</span>
                   </span>
                 </div>
@@ -542,36 +624,48 @@ const NewsSection = ({ onViewAll }) => {
                 <Eye size={14} className="text-green-600 flex-shrink-0" />
                 <span>{selectedNews.views || 0} {t.views}</span>
               </span>
-              <button onClick={() => handleLike(selectedNews)}
+              <button 
+                onClick={() => handleLike(selectedNews)}
                 className={`flex items-center gap-1.5 text-[11px] sm:text-sm px-2.5 py-1.5 rounded-lg border transition-all duration-200 whitespace-nowrap ${
                   selectedNews.liked ? "bg-red-50 border-red-200 text-red-500 font-medium" : "border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-400"
-                }`}>
+                }`}
+              >
                 <Heart size={14} className={`${selectedNews.liked ? "fill-red-500 text-red-500" : ""} flex-shrink-0`} />
                 <span>{selectedNews.likes || 0} {t.likes}</span>
               </button>
-              <button onClick={() => handleShare(selectedNews)}
+              <button 
+                onClick={() => handleShare(selectedNews)}
                 className={`flex items-center gap-1.5 text-[11px] sm:text-sm px-2.5 py-1.5 rounded-lg border transition-all duration-200 whitespace-nowrap ${
                   selectedNews.shared ? "bg-green-50 border-green-200 text-green-600 font-medium" : "border-gray-200 text-gray-500 hover:bg-green-50 hover:border-green-200 hover:text-green-500"
-                }`}>
+                }`}
+              >
                 <Share2 size={14} className="flex-shrink-0" />
                 <span>{selectedNews.shares || 0} {t.shares}</span>
               </button>
             </div>
 
             {/* Content with proper text wrapping */}
-            <div className="prose prose-sm max-w-none mb-8 text-gray-600 leading-relaxed text-sm sm:text-base break-words overflow-x-auto"
-              dangerouslySetInnerHTML={{ __html: currentLang === 'km' ? selectedNews.contentKh : selectedNews.contentEn }} />
+            <div 
+              className="prose prose-sm max-w-none mb-8 text-gray-600 leading-relaxed text-sm sm:text-base break-words overflow-x-auto"
+              dangerouslySetInnerHTML={{ __html: currentLang === 'km' ? selectedNews.contentKh : selectedNews.contentEn }} 
+            />
 
             {selectedNews.images?.length > 1 && (
               <div className="mb-8">
                 <h3 className="text-base sm:text-lg font-semibold text-green-600 mb-3 sm:mb-4 break-words">{t.viewImages}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                   {selectedNews.images.slice(0, 8).map((img, idx) => (
-                    <div key={idx} onClick={() => handleOpenLightbox(idx)}
-                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-gray-100">
-                      <img src={img} alt={`img-${idx + 1}`}
+                    <div 
+                      key={idx} 
+                      onClick={() => handleOpenLightbox(idx)}
+                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-gray-100"
+                    >
+                      <img 
+                        src={img} 
+                        alt={`img-${idx + 1}`}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        onError={(e) => { e.target.src = defaultImg; }} />
+                        onError={(e) => { e.target.src = defaultImg; }} 
+                      />
                       {idx === 7 && selectedNews.images.length > 8 && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                           <span className="text-white text-xs sm:text-sm font-medium whitespace-nowrap">+{selectedNews.images.length - 8}</span>
@@ -589,19 +683,33 @@ const NewsSection = ({ onViewAll }) => {
       {/* ── Lightbox ──────────────────────────────────────────────────────── */}
       {showLightbox && selectedNews && selectedImageIndex !== null && (
         <div className="fixed inset-0 bg-black/95 z-[60] flex items-center justify-center">
-          <button onClick={handleCloseLightbox} className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-white hover:text-gray-300"><X size={24} className="sm:w-8 sm:h-8" /></button>
-          <button onClick={handlePrevImage} disabled={selectedImageIndex === 0}
-            className={`absolute left-2 sm:left-4 z-10 text-white hover:text-gray-300 ${selectedImageIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+          <button 
+            onClick={handleCloseLightbox} 
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-white hover:text-gray-300"
+          >
+            <X size={24} className="sm:w-8 sm:h-8" />
+          </button>
+          <button 
+            onClick={handlePrevImage} 
+            disabled={selectedImageIndex === 0}
+            className={`absolute left-2 sm:left-4 z-10 text-white hover:text-gray-300 ${selectedImageIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
             <ChevronLeft size={32} className="sm:w-12 sm:h-12" />
           </button>
-          <button onClick={handleNextImage} disabled={selectedImageIndex === selectedNews.images.length - 1}
-            className={`absolute right-2 sm:right-4 z-10 text-white hover:text-gray-300 ${selectedImageIndex === selectedNews.images.length - 1 ? "opacity-50 cursor-not-allowed" : ""}`}>
+          <button 
+            onClick={handleNextImage} 
+            disabled={selectedImageIndex === selectedNews.images.length - 1}
+            className={`absolute right-2 sm:right-4 z-10 text-white hover:text-gray-300 ${selectedImageIndex === selectedNews.images.length - 1 ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
             <ChevronRightIcon size={32} className="sm:w-12 sm:h-12" />
           </button>
           <div className="max-w-[90vw] max-h-[90vh] relative">
-            <img src={selectedNews.images[selectedImageIndex]} alt={`img-${selectedImageIndex + 1}`}
+            <img 
+              src={selectedNews.images[selectedImageIndex]} 
+              alt={`img-${selectedImageIndex + 1}`}
               className="max-w-full max-h-[90vh] object-contain"
-              onError={(e) => { e.target.src = defaultImg; }} />
+              onError={(e) => { e.target.src = defaultImg; }} 
+            />
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-sm whitespace-nowrap">
               {selectedImageIndex + 1} / {selectedNews.images.length}
             </div>
@@ -623,15 +731,22 @@ const NewsSection = ({ onViewAll }) => {
                 { label: "Twitter",  bg: "bg-sky-500 hover:bg-sky-600",   icon: <Twitter  size={14} /> },
                 { label: "LinkedIn", bg: "bg-blue-700 hover:bg-blue-800", icon: <Linkedin size={14} /> },
               ].map((s) => (
-                <button key={s.label}
+                <button 
+                  key={s.label}
                   onClick={() => { if (selectedNews) handleShare(selectedNews); setShareModal(false); }}
-                  className="flex flex-col items-center space-y-1 p-1.5 sm:p-2 hover:bg-gray-50 rounded-lg">
+                  className="flex flex-col items-center space-y-1 p-1.5 sm:p-2 hover:bg-gray-50 rounded-lg"
+                >
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 ${s.bg} text-white rounded-full flex items-center justify-center transition-colors`}>{s.icon}</div>
                   <span className="text-[9px] sm:text-[10px] text-gray-500 whitespace-nowrap">{s.label}</span>
                 </button>
               ))}
-              <button onClick={handleCopyLink} className="flex flex-col items-center space-y-1 p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full flex items-center justify-center transition-colors"><Link2 size={14} /></div>
+              <button 
+                onClick={handleCopyLink} 
+                className="flex flex-col items-center space-y-1 p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full flex items-center justify-center transition-colors">
+                  <Link2 size={14} />
+                </div>
                 <span className="text-[9px] sm:text-[10px] text-gray-500 whitespace-nowrap">{t.copyLink}</span>
               </button>
             </div>

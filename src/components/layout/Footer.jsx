@@ -171,7 +171,7 @@ const Footer = () => {
       quickLinks: "Quick Links",
       home: "Home",
       news: "News & Events",
-      about: "About Department",
+      about: "About General Department",
       documents: "Document Collection",
       legalDocuments: "Legal Documents",
       reports: "Reports",

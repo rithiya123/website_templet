@@ -4,31 +4,218 @@ import {
   ChevronLeft, ChevronRight, X, List, Filter,
   BookOpen, Copy, Scale, FileCheck, AlertCircle,
   ChevronDown, MoreHorizontal, Share2, Check,
-  Facebook, Twitter, Linkedin, MessageCircle,
+  Facebook, Twitter, Linkedin, MessageCircle, FileSignature, SlidersHorizontal
 } from "lucide-react";
 import Container from "../components/ui/Container.jsx";
 import GlobalBanner from "../components/ui/GlobalBanner.jsx";
 import RunningText from "../components/ui/RunningText";
 import { useLegalDocuments } from "../hooks/useLegal";
 import defaultThumbnail from "../images/pdf/thumbnails/Lor.jpg";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const LegalPage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [currentLang, setCurrentLang] = useState(() => {
     return localStorage.getItem("language") || "km";
   });
-  const [page, setPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  const [shareCount, setShareCount] = useState(0);
-  const [downloadCounts, setDownloadCounts] = useState({});
+  const [sortBy, setSortBy] = useState("latest");
+  const [sortOpen, setSortOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
-  const { loading, documents, totalPages, categories, total } =
-    useLegalDocuments(page, 10, selectedCategory);
+  const itemsPerPage = 9;
+
+  // Get type from URL query parameter
+  const queryParams = new URLSearchParams(location.search);
+  const typeParam = queryParams.get('type');
+
+  // Load counts from localStorage
+  const loadStats = () => {
+    const storedViews = localStorage.getItem('legal_views');
+    const storedDownloads = localStorage.getItem('legal_downloads');
+    const storedShares = localStorage.getItem('legal_shares');
+    return {
+      views: storedViews ? JSON.parse(storedViews) : {},
+      downloads: storedDownloads ? JSON.parse(storedDownloads) : {},
+      shares: storedShares ? JSON.parse(storedShares) : {}
+    };
+  };
+
+  // Save counts to localStorage
+  const saveViewCount = (docId, views) => {
+    const stats = loadStats();
+    stats.views[docId] = views;
+    localStorage.setItem('legal_views', JSON.stringify(stats.views));
+  };
+
+  const saveDownloadCount = (docId, downloads) => {
+    const stats = loadStats();
+    stats.downloads[docId] = downloads;
+    localStorage.setItem('legal_downloads', JSON.stringify(stats.downloads));
+  };
+
+  const saveShareCount = (docId, shares) => {
+    const stats = loadStats();
+    stats.shares[docId] = shares;
+    localStorage.setItem('legal_shares', JSON.stringify(stats.shares));
+  };
+
+  // Get counts for a specific document
+  const getViewCount = (docId) => {
+    const stats = loadStats();
+    return stats.views[docId] || 0;
+  };
+
+  const getDownloadCount = (docId) => {
+    const stats = loadStats();
+    return stats.downloads[docId] || 0;
+  };
+
+  const getShareCount = (docId) => {
+    const stats = loadStats();
+    return stats.shares[docId] || 0;
+  };
+
+  // Increment view count
+  const incrementViewCount = (docId) => {
+    const currentViews = getViewCount(docId);
+    const newViews = currentViews + 1;
+    saveViewCount(docId, newViews);
+    return newViews;
+  };
+
+  // Increment download count
+  const incrementDownloadCount = (docId) => {
+    const currentDownloads = getDownloadCount(docId);
+    const newDownloads = currentDownloads + 1;
+    saveDownloadCount(docId, newDownloads);
+    return newDownloads;
+  };
+
+  // Increment share count
+  const incrementShareCount = (docId) => {
+    const currentShares = getShareCount(docId);
+    const newShares = currentShares + 1;
+    saveShareCount(docId, newShares);
+    return newShares;
+  };
+
+  // Check if title is in Khmer
+  const isTitleKhmer = (title) => {
+    const khmerRegex = /[\u1780-\u17FF]/;
+    return khmerRegex.test(title);
+  };
+
+  // Check if document has Khmer file
+  const hasKhmerFile = (doc) => {
+    return doc.pdfFileKh && doc.pdfFileKh !== '#';
+  };
+
+  // Check if document has English file
+  const hasEnglishFile = (doc) => {
+    return doc.pdfFileEn && doc.pdfFileEn !== '#';
+  };
+
+  // Get the appropriate download button configuration based on title language
+  const getDownloadButtonConfig = (doc) => {
+    const title = currentLang === 'km' ? doc.titleKh : doc.titleEn;
+    const isKhmerTitle = isTitleKhmer(title);
+    const hasKh = hasKhmerFile(doc);
+    const hasEn = hasEnglishFile(doc);
+    
+    // Priority 1: Khmer title + Khmer file exists
+    if (isKhmerTitle && hasKh) {
+      return { show: true, language: 'km', text: t.downloadKh };
+    }
+    // Priority 2: English title + English file exists
+    else if (!isKhmerTitle && hasEn) {
+      return { show: true, language: 'en', text: t.downloadEn };
+    }
+    // Priority 3: Fallback - Khmer file exists
+    else if (hasKh) {
+      return { show: true, language: 'km', text: t.downloadKh };
+    }
+    // Priority 4: Fallback - English file exists
+    else if (hasEn) {
+      return { show: true, language: 'en', text: t.downloadEn };
+    }
+    // No file available
+    return { show: false, language: null, text: '' };
+  };
+
+  // Map URL type to category for API
+  const getCategoryFromType = (type) => {
+    const typeMap = {
+      'law': 'law',
+      'sub-decree': 'decree',
+      'circular': 'circular',
+      'declaration': 'proclamation',
+      'other': 'other'
+    };
+    return typeMap[type] || '';
+  };
+
+  // Get selected category from URL type
+  const selectedCategory = getCategoryFromType(typeParam);
+
+  const { loading, documents, totalPages: apiTotalPages, categories, total } =
+    useLegalDocuments(currentPage, itemsPerPage, selectedCategory);
+
+  // Add stats to documents
+  const documentsWithStats = documents.map(doc => ({
+    ...doc,
+    views: getViewCount(doc.id),
+    downloads: getDownloadCount(doc.id),
+    shares: getShareCount(doc.id)
+  }));
+
+  // Filter by search term
+  const searchedDocuments = documentsWithStats.filter((doc) => {
+    if (!searchTerm) return true;
+    const title = currentLang === "km" ? doc.titleKh : doc.titleEn;
+    const desc = currentLang === "km" ? doc.descriptionKh : doc.descriptionEn;
+    return (
+      title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      desc.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  // Sort documents
+  const sortedDocuments = [...searchedDocuments].sort((a, b) => {
+    switch(sortBy) {
+      case 'oldest':
+        return new Date(a.publishedDate) - new Date(b.publishedDate);
+      case 'popular':
+        return b.views - a.views;
+      default: // latest
+        return new Date(b.publishedDate) - new Date(a.publishedDate);
+    }
+  });
+
+  // Pagination for sorted documents
+  const totalFilteredPages = Math.ceil(sortedDocuments.length / itemsPerPage);
+  const paginatedDocuments = sortedDocuments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const startItem = sortedDocuments.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+  const endItem = Math.min(currentPage * itemsPerPage, sortedDocuments.length);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveDropdown(null);
+      setSortOpen(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleLanguageChange = (e) => {
@@ -47,32 +234,27 @@ const LegalPage = () => {
     return () => { document.body.style.overflow = "unset"; };
   }, [showModal, showShareModal]);
 
-  // Close dropdown when clicking outside
+  // Reset page when search or sort changes
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (categoryDropdownOpen && !event.target.closest('.category-dropdown')) {
-        setCategoryDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [categoryDropdownOpen]);
+    setCurrentPage(1);
+  }, [searchTerm, sortBy, typeParam]);
+
+  const handleDropdownToggle = (dropdownName, e) => {
+    e.stopPropagation();
+    if (activeDropdown === dropdownName) {
+      setActiveDropdown(null);
+      if (dropdownName === 'sort') setSortOpen(false);
+    } else {
+      setActiveDropdown(dropdownName);
+      setSortOpen(dropdownName === 'sort');
+    }
+  };
 
   // Strip HTML tags from text
   const stripHtmlTags = (html) => {
     if (!html) return '';
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || '';
-  };
-
-  // Check if document has Khmer file
-  const hasKhmerFile = (doc) => {
-    return doc.pdfFileKh && doc.pdfFileKh !== '#';
-  };
-
-  // Check if document has English file
-  const hasEnglishFile = (doc) => {
-    return doc.pdfFileEn && doc.pdfFileEn !== '#';
   };
 
   const getCategoryDisplayName = (categoryKey) => {
@@ -90,6 +272,7 @@ const LegalPage = () => {
       regulation: <FileCheck size={14} />,
       decree: <FileText size={14} />,
       proclamation: <AlertCircle size={14} />,
+      circular: <FileSignature size={14} />,
       directive: <BookOpen size={14} />,
       other: <MoreHorizontal size={14} />,
     };
@@ -102,7 +285,8 @@ const LegalPage = () => {
       regulation: "bg-green-50 text-green-700 border-green-200",
       decree: "bg-purple-50 text-purple-700 border-purple-200",
       proclamation: "bg-orange-50 text-orange-700 border-orange-200",
-      directive: "bg-cyan-50 text-cyan-700 border-cyan-200",
+      circular: "bg-cyan-50 text-cyan-700 border-cyan-200",
+      directive: "bg-indigo-50 text-indigo-700 border-indigo-200",
       other: "bg-gray-50 text-gray-700 border-gray-200",
     };
     return colors[categoryKey] || "bg-gray-50 text-gray-700 border-gray-200";
@@ -110,12 +294,45 @@ const LegalPage = () => {
 
   const getThumbnail = (doc) => doc.coverImage || defaultThumbnail;
 
+  const getPageTitle = () => {
+    if (!typeParam) {
+      return currentLang === "km" ? "បណ្តុំឯកសារ" : "Document Collection";
+    }
+    const titleMap = {
+      'law': currentLang === "km" ? "ច្បាប់" : "Laws",
+      'sub-decree': currentLang === "km" ? "អនុក្រឹត្យ" : "Sub-Decrees",
+      'circular': currentLang === "km" ? "សារាចរ" : "Circulars",
+      'declaration': currentLang === "km" ? "ប្រកាស" : "Declarations",
+      'other': currentLang === "km" ? "ផ្សេងៗ" : "Others"
+    };
+    return titleMap[typeParam] || (currentLang === "km" ? "បណ្តុំឯកសារ" : "Document Collection");
+  };
+
+  const getPageSubtitle = () => {
+    if (!typeParam) {
+      return currentLang === "km" 
+        ? "លិខិតបទដ្ឋានគតិយុត្ត និងឯកសារពាក់ព័ន្ធ" 
+        : "Legal standards and related documents";
+    }
+    const subtitleMap = {
+      'law': currentLang === "km" ? "ច្បាប់នានារបស់ព្រះរាជាណាចក្រកម្ពុជា" : "Laws of the Kingdom of Cambodia",
+      'sub-decree': currentLang === "km" ? "អនុក្រឹត្យនានារបស់រាជរដ្ឋាភិបាល" : "Sub-decrees of the Royal Government",
+      'circular': currentLang === "km" ? "សារាចរណែនាំពីស្ថាប័នពាក់ព័ន្ធ" : "Circulars from relevant institutions",
+      'declaration': currentLang === "km" ? "ប្រកាសរបស់ក្រសួង និងស្ថាប័ន" : "Declarations from ministries and institutions",
+      'other': currentLang === "km" ? "ឯកសារពាក់ព័ន្ធផ្សេងៗ" : "Other related documents"
+    };
+    return subtitleMap[typeParam] || (currentLang === "km" 
+      ? "លិខិតបទដ្ឋានគតិយុត្ត និងឯកសារពាក់ព័ន្ធ" 
+      : "Legal standards and related documents");
+  };
+
   const translations = {
     km: {
-      title: "បណ្តុំឯកសារ",
-      subtitle: "លិខិតបទដ្ឋានគតិយុត្ត និងឯកសារពាក់ព័ន្ធ",
       search: "ស្វែងរកតាមចំណងជើង ឬខ្លឹមសារ...",
-      allCategories: "គ្រប់ប្រភេទ",
+      sortBy: "តម្រៀប",
+      sortLatest: "ថ្មីជាងគេ",
+      sortOldest: "ចាស់ជាងគេ",
+      sortPopular: "ការមើលច្រើន",
       download: "ទាញយក",
       downloadKh: "ទាញយកជាភាសាខ្មែរ",
       downloadEn: "ទាញយកជាភាសាអង់គ្លេស",
@@ -133,33 +350,26 @@ const LegalPage = () => {
       to: "ដល់",
       ofTotal: "នៃ",
       documents: "ឯកសារ",
-      filter: "តម្រង",
-      clearFilters: "សម្អាតតម្រង",
+      clearFilters: "សម្អាត",
       totalDocuments: "ឯកសារសរុប",
       loading: "កំពុងផ្ទុក...",
-      noCategories: "គ្មានប្រភេទ",
       share: "ចែករំលែក",
       shareVia: "ចែករំលែកតាម",
       copyLink: "ចម្លងតំណ",
       copied: "បានចម្លង!",
       back: "ត្រលប់ក្រោយ",
-      viewDetails: "មើលលម្អិត",
       publishedDate: "ថ្ងៃចេញផ្សាយ",
-      effectiveDate: "ថ្ងៃចូលជាធរមាន",
-      department: "ស្ថាប័ន",
-      fileSize: "ទំហំឯកសារ",
-      format: "ទម្រង់",
-      pages: "ទំព័រ",
       description: "សេចក្តីសង្ខេប",
-      keywords: "ពាក្យគន្លឹះ",
       shares: "ចែករំលែក",
       downloads: "ទាញយក",
+      views: "ទស្សនា"
     },
     en: {
-      title: "Document collection",
-      subtitle: "Legal standards and related documents",
       search: "Search by title or content...",
-      allCategories: "All Categories",
+      sortBy: "Sort",
+      sortLatest: "Latest",
+      sortOldest: "Oldest",
+      sortPopular: "Most Viewed",
       download: "Download",
       downloadKh: "Download in Khmer",
       downloadEn: "Download in English",
@@ -177,27 +387,19 @@ const LegalPage = () => {
       to: "to",
       ofTotal: "of",
       documents: "documents",
-      filter: "Filter",
-      clearFilters: "Clear Filters",
+      clearFilters: "Clear",
       totalDocuments: "Total Documents",
       loading: "Loading...",
-      noCategories: "No categories",
       share: "Share",
       shareVia: "Share via",
       copyLink: "Copy Link",
       copied: "Copied!",
       back: "Back",
-      viewDetails: "View Details",
       publishedDate: "Published Date",
-      effectiveDate: "Effective Date",
-      department: "Department",
-      fileSize: "File Size",
-      format: "Format",
-      pages: "Pages",
       description: "Description",
-      keywords: "Keywords",
       shares: "Shares",
       downloads: "Downloads",
+      views: "Views"
     },
   };
 
@@ -216,35 +418,17 @@ const LegalPage = () => {
     return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
-  const filteredDocuments = documents.filter((doc) => {
-    if (!searchTerm) return true;
-    const title = currentLang === "km" ? doc.titleKh : doc.titleEn;
-    const desc = currentLang === "km" ? doc.descriptionKh : doc.descriptionEn;
-    return (
-      title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      desc.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
-
-  const itemsPerPage = 10;
-  const startItem = filteredDocuments.length > 0 ? (page - 1) * itemsPerPage + 1 : 0;
-  const endItem = Math.min(page * itemsPerPage, filteredDocuments.length);
-
   const handleDocumentClick = (doc) => {
-    setSelectedDocument(doc);
+    incrementViewCount(doc.id);
+    setSelectedDocument({ ...doc, views: getViewCount(doc.id) + 1 });
     setShowModal(true);
   };
 
   const handlePdfAction = (doc, action = "view", language = currentLang) => {
     const pdfUrl = language === "km" ? doc.pdfFileKh : doc.pdfFileEn;
     if (pdfUrl && pdfUrl !== "#") {
-      // Update download count
-      setDownloadCounts(prev => ({
-        ...prev,
-        [doc.id]: (prev[doc.id] || 0) + 1
-      }));
-      
       if (action === "download") {
+        incrementDownloadCount(doc.id);
         const link = document.createElement("a");
         link.href = pdfUrl;
         link.download = `${language === "km" ? doc.titleKh : doc.titleEn}.pdf`;
@@ -256,10 +440,9 @@ const LegalPage = () => {
   };
 
   const handleShare = (doc) => {
-    setSelectedDocument(doc);
+    incrementShareCount(doc.id);
+    setSelectedDocument({ ...doc, shares: getShareCount(doc.id) + 1 });
     setShowShareModal(true);
-    // Update share count
-    setShareCount(prev => prev + 1);
   };
 
   const handleCopyLink = () => {
@@ -283,32 +466,31 @@ const LegalPage = () => {
     }
   };
 
-  const clearFilters = () => {
-    setSelectedCategory("");
+  const clearSearch = () => {
     setSearchTerm("");
-    setPage(1);
+    setCurrentPage(1);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <RunningText />
       <GlobalBanner
-        title={t.title}
-        subtitle={t.subtitle}
+        title={getPageTitle()}
+        subtitle={getPageSubtitle()}
         height="h-[180px] md:h-[250px] lg:h-[300px]"
         showBreadcrumb={true}
       />
 
       <Container className="py-8">
         {/* Stats Bar */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <FileText size={18} className="text-[#4CAF50]" />
             <span className="font-medium">{total} {t.totalDocuments.toLowerCase()}</span>
           </div>
         </div>
 
-        {/* Filter Bar */}
+        {/* Search and Sort Bar */}
         <div className="bg-white rounded-xl border border-gray-200 mb-6">
           <div className="p-5">
             <div className="flex flex-col lg:flex-row gap-4">
@@ -319,74 +501,45 @@ const LegalPage = () => {
                   type="text"
                   placeholder={t.search}
                   value={searchTerm}
-                  onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+                  onChange={(e) => { setSearchTerm(e.target.value); }}
                   className="w-full pl-12 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent bg-white text-sm"
                 />
               </div>
 
-              {/* Category Dropdown - Fixed positioning */}
-              <div className="relative lg:w-64 category-dropdown">
+              {/* Sort Dropdown */}
+              <div className="relative">
                 <button
-                  onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-white text-left text-sm flex items-center justify-between hover:border-gray-300 transition-colors"
+                  onClick={(e) => handleDropdownToggle('sort', e)}
+                  className="flex items-center gap-1.5 px-4 py-2.5 border border-gray-200 rounded-lg bg-white text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                 >
-                  <span className="flex items-center gap-2">
-                    <Filter size={16} className="text-gray-400" />
-                    <span className={selectedCategory ? "text-gray-900" : "text-gray-500"}>
-                      {selectedCategory
-                        ? getCategoryDisplayName(selectedCategory)
-                        : t.allCategories}
-                    </span>
-                  </span>
-                  <ChevronDown
-                    size={16}
-                    className={`text-gray-400 transition-transform duration-200 ${categoryDropdownOpen ? "rotate-180" : ""}`}
-                  />
+                  <SlidersHorizontal size={16} />
+                  <span>{t.sortBy}</span>
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${sortOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {categoryDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg border border-gray-200 shadow-lg py-1 z-50 max-h-64 overflow-y-auto">
-                    <button
-                      onClick={() => { setSelectedCategory(""); setPage(1); setCategoryDropdownOpen(false); }}
-                      className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${!selectedCategory ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
-                    >
-                      <Filter size={14} />
-                      <span>{t.allCategories}</span>
-                    </button>
-
-                    {!loading && categories.length > 0 ? (
-                      categories.map((cat, index) => {
-                        const key = Object.keys(cat)[0];
-                        const label = currentLang === "km"
-                          ? cat[key].kh || cat[key].en || key
-                          : cat[key].en || cat[key].kh || key;
-
-                        return (
-                          <button
-                            key={index}
-                            onClick={() => { setSelectedCategory(key); setPage(1); setCategoryDropdownOpen(false); }}
-                            className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 transition-colors ${selectedCategory === key ? "bg-green-50 text-[#4CAF50]" : "text-gray-700"}`}
-                          >
-                            <span className={`w-5 h-5 rounded-full flex items-center justify-center ${getCategoryColor(key).split(" ")[0]}`}>
-                              {getCategoryIcon(key)}
-                            </span>
-                            <span>{label}</span>
-                          </button>
-                        );
-                      })
-                    ) : (
-                      <div className="px-4 py-2.5 text-sm text-gray-400">
-                        {loading ? t.loading : t.noCategories}
-                      </div>
-                    )}
+                {sortOpen && (
+                  <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 min-w-[160px]">
+                    {[
+                      { value: "latest", label: t.sortLatest },
+                      { value: "oldest", label: t.sortOldest },
+                      { value: "popular", label: t.sortPopular }
+                    ].map(option => (
+                      <button
+                        key={option.value}
+                        onClick={() => { setSortBy(option.value); setSortOpen(false); setActiveDropdown(null); }}
+                        className={`w-full px-4 py-2 text-left text-sm ${sortBy === option.value ? "text-[#4CAF50] bg-green-50" : "text-gray-600 hover:bg-gray-50"}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Clear Filters */}
-              {(selectedCategory || searchTerm) && (
+              {/* Clear Search Button */}
+              {searchTerm && (
                 <button
-                  onClick={clearFilters}
+                  onClick={clearSearch}
                   className="px-4 py-2.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <X size={14} />
@@ -396,15 +549,16 @@ const LegalPage = () => {
             </div>
           </div>
 
-          {/* Active Filter Tags */}
-          {(selectedCategory || searchTerm) && (
+          {/* Active Filters Display */}
+          {(searchTerm || sortBy !== "latest") && (
             <div className="px-5 pb-4 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
               <span className="text-xs text-gray-500">{t.filter}:</span>
-              {selectedCategory && (
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${getCategoryColor(selectedCategory)}`}>
-                  {getCategoryIcon(selectedCategory)}
-                  {getCategoryDisplayName(selectedCategory)}
-                  <button onClick={() => setSelectedCategory("")} className="ml-1 hover:bg-black/10 rounded-full p-0.5">
+              {sortBy !== "latest" && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                  <SlidersHorizontal size={12} />
+                  {sortBy === "oldest" && t.sortOldest}
+                  {sortBy === "popular" && t.sortPopular}
+                  <button onClick={() => { setSortBy("latest"); }} className="ml-1 hover:bg-gray-200 rounded-full p-0.5">
                     <X size={12} />
                   </button>
                 </span>
@@ -413,7 +567,7 @@ const LegalPage = () => {
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                   <Search size={12} />
                   "{searchTerm}"
-                  <button onClick={() => setSearchTerm("")} className="ml-1 hover:bg-gray-200 rounded-full p-0.5">
+                  <button onClick={clearSearch} className="ml-1 hover:bg-gray-200 rounded-full p-0.5">
                     <X size={12} />
                   </button>
                 </span>
@@ -425,8 +579,8 @@ const LegalPage = () => {
         {/* Results Count */}
         {!loading && (
           <div className="text-sm text-gray-500 mb-4">
-            {filteredDocuments.length > 0
-              ? `${t.showing} ${startItem}-${endItem} ${t.ofTotal} ${filteredDocuments.length} ${t.documents}`
+            {sortedDocuments.length > 0
+              ? `${t.showing} ${startItem}-${endItem} ${t.ofTotal} ${sortedDocuments.length} ${t.documents}`
               : t.noDocuments}
           </div>
         )}
@@ -447,7 +601,7 @@ const LegalPage = () => {
               </div>
             ))}
           </div>
-        ) : filteredDocuments.length === 0 ? (
+        ) : paginatedDocuments.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl border border-gray-100">
             <div className="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FileText size={40} className="text-gray-400" />
@@ -455,19 +609,13 @@ const LegalPage = () => {
             <p className="text-gray-500 font-medium text-lg mb-2">{t.noDocuments}</p>
             <p className="text-gray-400 text-sm">
               {currentLang === "km"
-                ? "សាកល្បងកែតម្រូវតម្រង ឬពាក្យស្វែងរករបស់អ្នក"
-                : "Try adjusting your filters or search term"}
+                ? "សាកល្បងស្វែងរកម្តងទៀត"
+                : "Try searching again"}
             </p>
-            {(selectedCategory || searchTerm) && (
-              <button onClick={clearFilters} className="mt-4 px-4 py-2 text-sm text-[#4CAF50] hover:bg-green-50 rounded-lg transition-colors">
-                {t.clearFilters}
-              </button>
-            )}
           </div>
         ) : (
-          /* ── List View Only ── */
           <div className="space-y-4">
-            {filteredDocuments.map((doc) => {
+            {paginatedDocuments.map((doc) => {
               const title = currentLang === "km"
                 ? doc.titleKh || doc.titleEn
                 : doc.titleEn || doc.titleKh;
@@ -476,9 +624,7 @@ const LegalPage = () => {
                 : doc.descriptionEn || doc.descriptionKh;
               const plainDescription = stripHtmlTags(description);
               const thumbnail = getThumbnail(doc);
-              const hasKh = hasKhmerFile(doc);
-              const hasEn = hasEnglishFile(doc);
-              const downloadCount = downloadCounts[doc.id] || 0;
+              const btnConfig = getDownloadButtonConfig(doc);
 
               return (
                 <div
@@ -532,41 +678,50 @@ const LegalPage = () => {
                         </p>
                       )}
 
-                      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mb-3">
+                        <span className="flex items-center gap-1">
+                          <Eye size={11} />
+                          {doc.views} {t.views}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Download size={11} />
+                          {doc.downloads} {t.downloads}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Share2 size={11} />
+                          {doc.shares} {t.shares}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
                         <button
                           onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "view"); }}
                           className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
                         >
                           <Eye size={13} />{t.view}
                         </button>
-                        {hasKh && (
+                        
+                        {/* Single conditional download button based on title language */}
+                        {btnConfig.show && (
                           <button
-                            onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "km"); }}
-                            className="px-3 py-1.5 text-xs bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors flex items-center gap-1"
+                            onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", btnConfig.language); }}
+                            className={`px-3 py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1 ${
+                              btnConfig.language === 'km'
+                                ? 'bg-[#4CAF50] text-white hover:bg-[#2E7D32]'
+                                : 'border border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white'
+                            }`}
                           >
-                            <Download size={13} />{t.downloadKh}
+                            <Download size={13} />
+                            {btnConfig.text}
                           </button>
                         )}
-                        {hasEn && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handlePdfAction(doc, "download", "en"); }}
-                            className="px-3 py-1.5 text-xs border border-[#4CAF50] text-[#4CAF50] rounded-lg hover:bg-[#4CAF50] hover:text-white transition-colors flex items-center gap-1"
-                          >
-                            <Download size={13} />{t.downloadEn}
-                          </button>
-                        )}
+                        
                         <button
                           onClick={(e) => { e.stopPropagation(); handleShare(doc); }}
                           className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
                         >
                           <Share2 size={13} />
                         </button>
-                        {downloadCount > 0 && (
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
-                            <Download size={10} />
-                            {downloadCount}
-                          </span>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -577,29 +732,29 @@ const LegalPage = () => {
         )}
 
         {/* Pagination */}
-        {!loading && totalPages > 1 && (
+        {!loading && totalFilteredPages > 1 && (
           <div className="mt-8 flex items-center justify-center gap-1">
             <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
               className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={18} />
             </button>
 
-            {[...Array(Math.min(5, totalPages))].map((_, i) => {
+            {[...Array(Math.min(5, totalFilteredPages))].map((_, i) => {
               let pageNum;
-              if (totalPages <= 5) pageNum = i + 1;
-              else if (page <= 3) pageNum = i + 1;
-              else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-              else pageNum = page - 2 + i;
+              if (totalFilteredPages <= 5) pageNum = i + 1;
+              else if (currentPage <= 3) pageNum = i + 1;
+              else if (currentPage >= totalFilteredPages - 2) pageNum = totalFilteredPages - 4 + i;
+              else pageNum = currentPage - 2 + i;
 
               return (
                 <button
                   key={i}
-                  onClick={() => setPage(pageNum)}
+                  onClick={() => setCurrentPage(pageNum)}
                   className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                    page === pageNum
+                    currentPage === pageNum
                       ? "bg-[#4CAF50] text-white"
                       : "border border-gray-200 hover:bg-gray-50 text-gray-700"
                   }`}
@@ -610,8 +765,8 @@ const LegalPage = () => {
             })}
 
             <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalFilteredPages, p + 1))}
+              disabled={currentPage === totalFilteredPages}
               className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight size={18} />
@@ -620,7 +775,7 @@ const LegalPage = () => {
         )}
       </Container>
 
-      {/* Document Detail Modal */}
+      {/* Document Detail Modal - With conditional download button */}
       {showModal && selectedDocument && (
         <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
           <div className="min-h-screen px-3 sm:px-4 py-4 sm:py-8">
@@ -674,6 +829,20 @@ const LegalPage = () => {
                         {stripHtmlTags(currentLang === 'km' ? selectedDocument.descriptionKh : selectedDocument.descriptionEn)}
                       </p>
                     )}
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <Eye size={12} />
+                        {selectedDocument.views} {t.views}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Download size={12} />
+                        {selectedDocument.downloads} {t.downloads}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Share2 size={12} />
+                        {selectedDocument.shares} {t.shares}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -694,6 +863,7 @@ const LegalPage = () => {
                   </div>
                 </div>
 
+                {/* Download & View Section - Single button based on title language */}
                 <div className="bg-[#4CAF50] bg-opacity-5 rounded-lg p-4 sm:p-6 border border-[#4CAF50] border-opacity-20">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center space-x-2 sm:space-x-3">
@@ -713,26 +883,28 @@ const LegalPage = () => {
                         <Eye size={12} className="sm:w-4 sm:h-4" />
                         <span>{t.viewPdf}</span>
                       </button>
-                      {hasKhmerFile(selectedDocument) && (
-                        <button 
-                          onClick={() => handlePdfAction(selectedDocument, "download", "km")}
-                          className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white text-xs sm:text-sm rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
-                        >
-                          <Download size={12} className="sm:w-4 sm:h-4" />
-                          <span className="hidden xs:inline">{t.downloadKh}</span>
-                          <span className="xs:hidden">ខ្មែរ</span>
-                        </button>
-                      )}
-                      {hasEnglishFile(selectedDocument) && (
-                        <button 
-                          onClick={() => handlePdfAction(selectedDocument, "download", "en")}
-                          className="px-3 sm:px-4 py-1.5 sm:py-2 border border-[#4CAF50] text-[#2E7D32] text-xs sm:text-sm rounded-lg hover:bg-[#4CAF50] hover:text-white transition-all duration-200 flex items-center space-x-1 sm:space-x-2"
-                        >
-                          <Download size={12} className="sm:w-4 sm:h-4" />
-                          <span className="hidden xs:inline">{t.downloadEn}</span>
-                          <span className="xs:hidden">EN</span>
-                        </button>
-                      )}
+                      
+                      {/* Single conditional download button based on title language */}
+                      {(() => {
+                        const btnConfig = getDownloadButtonConfig(selectedDocument);
+                        if (btnConfig.show) {
+                          return (
+                            <button 
+                              onClick={() => handlePdfAction(selectedDocument, "download", btnConfig.language)}
+                              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 flex items-center space-x-1 sm:space-x-2 ${
+                                btnConfig.language === 'km'
+                                  ? 'bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white hover:shadow-lg'
+                                  : 'border border-[#4CAF50] text-[#2E7D32] hover:bg-[#4CAF50] hover:text-white'
+                              }`}
+                            >
+                              <Download size={12} className="sm:w-4 sm:h-4" />
+                              <span className="hidden xs:inline">{btnConfig.text}</span>
+                              <span className="xs:hidden">{btnConfig.language === 'km' ? 'ខ្មែរ' : 'EN'}</span>
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
                 </div>
