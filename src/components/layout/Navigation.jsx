@@ -115,7 +115,7 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
               { label: 'អនុក្រឹត្យ', path: '/legal?type=sub-decree', icon: FileText },
               { label: 'សារាចរ', path: '/legal?type=circular', icon: FileSignature },
               { label: 'ប្រកាស', path: '/legal?type=declaration', icon: Megaphone },
-              { label: 'ផ្សេងៗ', path: '/legal?type=other', icon: FileText }
+             
             ]
           }
         ],
@@ -130,7 +130,7 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
               { label: 'Sub-Decree', path: '/legal?type=sub-decree', icon: FileText },
               { label: 'Circular', path: '/legal?type=circular', icon: FileSignature },
               { label: 'Declaration', path: '/legal?type=declaration', icon: Megaphone },
-              { label: 'Others', path: '/legal?type=other', icon: FileText }
+              
             ]
           }
         ]
