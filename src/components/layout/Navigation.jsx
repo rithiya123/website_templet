@@ -114,9 +114,13 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
               { label: 'ច្បាប់', path: '/legal?type=law', icon: Book },
               { label: 'អនុក្រឹត្យ', path: '/legal?type=sub-decree', icon: FileText },
               { label: 'សារាចរ', path: '/legal?type=circular', icon: FileSignature },
-              { label: 'ប្រកាស', path: '/legal?type=declaration', icon: Megaphone },
-             
+              { label: 'ប្រកាស', path: '/legal?type=declaration', icon: Megaphone }
             ]
+          },
+          { 
+            label: 'ផ្សេងៗ', 
+            icon: FileText,
+            path: '/legal?type=other'
           }
         ],
         en: [
@@ -129,11 +133,15 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
               { label: 'Law', path: '/legal?type=law', icon: Book },
               { label: 'Sub-Decree', path: '/legal?type=sub-decree', icon: FileText },
               { label: 'Circular', path: '/legal?type=circular', icon: FileSignature },
-              { label: 'Declaration', path: '/legal?type=declaration', icon: Megaphone },
-              
+              { label: 'Declaration', path: '/legal?type=declaration', icon: Megaphone }
             ]
+          },
+          { 
+            label: 'Others', 
+            icon: FileText,
+            path: '/legal?type=other'
           }
-        ]
+        ],
       }
     },
     { 
