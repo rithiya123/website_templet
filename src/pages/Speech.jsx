@@ -3,11 +3,11 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Mic, Calendar, User, ChevronRight, Eye, Clock, Share2, 
   Search, ChevronDown, ArrowLeft, ArrowRight, 
-  BookOpen, TrendingUp, Calendar as CalendarIcon, X,
-  Award, Users, SlidersHorizontal
+  SlidersHorizontal, X
 } from 'lucide-react';
 import GlobalBanner from '../components/ui/GlobalBanner.jsx';
 import Container from '../components/ui/Container.jsx';
+import RunningText from '../components/ui/RunningText';
 import useSpeech from '../hooks/useSpeech';
 import speechService from '../services/api/speech.service';
 
@@ -16,7 +16,6 @@ const Speech = () => {
     return localStorage.getItem("language") || "km";
   });
   const [selectedSpeech, setSelectedSpeech] = useState(null);
-  const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
@@ -68,8 +67,6 @@ const Speech = () => {
       date: speech.createdDate,
       formattedDate: speech.formattedDate,
       author: speechService.getAuthor(speech, currentLang),
-      category: speech.category,
-      categoryLabel: speechService.getCategoryLabel(speech, currentLang),
       views: getViewCount(speech.id, currentLang) || 0,
       readTime: speechService.getReadTime(speech, currentLang),
       excerpt: speechService.getExcerpt(speech, currentLang),
@@ -77,41 +74,6 @@ const Speech = () => {
       image: speech.coverImage || 'https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=800&h=500&fit=crop',
     }));
   }, [apiSpeeches, currentLang]);
-
-  // Get unique categories from API data
-  const categories = useMemo(() => {
-    const categoryMap = new Map();
-    categoriesList.forEach(cat => {
-      categoryMap.set(cat.id, cat);
-    });
-    
-    speechesData.forEach(speech => {
-      if (speech.category && !categoryMap.has(speech.category)) {
-        const label = currentLang === 'km' 
-          ? (speech.category === 'annual-meeting' ? 'ប្រជុំប្រចាំឆ្នាំ' :
-             speech.category === 'resettlement' ? 'ដោះស្រាយផលប៉ះពាល់' :
-             speech.category === 'conference' ? 'សន្និបាត' :
-             speech.category === 'training' ? 'បណ្តុះបណ្តាល' : 'ផ្សេងៗ')
-          : (speech.category === 'annual-meeting' ? 'Annual Meeting' :
-             speech.category === 'resettlement' ? 'Resettlement' :
-             speech.category === 'conference' ? 'Conference' :
-             speech.category === 'training' ? 'Training' : 'Other');
-        
-        categoryMap.set(speech.category, { id: speech.category, label });
-      }
-    });
-    
-    const allCategory = { id: 'all', label: currentLang === 'km' ? 'ទាំងអស់' : 'All' };
-    return [allCategory, ...Array.from(categoryMap.values())];
-  }, [speechesData, currentLang]);
-
-  const categoriesList = [
-    { id: 'all', label: currentLang === 'km' ? 'ទាំងអស់' : 'All', icon: BookOpen },
-    { id: 'annual-meeting', label: currentLang === 'km' ? 'ប្រជុំប្រចាំឆ្នាំ' : 'Annual', icon: CalendarIcon },
-    { id: 'resettlement', label: currentLang === 'km' ? 'ដោះស្រាយផលប៉ះពាល់' : 'Resettlement', icon: Users },
-    { id: 'conference', label: currentLang === 'km' ? 'សន្និបាត' : 'Conference', icon: Award },
-    { id: 'training', label: currentLang === 'km' ? 'បណ្តុះបណ្តាល' : 'Training', icon: TrendingUp },
-  ];
 
   const translations = {
     km: {
@@ -174,7 +136,7 @@ const Speech = () => {
 
   const t = translations[currentLang];
 
-  // Filter and sort speeches
+  // Filter and sort speeches (without category)
   const filteredSpeeches = useMemo(() => {
     let filtered = [...speechesData];
     
@@ -186,11 +148,6 @@ const Speech = () => {
       );
     }
     
-    // Category filter
-    if (activeCategory !== 'all') {
-      filtered = filtered.filter(speech => speech.category === activeCategory);
-    }
-    
     // Sort
     filtered.sort((a, b) => {
       if (sortBy === 'popular') return b.views - a.views;
@@ -199,7 +156,7 @@ const Speech = () => {
     });
     
     return filtered;
-  }, [speechesData, searchQuery, activeCategory, sortBy]);
+  }, [speechesData, searchQuery, sortBy]);
 
   // Pagination
   const totalPages = Math.ceil(filteredSpeeches.length / itemsPerPage);
@@ -259,14 +216,13 @@ const Speech = () => {
 
   const clearFilters = () => {
     setSearchQuery("");
-    setActiveCategory("all");
     setSortBy("latest");
     setCurrentPage(1);
   };
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, activeCategory, sortBy, itemsPerPage]);
+  }, [searchQuery, sortBy, itemsPerPage]);
 
   useEffect(() => {
     const handleLanguageChange = (e) => {
@@ -282,6 +238,7 @@ const Speech = () => {
   if (loading && speechesData.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
+        <RunningText />
         <GlobalBanner
           title={t.title}
           subtitle={t.subtitle}
@@ -304,6 +261,7 @@ const Speech = () => {
   if (error && speechesData.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
+        <RunningText />
         <GlobalBanner
           title={t.title}
           subtitle={t.subtitle}
@@ -346,11 +304,6 @@ const Speech = () => {
               e.target.src = 'https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=800&h=500&fit=crop';
             }}
           />
-          <div className="absolute top-3 left-3">
-            <span className="text-[11px] font-medium px-2.5 py-1 bg-white/95 backdrop-blur-sm text-[#2E7D32] rounded-full shadow-sm">
-              {speech.categoryLabel}
-            </span>
-          </div>
           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full text-white text-[10px]">
             <Eye size={10} className="text-white/80" />
             <span className="font-medium">{speech.views} {t.views}</span>
@@ -439,6 +392,7 @@ const Speech = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <RunningText />
       <GlobalBanner
         title={t.title}
         subtitle={t.subtitle}
@@ -447,23 +401,6 @@ const Speech = () => {
       />
 
       <Container className="py-6 sm:py-8">
-        {/* Categories */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {categories.map(category => (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategory(category.id)}
-              className={`px-4 py-1.5 text-sm rounded-full transition-all duration-200 ${
-                activeCategory === category.id
-                  ? 'bg-[#2E7D32] text-white shadow-sm'
-                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-              }`}
-            >
-              {category.label}
-            </button>
-          ))}
-        </div>
-
         {/* Search and Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
           <div className="p-4">
@@ -539,7 +476,7 @@ const Speech = () => {
               </div>
 
               {/* Clear Filters Button */}
-              {(searchQuery || activeCategory !== "all" || sortBy !== "latest") && (
+              {(searchQuery || sortBy !== "latest") && (
                 <button
                   onClick={clearFilters}
                   className="px-2.5 py-1.5 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
@@ -551,21 +488,13 @@ const Speech = () => {
             </div>
 
             {/* Active Filters Display */}
-            {(searchQuery || activeCategory !== "all" || sortBy !== "latest") && (
+            {(searchQuery || sortBy !== "latest") && (
               <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2 border-t border-gray-100">
                 {sortBy !== "latest" && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
                     {sortBy === "oldest" && t.oldest}
                     {sortBy === "popular" && t.popular}
                     <button onClick={() => { setSortBy("latest"); setCurrentPage(1); }} className="hover:bg-gray-200 rounded-full p-0.5">
-                      <X size={10} />
-                    </button>
-                  </span>
-                )}
-                {activeCategory !== "all" && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
-                    {categories.find(c => c.id === activeCategory)?.label}
-                    <button onClick={() => { setActiveCategory("all"); setCurrentPage(1); }} className="hover:bg-gray-200 rounded-full p-0.5">
                       <X size={10} />
                     </button>
                   </span>
@@ -635,9 +564,6 @@ const Speech = () => {
             </div>
 
             <div className="text-center mb-8">
-              <span className="inline-block text-xs px-3 py-1 bg-[#4CAF50]/10 text-[#2E7D32] rounded-full mb-3">
-                {selectedSpeech.categoryLabel}
-              </span>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">{selectedSpeech.title}</h1>
               <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
                 <span className="flex items-center gap-1.5">
