@@ -95,7 +95,7 @@ const Footer = () => {
 
   // Hardcoded links
   const WEBSITE_URL = 'https://gdr.mef.gov.kh';
-  const WEBSITE_DISPLAY = 'gdr.mef.gov.kh';
+  const WEBSITE_DISPLAY = 'www.gdr.mef.gov.kh';
   const FACEBOOK_URL = 'https://www.facebook.com';
   const X_URL = 'https://www.x.com';
   const TELEGRAM_URL = 'https://www.telegram.org';
