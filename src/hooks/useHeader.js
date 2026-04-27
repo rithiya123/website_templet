@@ -52,6 +52,16 @@ export const useHeader = (language = 'km') => {
     return texts || [];
   }, [data, language]);
 
+  const getBanners = useCallback(() => {
+    if (!data) return [];
+    return data.banners || [];
+  }, [data]);
+
+  const getPrimaryBanner = useCallback(() => {
+    const banners = getBanners();
+    return banners.length > 0 ? banners[0] : data?.banner || '';
+  }, [data, getBanners]);
+
   return {
     loading,
     error,
@@ -61,7 +71,9 @@ export const useHeader = (language = 'km') => {
     runningTexts: getRunningTexts(),
     logo: data?.logo || '',
     banner: data?.banner || '',
-    isActive: data?.isActive ?? false,
+    banners: getBanners(), // This will be an array of URL strings
+    primaryBanner: getPrimaryBanner(),
+    isActive: data?.isActive ?? true, // Default to true if not set
     refetch: fetchData,
   };
 };

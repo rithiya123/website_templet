@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, ChevronRight } from "lucide-react";
 import { useHeader } from "../../hooks/useHeader";
+import useWebsiteBanner from "../../hooks/useWebsiteBanner";
 import fallbackBanner from "../../images/Banner-1.jpg";
 
 const GlobalBanner = ({
@@ -16,8 +17,13 @@ const GlobalBanner = ({
   const [currentLang, setCurrentLang] = useState("km");
   const location = useLocation();
 
-  // Use header hook to get banner
-  const { loading, banner } = useHeader(currentLang);
+  // Use header hook to get header banner (as fallback)
+  const { loading: headerLoading, banner: headerBanner } = useHeader(currentLang);
+  
+  // Use website banner hook for dynamic page banners
+  const { loading: bannerLoading, getBannerByPath, isActive } = useWebsiteBanner();
+
+  const [bannerUrl, setBannerUrl] = useState(fallbackBanner);
 
   useEffect(() => {
     const handleLanguageChange = (e) => {
@@ -34,6 +40,28 @@ const GlobalBanner = ({
     return () =>
       window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
+
+  // Get banner based on current path
+  useEffect(() => {
+    const getBanner = () => {
+      const path = location.pathname;
+      
+      // Try to get specific banner from website banners API
+      const specificBanner = getBannerByPath(path, currentLang);
+      
+      if (specificBanner && specificBanner.trim() !== '') {
+        setBannerUrl(specificBanner);
+      } else if (headerBanner && headerBanner.trim() !== '') {
+        // Fallback to header banner
+        setBannerUrl(headerBanner);
+      } else {
+        // Final fallback
+        setBannerUrl(fallbackBanner);
+      }
+    };
+    
+    getBanner();
+  }, [location.pathname, getBannerByPath, headerBanner, currentLang]);
 
   const translations = {
     km: {
@@ -93,9 +121,7 @@ const GlobalBanner = ({
   };
 
   const t = translations[currentLang];
-
-  // Get banner URL - use API banner or fallback
-  const bannerUrl = banner && banner.trim() !== '' ? banner : fallbackBanner;
+  const isLoading = headerLoading || bannerLoading;
 
   // Generate breadcrumbs from location based on app routes
   const generateBreadcrumbs = () => {
@@ -167,7 +193,7 @@ const GlobalBanner = ({
     <div className={`relative w-full ${height} overflow-hidden`}>
       {/* Background Image */}
       <div className="absolute inset-0 w-full h-full">
-        {!loading && (
+        {!isLoading && (
           <img
             src={bannerUrl}
             alt={title || "Banner"}
@@ -184,7 +210,7 @@ const GlobalBanner = ({
       </div>
 
       {/* Loading state */}
-      {loading && (
+      {isLoading && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse">
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent"></div>
         </div>

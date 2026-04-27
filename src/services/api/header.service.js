@@ -54,9 +54,10 @@ class HeaderService {
       
       // Assets
       logo: data.url_logo || '',
-      banner: data.url_banner || '',
+      banner: data.url_banner || '', // Keep for backward compatibility
+      banners: this.extractBannerUrls(data.banners), // Extract URLs from banners array
       
-      // Status - Force to true to show header
+      // Always active - ignore status field
       isActive: true,
       
       // Meta
@@ -78,6 +79,36 @@ class HeaderService {
     const texts = textArray.map(item => item.text || '').filter(Boolean);
     console.log('extractTexts - result:', texts);
     return texts;
+  }
+
+  /**
+   * Extract banner URLs from banners array
+   * Input: [{ url: "https://...", _id: "..." }, ...]
+   * Output: ["https://...", "https://..."]
+   */
+  extractBannerUrls(bannersArray) {
+    if (!Array.isArray(bannersArray)) {
+      return [];
+    }
+    
+    const urls = bannersArray.map(item => item.url || '').filter(Boolean);
+    console.log('extractBannerUrls - result:', urls);
+    return urls;
+  }
+
+  /**
+   * Get banner images (returns array of banner URLs)
+   */
+  getBanners(data) {
+    return data?.banners || [];
+  }
+
+  /**
+   * Get single banner (returns first banner or default)
+   */
+  getPrimaryBanner(data) {
+    const banners = this.getBanners(data);
+    return banners.length > 0 ? banners[0] : data?.banner || '';
   }
 }
 

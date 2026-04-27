@@ -1,17 +1,17 @@
 // src/pages/Speech.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Mic, Calendar, User, ChevronRight, Eye, Clock, Share2, 
   Search, ChevronDown, ArrowLeft, ArrowRight, 
-  BookOpen, TrendingUp, Calendar as CalendarIcon,X,
+  BookOpen, TrendingUp, Calendar as CalendarIcon, X,
   Award, Users, SlidersHorizontal
 } from 'lucide-react';
 import GlobalBanner from '../components/ui/GlobalBanner.jsx';
 import Container from '../components/ui/Container.jsx';
+import useSpeech from '../hooks/useSpeech';
+import speechService from '../services/api/speech.service';
 
 const Speech = () => {
-  const navigate = useNavigate();
   const [currentLang, setCurrentLang] = useState(() => {
     return localStorage.getItem("language") || "km";
   });
@@ -23,7 +23,15 @@ const Speech = () => {
   const [sortBy, setSortBy] = useState('latest');
   const [sortOpen, setSortOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const [speechesData, setSpeechesData] = useState({ km: [], en: [] });
+
+  // Use the speech hook
+  const { 
+    speeches: apiSpeeches, 
+    pagination, 
+    loading, 
+    error,
+    changePage
+  } = useSpeech(currentPage, itemsPerPage);
 
   // Load view counts from localStorage
   const loadViewCounts = () => {
@@ -46,191 +54,58 @@ const Speech = () => {
     return storedViews[key] || 0;
   };
 
-  // Get random image for speech based on category
-  const getSpeechImage = (category, id) => {
-    const images = {
-      'annual-meeting': [
-        'https://images.unsplash.com/photo-1557425955-df376b88e2a3?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800&h=500&fit=crop',
-      ],
-      'resettlement': [
-        'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1593113646773-028cafb63a2c?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800&h=500&fit=crop',
-      ],
-      'conference': [
-        'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&h=500&fit=crop',
-      ],
-      'training': [
-        'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1544531585-9847b68c8c86?w=800&h=500&fit=crop',
-      ],
-      'default': [
-        'https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=500&fit=crop',
-      ]
-    };
+  // Transform API speeches with stats
+  const speechesData = useMemo(() => {
+    if (!apiSpeeches || apiSpeeches.length === 0) return [];
     
-    const categoryImages = images[category] || images.default;
-    return categoryImages[id % categoryImages.length];
-  };
+    return apiSpeeches.map(speech => ({
+      id: speech.id,
+      title: speechService.getTitle(speech, currentLang),
+      titleRaw: {
+        km: speech.titleKh,
+        en: speech.titleEn,
+      },
+      date: speech.createdDate,
+      formattedDate: speech.formattedDate,
+      author: speechService.getAuthor(speech, currentLang),
+      category: speech.category,
+      categoryLabel: speechService.getCategoryLabel(speech, currentLang),
+      views: getViewCount(speech.id, currentLang) || 0,
+      readTime: speechService.getReadTime(speech, currentLang),
+      excerpt: speechService.getExcerpt(speech, currentLang),
+      content: speechService.getArticle(speech, currentLang),
+      image: speech.coverImage || 'https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=800&h=500&fit=crop',
+    }));
+  }, [apiSpeeches, currentLang]);
 
-  // Initialize speeches with stored view counts and images
-  const initializeSpeeches = () => {
-    const baseSpeeches = {
-      km: [
-        {
-          id: 1,
-          title: 'សុន្ទរកថាបើកកិច្ចប្រជុំបូកសរុបការងារប្រចាំឆ្នាំ ២០២៥',
-          date: '2025-12-20',
-          author: 'ឯកឧត្តម ប្រធាន',
-          category: 'annual-meeting',
-          categoryLabel: 'ប្រជុំប្រចាំឆ្នាំ',
-          baseViews: 0,
-          readTime: 5,
-          excerpt: 'សុន្ទរកថាបើកកិច្ចប្រជុំបូកសរុបលទ្ធផលការងារប្រចាំឆ្នាំ។ យើងបានសម្រេចនូវសមិទ្ធផលសំខាន់ៗជាច្រើន រួមទាំងការដោះស្រាយសំណងជូនប្រជាពលរដ្ឋចំនួន ១,២៥០ គ្រួសារ និងការបណ្តុះបណ្តាលសមត្ថភាពដល់មន្ត្រីរាជការចំនួន ៥០០ នាក់។',
-          content: `<p>សូមគោរព ឯកឧត្តម លោកជំទាវ លោក លោកស្រី អ្នកនាងកញ្ញា ជាទីគោរពកោតសរសើរ!</p><p>ថ្ងៃនេះ ខ្ញុំមានសេចក្តីសោមនស្សរីករាយ ដែលបានអញ្ជើញមកកាន់ទីតាំងប្រជុំ។</p><p>សមិទ្ធផលសំខាន់ៗដែលយើងទទួលបានរួមមាន៖ ការដោះស្រាយសំណងជូនប្រជាពលរដ្ឋចំនួន ១,២៥០ គ្រួសារ ការបណ្តុះបណ្តាលសមត្ថភាពដល់មន្ត្រីរាជការចំនួន ៥០០ នាក់។</p><p>សូមអញ្ជើញបងប្អូនទាំងអស់គ្នា បន្តខិតខំប្រឹងប្រែង និងសហការគ្នាឱ្យបានខ្ជាប់ខ្ជួន។</p>`,
-        },
-        {
-          id: 2,
-          title: 'សុន្ទរកថាស្តីពីការជំរុញការងារដោះស្រាយផលប៉ះពាល់',
-          date: '2025-09-15',
-          author: 'ឯកឧត្តម អគ្គលេខាធិការ',
-          category: 'resettlement',
-          categoryLabel: 'ដោះស្រាយផលប៉ះពាល់',
-          baseViews: 0,
-          readTime: 4,
-          excerpt: 'សុន្ទរកថាស្តីពីការជំរុញការងារដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍។ យើងត្រូវបន្តពង្រឹងការងារនេះបន្ថែមទៀត ដើម្បីធានាបាននូវសិទ្ធិ និងផលប្រយោជន៍ស្របច្បាប់របស់ប្រជាពលរដ្ឋ។',
-          content: `<p>សូមគោរព លោកជំទាវ លោក លោកស្រី អ្នកនាងកញ្ញា ជាទីគោរព!</p><p>ខ្ញុំសូមសម្តែងនូវការកោតសរសើរ និងថ្លែងអំណរគុណចំពោះកិច្ចខិតខំប្រឹងប្រែងរបស់មន្ត្រីរាជការទាំងអស់។</p><p>សូមរួមគ្នាបន្តអនុវត្តការងារនេះ ដើម្បីធានាបាននូវសិទ្ធិ និងផលប្រយោជន៍ស្របច្បាប់របស់ប្រជាពលរដ្ឋ។</p>`,
-        },
-        {
-          id: 3,
-          title: 'សុន្ទរកថាបិទសន្និបាតបូកសរុបការងារ',
-          date: '2025-06-30',
-          author: 'លោកជំទាវ ប្រធាន',
-          category: 'conference',
-          categoryLabel: 'សន្និបាត',
-          baseViews: 0,
-          readTime: 3,
-          excerpt: 'សុន្ទរកថាបិទសន្និបាតបូកសរុបលទ្ធផលការងារ ៦ ខែ ដើមឆ្នាំ ២០២៥។ លទ្ធផលការងារសម្រេចបានគួរឱ្យកត់សម្គាល់ ជាពិសេសក្នុងវិស័យដោះស្រាយផលប៉ះពាល់។',
-          content: `<p>សូមគោរព ថ្នាក់ដឹកនាំ មន្ត្រីរាជការ និងបងប្អូនប្រជាពលរដ្ឋជាទីស្រឡាញ់!</p><p>បន្ទាប់ពីបានបូកសរុបលទ្ធផលការងាររយៈពេល ៦ ខែ យើងសង្កេតឃើញថា ការងារដោះស្រាយផលប៉ះពាល់ទទួលបានវឌ្ឍនភាពគួរឱ្យកត់សម្គាល់។</p>`,
-        },
-        {
-          id: 4,
-          title: 'សុន្ទរកថាស្តីពីការពង្រឹងសមត្ថភាពមន្ត្រីរាជការ',
-          date: '2025-03-10',
-          author: 'ឯកឧត្តម ប្រធាន',
-          category: 'training',
-          categoryLabel: 'បណ្តុះបណ្តាល',
-          baseViews: 0,
-          readTime: 6,
-          excerpt: 'សុន្ទរកថាស្តីពីការពង្រឹងសមត្ថភាពមន្ត្រីរាជការក្នុងការដោះស្រាយផលប៉ះពាល់។ ការពង្រឹងសមត្ថភាពមន្ត្រីរាជការ គឺជាអាទិភាពចម្បងមួយរបស់យើង។',
-          content: `<p>សូមគោរព ឯកឧត្តម លោកជំទាវ លោក លោកស្រី អ្នកនាងកញ្ញា ជាទីគោរព!</p><p>ការពង្រឹងសមត្ថភាពមន្ត្រីរាជការ គឺជាអាទិភាពចម្បងមួយរបស់អគ្គនាយកដ្ឋានយើងខ្ញុំ។</p>`,
-        },
-      ],
-      en: [
-        {
-          id: 1,
-          title: 'Opening Speech for Annual Work Review Meeting 2025',
-          date: '2025-12-20',
-          author: 'H.E. The Director General',
-          category: 'annual-meeting',
-          categoryLabel: 'Annual Meeting',
-          baseViews: 0,
-          readTime: 5,
-          excerpt: 'Opening speech for the annual work review meeting and action plan. Key achievements include compensation provided to 1,250 families and capacity building training for 500 civil servants.',
-          content: `<p>Distinguished Excellencies, Ladies and Gentlemen, Dear All!</p><p>Today, I am delighted to be here with you to participate in the Annual Work Review Meeting for 2025.</p><p>Key achievements include: Compensation provided to 1,250 families, Capacity building training for 500 civil servants.</p><p>I encourage everyone to continue working together diligently to achieve our vision and goals.</p>`,
-        },
-        {
-          id: 2,
-          title: 'Speech on Promoting Resettlement Work',
-          date: '2025-09-15',
-          author: 'H.E. The Secretary General',
-          category: 'resettlement',
-          categoryLabel: 'Resettlement',
-          baseViews: 0,
-          readTime: 4,
-          excerpt: 'Speech on promoting resettlement work for development projects. We must continue to strengthen this work to ensure the rights and legal interests of citizens are protected.',
-          content: `<p>Distinguished Ladies and Gentlemen, Dear All!</p><p>I would like to express my deep appreciation and gratitude for the efforts of all civil servants.</p><p>Let us continue working together to ensure the rights and legal interests of citizens are protected.</p>`,
-        },
-        {
-          id: 3,
-          title: 'Closing Speech for Annual Conference',
-          date: '2025-06-30',
-          author: 'Madam The Director',
-          category: 'conference',
-          categoryLabel: 'Conference',
-          baseViews: 0,
-          readTime: 3,
-          excerpt: 'Closing speech for the annual conference reviewing first-half work results. Significant progress has been made, especially in resettlement work.',
-          content: `<p>Respected Leaders, Civil Servants, and Dear Citizens!</p><p>After reviewing the work results for the first 6 months, we observe significant progress in resettlement work.</p><p>I thank all departments for their efforts.</p>`,
-        },
-        {
-          id: 4,
-          title: 'Speech on Strengthening Civil Servant Capacity',
-          date: '2025-03-10',
-          author: 'H.E. The Director General',
-          category: 'training',
-          categoryLabel: 'Training',
-          baseViews: 0,
-          readTime: 6,
-          excerpt: 'Speech on strengthening civil servant capacity in resettlement work. Strengthening civil servant capacity is a key priority of our General Department.',
-          content: `<p>Distinguished Excellencies, Ladies and Gentlemen, Dear All!</p><p>Strengthening civil servant capacity is a key priority of our General Department.</p>`,
-        },
-      ],
-    };
-
-    // Load stored views and merge with base views
-    const storedViews = loadViewCounts();
+  // Get unique categories from API data
+  const categories = useMemo(() => {
+    const categoryMap = new Map();
+    categoriesList.forEach(cat => {
+      categoryMap.set(cat.id, cat);
+    });
     
-    const mergedSpeeches = {
-      km: baseSpeeches.km.map(speech => ({
-        ...speech,
-        views: getViewCount(speech.id, 'km') || 0,
-        image: getSpeechImage(speech.category, speech.id)
-      })),
-      en: baseSpeeches.en.map(speech => ({
-        ...speech,
-        views: getViewCount(speech.id, 'en') || 0,
-        image: getSpeechImage(speech.category, speech.id)
-      }))
-    };
+    speechesData.forEach(speech => {
+      if (speech.category && !categoryMap.has(speech.category)) {
+        const label = currentLang === 'km' 
+          ? (speech.category === 'annual-meeting' ? 'ប្រជុំប្រចាំឆ្នាំ' :
+             speech.category === 'resettlement' ? 'ដោះស្រាយផលប៉ះពាល់' :
+             speech.category === 'conference' ? 'សន្និបាត' :
+             speech.category === 'training' ? 'បណ្តុះបណ្តាល' : 'ផ្សេងៗ')
+          : (speech.category === 'annual-meeting' ? 'Annual Meeting' :
+             speech.category === 'resettlement' ? 'Resettlement' :
+             speech.category === 'conference' ? 'Conference' :
+             speech.category === 'training' ? 'Training' : 'Other');
+        
+        categoryMap.set(speech.category, { id: speech.category, label });
+      }
+    });
+    
+    const allCategory = { id: 'all', label: currentLang === 'km' ? 'ទាំងអស់' : 'All' };
+    return [allCategory, ...Array.from(categoryMap.values())];
+  }, [speechesData, currentLang]);
 
-    setSpeechesData(mergedSpeeches);
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setActiveDropdown(null);
-      setSortOpen(false);
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    initializeSpeeches();
-  }, []);
-
-  useEffect(() => {
-    const handleLanguageChange = (e) => {
-      setCurrentLang(e.detail.language);
-    };
-    window.addEventListener('languagechange', handleLanguageChange);
-    const savedLang = localStorage.getItem('language');
-    if (savedLang) setCurrentLang(savedLang);
-    return () => window.removeEventListener('languagechange', handleLanguageChange);
-  }, []);
-
-  const currentSpeeches = speechesData[currentLang] || speechesData.km || [];
-  
-  const categories = [
+  const categoriesList = [
     { id: 'all', label: currentLang === 'km' ? 'ទាំងអស់' : 'All', icon: BookOpen },
     { id: 'annual-meeting', label: currentLang === 'km' ? 'ប្រជុំប្រចាំឆ្នាំ' : 'Annual', icon: CalendarIcon },
     { id: 'resettlement', label: currentLang === 'km' ? 'ដោះស្រាយផលប៉ះពាល់' : 'Resettlement', icon: Users },
@@ -249,6 +124,7 @@ const Speech = () => {
       oldest: 'ចាស់ជាងគេ',
       showing: 'បង្ហាញ',
       speeches: 'សុន្ទរកថា',
+      ofTotal: 'នៃ',
       total: 'សរុប',
       noSpeeches: 'រកមិនឃើញ',
       tryAgain: 'សូមស្វែងរកម្តងទៀត',
@@ -261,7 +137,10 @@ const Speech = () => {
       relatedSpeeches: 'ពាក់ព័ន្ធ',
       minRead: 'នាទី',
       by: 'ដោយ',
-      clearAll: 'សម្អាត'
+      clearAll: 'សម្អាត',
+      loading: 'កំពុងផ្ទុក...',
+      error: 'មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ',
+      retry: 'សាកល្បងម្តងទៀត'
     },
     en: {
       title: 'Speeches',
@@ -273,6 +152,7 @@ const Speech = () => {
       oldest: 'Oldest',
       showing: 'Showing',
       speeches: 'speeches',
+      ofTotal: 'of',
       total: 'Total',
       noSpeeches: 'No speeches found',
       tryAgain: 'Please try again',
@@ -285,25 +165,43 @@ const Speech = () => {
       relatedSpeeches: 'Related',
       minRead: 'min read',
       by: 'by',
-      clearAll: 'Clear'
+      clearAll: 'Clear',
+      loading: 'Loading...',
+      error: 'Error loading data',
+      retry: 'Try Again'
     },
   };
 
   const t = translations[currentLang];
 
-  const filteredSpeeches = currentSpeeches
-    .filter(speech => {
-      const matchesSearch = speech.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           speech.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = activeCategory === 'all' || speech.category === activeCategory;
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
+  // Filter and sort speeches
+  const filteredSpeeches = useMemo(() => {
+    let filtered = [...speechesData];
+    
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(speech => 
+        speech.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        speech.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Category filter
+    if (activeCategory !== 'all') {
+      filtered = filtered.filter(speech => speech.category === activeCategory);
+    }
+    
+    // Sort
+    filtered.sort((a, b) => {
       if (sortBy === 'popular') return b.views - a.views;
       if (sortBy === 'oldest') return new Date(a.date) - new Date(b.date);
       return new Date(b.date) - new Date(a.date);
     });
+    
+    return filtered;
+  }, [speechesData, searchQuery, activeCategory, sortBy]);
 
+  // Pagination
   const totalPages = Math.ceil(filteredSpeeches.length / itemsPerPage);
   const paginatedSpeeches = filteredSpeeches.slice(
     (currentPage - 1) * itemsPerPage,
@@ -313,6 +211,7 @@ const Speech = () => {
   const endItem = Math.min(currentPage * itemsPerPage, filteredSpeeches.length);
 
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     if (currentLang === 'km') {
       return date.toLocaleDateString('km-KH', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -323,22 +222,12 @@ const Speech = () => {
   const incrementViewCount = (speech) => {
     const newViews = speech.views + 1;
     saveViewCount(speech.id, currentLang, newViews);
-    
-    setSpeechesData(prev => {
-      const updated = { ...prev };
-      const speechIndex = updated[currentLang].findIndex(s => s.id === speech.id);
-      if (speechIndex !== -1) {
-        updated[currentLang][speechIndex].views = newViews;
-      }
-      return updated;
-    });
-    
     return newViews;
   };
 
   const handleViewSpeech = (speech) => {
-    const updatedSpeech = { ...speech, views: incrementViewCount(speech) };
-    setSelectedSpeech(updatedSpeech);
+    const updatedViews = incrementViewCount(speech);
+    setSelectedSpeech({ ...speech, views: updatedViews });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -377,16 +266,77 @@ const Speech = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, activeCategory, sortBy]);
+  }, [searchQuery, activeCategory, sortBy, itemsPerPage]);
 
-  // Large List Card with Big Image
+  useEffect(() => {
+    const handleLanguageChange = (e) => {
+      setCurrentLang(e.detail.language);
+    };
+    window.addEventListener('languagechange', handleLanguageChange);
+    const savedLang = localStorage.getItem('language');
+    if (savedLang) setCurrentLang(savedLang);
+    return () => window.removeEventListener('languagechange', handleLanguageChange);
+  }, []);
+
+  // Loading state
+  if (loading && speechesData.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <GlobalBanner
+          title={t.title}
+          subtitle={t.subtitle}
+          height="h-[180px] md:h-[250px] lg:h-[300px]"
+          showBreadcrumb={true}
+        />
+        <Container className="py-12">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4CAF50] mx-auto mb-4"></div>
+              <p className="text-gray-500">{t.loading}</p>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && speechesData.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <GlobalBanner
+          title={t.title}
+          subtitle={t.subtitle}
+          height="h-[180px] md:h-[250px] lg:h-[300px]"
+          showBreadcrumb={true}
+        />
+        <Container className="py-12">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <Mic size={28} className="text-red-400" />
+            </div>
+            <p className="text-red-500 text-sm mb-1">{t.error}</p>
+            <p className="text-gray-400 text-xs mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors"
+            >
+              {t.retry}
+            </button>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  // Speech List Item Component
   const SpeechListItem = ({ speech }) => (
     <div
       onClick={() => handleViewSpeech(speech)}
       className="group bg-white border border-gray-100 rounded-xl hover:border-[#4CAF50]/30 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden mb-4"
     >
       <div className="flex flex-col md:flex-row">
-        {/* Image Section - Larger */}
+        {/* Image Section */}
         <div className="relative md:w-72 lg:w-80 h-56 md:h-auto overflow-hidden bg-gray-100">
           <img 
             src={speech.image} 
@@ -396,13 +346,11 @@ const Speech = () => {
               e.target.src = 'https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=800&h=500&fit=crop';
             }}
           />
-          {/* Category Badge Overlay */}
           <div className="absolute top-3 left-3">
             <span className="text-[11px] font-medium px-2.5 py-1 bg-white/95 backdrop-blur-sm text-[#2E7D32] rounded-full shadow-sm">
               {speech.categoryLabel}
             </span>
           </div>
-          {/* View Count Overlay */}
           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full text-white text-[10px]">
             <Eye size={10} className="text-white/80" />
             <span className="font-medium">{speech.views} {t.views}</span>
@@ -445,6 +393,7 @@ const Speech = () => {
     </div>
   );
 
+  // Pagination Component
   const Pagination = () => {
     if (totalPages <= 1) return null;
     return (
@@ -515,7 +464,7 @@ const Speech = () => {
           ))}
         </div>
 
-        {/* Search and Filters - Dropdown Style */}
+        {/* Search and Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
           <div className="p-4">
             <div className="flex flex-wrap items-center gap-3">
@@ -763,6 +712,17 @@ const Speech = () => {
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>

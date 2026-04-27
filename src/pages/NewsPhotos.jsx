@@ -1,5 +1,5 @@
 // src/pages/NewsPhotos.jsx
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import ImageLogo from "../images/logo_white.png";
 import {
   Camera,
@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Eye,
   Calendar as CalendarIcon,
-  User,
   Heart,
   Share2,
   Download,
@@ -18,164 +17,17 @@ import {
   ChevronRight as ChevronRightIcon,
   Grid,
   List,
-  FolderOpen,
   Search,
   Filter,
   ChevronDown,
   ArrowLeft,
   ArrowRight,
-  Images,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import Container from "../components/ui/Container.jsx";
 import GlobalBanner from "../components/ui/GlobalBanner.jsx";
-
-// Helper function to import images dynamically
-const importAllImages = (r) => {
-  let images = {};
-  r.keys().forEach((item, index) => {
-    images[item.replace("./", "")] = r(item);
-  });
-  return images;
-};
-
-// Import all images for each post
-const post1Images = importAllImages(
-  require.context("../images/Post1", false, /\.(jpg|jpeg|png)$/),
-);
-const post2Images = importAllImages(
-  require.context("../images/Post2", false, /\.(jpg|jpeg|png)$/),
-);
-const post3Images = importAllImages(
-  require.context("../images/Post3", false, /\.(jpg|jpeg|png)$/),
-);
-const post4Images = importAllImages(
-  require.context("../images/Post4", false, /\.(jpg|jpeg|png)$/),
-);
-const post5Images = importAllImages(
-  require.context("../images/Post5", false, /\.(jpg|jpeg|png)$/),
-);
-const post6Images = importAllImages(
-  require.context("../images/Post6", false, /\.(jpg|jpeg|png)$/),
-);
-
-// Convert objects to arrays and sort by filename
-const sortImages = (imagesObj) => {
-  return Object.keys(imagesObj)
-    .sort((a, b) => {
-      const numA = parseInt(a.match(/(\d+)/)[0]);
-      const numB = parseInt(b.match(/(\d+)/)[0]);
-      return numA - numB;
-    })
-    .map((key) => imagesObj[key]);
-};
-
-const post1ImageArray = sortImages(post1Images);
-const post2ImageArray = sortImages(post2Images);
-const post3ImageArray = sortImages(post3Images);
-const post4ImageArray = sortImages(post4Images);
-const post5ImageArray = sortImages(post5Images);
-const post6ImageArray = sortImages(post6Images);
-
-// Base albums data without counts
-const basePhotoAlbums = [
-  {
-    id: 1,
-    title: {
-      km: "ឯកឧត្តម អ៊ឹម សិទ្ធីរ៉ា ជួបពិភាក្សាការងារជាមួយធនាគារអភិវឌ្ឍន៍អាស៊ី (ADB)",
-      en: "H.E. Im Sitthyra Meets with Asian Development Bank (ADB)",
-    },
-    date: "20 មករា 2026",
-    dateSort: "2026-01-20",
-    images: post1ImageArray,
-    coverImage: post1ImageArray[0],
-    description: {
-      km: "ក្នុងជំនួបនេះ ភាគីទាំងពីរបានពិភាក្សាអំពីកិច្ចសហប្រតិបត្តិការនាពេលខាងមុខ",
-      en: "During this meeting, both parties discussed future cooperation",
-    },
-    year: "2026",
-  },
-  {
-    id: 2,
-    title: {
-      km: "សិក្ខាសាលាស្តីពីការគ្រប់គ្រងលទ្ធកម្មដីធ្លី និងការរឹតបន្តឹងលើការប្រើប្រាស់ដីធ្លី",
-      en: "Workshop on Land Acquisition and Land Use Restriction Management",
-    },
-    date: "5 មីនា 2026",
-    dateSort: "2026-03-05",
-    images: post2ImageArray,
-    coverImage: post2ImageArray[0],
-    description: {
-      km: "សិក្ខាសាលាធ្វើឡើងក្រោមការដឹកនាំរបស់ឯកឧត្តម អុឹម សិទ្ធីរ៉ា",
-      en: "Workshop held under the leadership of H.E. Im Sitthyra",
-    },
-    year: "2026",
-  },
-  {
-    id: 3,
-    title: {
-      km: "សិក្ខាសាលាស្តីពីការអនុវត្តគោលនយោបាយដោះស្រាយផលប៉ះពាល់",
-      en: "Workshop on Impact Resolution Policy Implementation",
-    },
-    date: "15 មីនា 2026",
-    dateSort: "2026-03-15",
-    images: post3ImageArray,
-    coverImage: post3ImageArray[0],
-    description: {
-      km: "សិក្ខាសាលាស្តីពីការអនុវត្តគោលនយោបាយដោះស្រាយផលប៉ះពាល់ពីគម្រោងអភិវឌ្ឍន៍",
-      en: "Workshop on the implementation of impact resolution policies from development projects",
-    },
-    year: "2026",
-  },
-  {
-    id: 4,
-    title: {
-      km: "ពិធីបើកការដ្ឋានសាងសង់ហេដ្ឋារចនាសម្ព័ន្ធសហគមន៍",
-      en: "Community Infrastructure Construction Site Opening Ceremony",
-    },
-    date: "22 មីនា 2026",
-    dateSort: "2026-03-22",
-    images: post4ImageArray,
-    coverImage: post4ImageArray[0],
-    description: {
-      km: "ពិធីបើកការដ្ឋានសាងសង់ហេដ្ឋារចនាសម្ព័ន្ធសហគមន៍ក្រោមគម្រោងអភិវឌ្ឍន៍",
-      en: "Community infrastructure construction site opening ceremony under development projects",
-    },
-    year: "2026",
-  },
-  {
-    id: 5,
-    title: {
-      km: "កិច្ចប្រជុំប្រចាំខែរបស់អគ្គនាយកដ្ឋាន",
-      en: "General Department Monthly Meeting",
-    },
-    date: "28 មីនា 2026",
-    dateSort: "2026-03-28",
-    images: post5ImageArray,
-    coverImage: post5ImageArray[0],
-    description: {
-      km: "កិច្ចប្រជុំប្រចាំខែ ដើម្បីពិនិត្យវឌ្ឍនភាពការងារ និងរៀបចំផែនការសកម្មភាពបន្ត",
-      en: "Monthly meeting to review work progress and plan future activities",
-    },
-    year: "2026",
-  },
-  {
-    id: 6,
-    title: {
-      km: "ដំណើរទស្សនកិច្ចសិក្សានៅខេត្តព្រះសីហនុ",
-      en: "Study Visit to Preah Sihanouk Province",
-    },
-    date: "5 មេសា 2026",
-    dateSort: "2026-04-05",
-    images: post6ImageArray,
-    coverImage: post6ImageArray[0],
-    description: {
-      km: "ដំណើរទស្សនកិច្ចសិក្សារបស់មន្រ្តីអគ្គនាយកដ្ឋាននៅខេត្តព្រះសីហនុ",
-      en: "Study visit of General Department officials to Preah Sihanouk Province",
-    },
-    year: "2026",
-  },
-];
+import RunningText from "../components/ui/RunningText"; // Import RunningText component
+import usePhotoAlbum from "../hooks/usePhotoAlbum";
+import photoAlbumService from "../services/api/photoAlbum.service";
 
 const NewsPhotos = () => {
   const [selectedAlbum, setSelectedAlbum] = useState(null);
@@ -188,6 +40,15 @@ const NewsPhotos = () => {
   const [sortBy, setSortBy] = useState("latest");
   const [showFilters, setShowFilters] = useState(false);
   const [currentLang, setCurrentLang] = useState("km");
+
+  // Use the photo album hook
+  const { 
+    albums: apiAlbums, 
+    pagination, 
+    loading, 
+    error,
+    changePage
+  } = usePhotoAlbum(currentPage, itemsPerPage);
 
   // Load counts from localStorage
   const [albumViews, setAlbumViews] = useState(() => {
@@ -205,7 +66,7 @@ const NewsPhotos = () => {
     return saved ? JSON.parse(saved) : {};
   });
 
-  // Track which albums the user has liked (for like/unlike functionality)
+  // Track which albums the user has liked
   const [userLikedAlbums, setUserLikedAlbums] = useState(() => {
     const saved = localStorage.getItem('user_liked_albums');
     return saved ? JSON.parse(saved) : {};
@@ -228,16 +89,82 @@ const NewsPhotos = () => {
     localStorage.setItem('user_liked_albums', JSON.stringify(userLikedAlbums));
   }, [userLikedAlbums]);
 
-  // Merge base albums with stored counts - using useMemo to update when counts change
+  // Transform API albums with stats
   const photoAlbums = useMemo(() => {
-    return basePhotoAlbums.map(album => ({
-      ...album,
-      views: albumViews[album.id] || 0,
-      likes: albumLikes[album.id] || 0,
-      shares: albumShares[album.id] || 0,
-      userLiked: userLikedAlbums[album.id] || false,
-    }));
-  }, [albumViews, albumLikes, albumShares, userLikedAlbums]);
+    if (!apiAlbums || apiAlbums.length === 0) return [];
+    
+    return apiAlbums.map(album => {
+      // Format date
+      const date = album.createdDate ? new Date(album.createdDate) : new Date();
+      const formattedDate = date.toLocaleDateString(currentLang === 'km' ? 'km-KH' : 'en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      // Get article text (strip HTML)
+      const articleText = photoAlbumService.stripHtml(
+        currentLang === 'km' ? album.articleKh : album.articleEn
+      );
+      
+      return {
+        id: album.id,
+        title: {
+          km: album.titleKh,
+          en: album.titleEn,
+        },
+        description: {
+          km: articleText || album.titleKh,
+          en: articleText || album.titleEn,
+        },
+        coverImage: album.coverImage,
+        images: album.images,
+        imageCount: album.imageCount,
+        date: formattedDate,
+        dateSort: album.createdDate,
+        views: albumViews[album.id] || 0,
+        likes: albumLikes[album.id] || 0,
+        shares: albumShares[album.id] || 0,
+        userLiked: userLikedAlbums[album.id] || false,
+      };
+    });
+  }, [apiAlbums, albumViews, albumLikes, albumShares, userLikedAlbums, currentLang]);
+
+  // Filter and sort albums
+  const filteredAlbums = useMemo(() => {
+    let filtered = [...photoAlbums];
+    
+    // Apply search filter
+    if (searchQuery) {
+      filtered = filtered.filter(album => {
+        const title = currentLang === 'km' ? album.title.km : album.title.en;
+        const description = currentLang === 'km' ? album.description.km : album.description.en;
+        return title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               description.toLowerCase().includes(searchQuery.toLowerCase());
+      });
+    }
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+      if (sortBy === "popular") return b.views - a.views;
+      if (sortBy === "oldest") return new Date(a.dateSort) - new Date(b.dateSort);
+      return new Date(b.dateSort) - new Date(a.dateSort); // latest
+    });
+    
+    return filtered;
+  }, [photoAlbums, searchQuery, sortBy, currentLang]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAlbums.length / itemsPerPage);
+  const paginatedAlbums = filteredAlbums.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset pagination when search or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortBy, itemsPerPage]);
 
   // Touch swipe refs
   const touchStartX = useRef(0);
@@ -260,21 +187,16 @@ const NewsPhotos = () => {
       window.removeEventListener("languagechange", handleLanguageChange);
   }, []);
 
-  // Translations
   const translations = {
     km: {
       title: "កម្រងរូបភាពព័ត៌មាន",
-      subtitle:
-        "បណ្តុំរូបភាពព្រឹត្តិការណ៍ សិក្ខាសាលា និងសកម្មភាពនានារបស់អគ្គនាយកដ្ឋាន",
-      runningText:
-        "សូមស្វាគមន៍មកកាន់កម្រងរូបភាពព័ត៌មាន • រូបភាពព្រឹត្តិការណ៍សំខាន់ៗរបស់អគ្គនាយកដ្ឋាន •",
+      subtitle: "បណ្តុំរូបភាពព្រឹត្តិការណ៍ សិក្ខាសាលា និងសកម្មភាពនានារបស់អគ្គនាយកដ្ឋាន",
       searchPlaceholder: "ស្វែងរកកម្រងរូបភាព...",
       sortBy: "តម្រៀបតាម",
       latest: "ថ្មីបំផុត",
       popular: "ពេញនិយមបំផុត",
       oldest: "ចាស់បំផុត",
       filter: "តម្រង",
-      all: "ទាំងអស់",
       showing: "បង្ហាញ",
       albums: "កម្រងរូបភាព",
       total: "សរុប",
@@ -289,23 +211,19 @@ const NewsPhotos = () => {
       grid: "ទម្រង់ក្រឡា",
       list: "ទម្រង់បញ្ជី",
       itemsPerPage: "ចំនួនក្នុងមួយទំព័រ",
-      share: "ចែករំលែក",
-      shareVia: "ចែករំលែកតាម",
-      copyLink: "ចម្លងតំណ",
-      copied: "បានចម្លង!",
+      loading: "កំពុងផ្ទុក...",
+      error: "មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ",
+      retry: "សាកល្បងម្តងទៀត",
     },
     en: {
       title: "News Photo Gallery",
-      subtitle:
-        "Collection of event photos, workshops and activities of the General Department",
-      runningText: "WELCOME TO THE NEWS PHOTO GALLERY •",
+      subtitle: "Collection of event photos, workshops and activities of the General Department",
       searchPlaceholder: "Search albums...",
       sortBy: "Sort by",
       latest: "Latest",
       popular: "Most viewed",
       oldest: "Oldest",
       filter: "Filter",
-      all: "All",
       showing: "Showing",
       albums: "albums",
       total: "Total",
@@ -320,36 +238,13 @@ const NewsPhotos = () => {
       grid: "Grid View",
       list: "List View",
       itemsPerPage: "Items per page",
-      share: "Share",
-      shareVia: "Share via",
-      copyLink: "Copy Link",
-      copied: "Copied!",
+      loading: "Loading...",
+      error: "Error loading data",
+      retry: "Try Again",
     },
   };
 
   const t = translations[currentLang];
-
-  // Filter and sort albums
-  const filteredAlbums = photoAlbums
-    .filter(
-      (album) =>
-        album.title.km.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        album.title.en.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        album.description.km.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-    .sort((a, b) => {
-      if (sortBy === "popular") return b.views - a.views;
-      if (sortBy === "oldest")
-        return new Date(a.dateSort) - new Date(b.dateSort);
-      return new Date(b.dateSort) - new Date(a.dateSort);
-    });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredAlbums.length / itemsPerPage);
-  const paginatedAlbums = filteredAlbums.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
 
   const handleOpenAlbum = (album) => {
     // Update view count when opening album
@@ -367,14 +262,12 @@ const NewsPhotos = () => {
     setSelectedImageIndex(null);
   };
 
-  // Toggle like/unlike for an album
   const handleToggleLike = (albumId, e) => {
     e.stopPropagation();
     
     const isLiked = userLikedAlbums[albumId];
     
     if (isLiked) {
-      // Unlike: decrease like count and remove from userLikedAlbums
       setAlbumLikes(prev => ({
         ...prev,
         [albumId]: Math.max(0, (prev[albumId] || 0) - 1)
@@ -385,7 +278,6 @@ const NewsPhotos = () => {
         return newState;
       });
     } else {
-      // Like: increase like count and add to userLikedAlbums
       setAlbumLikes(prev => ({
         ...prev,
         [albumId]: (prev[albumId] || 0) + 1
@@ -399,16 +291,14 @@ const NewsPhotos = () => {
 
   const handleShare = (album, e) => {
     e.stopPropagation();
-    // Update share count
     setAlbumShares(prev => ({
       ...prev,
       [album.id]: (prev[album.id] || 0) + 1
     }));
     
-    // Copy link to clipboard
     const url = `${window.location.origin}/photos/${album.id}`;
     navigator.clipboard.writeText(url);
-    alert(t.copied);
+    alert(t.copied || "Copied!");
   };
 
   const handleOpenLightbox = (index) => {
@@ -494,10 +384,58 @@ const NewsPhotos = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showLightbox, selectedAlbum, selectedImageIndex]);
 
-  // Reset pagination when search or filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortBy]);
+  // Loading state
+  if (loading && photoAlbums.length === 0) {
+    return (
+      <div className="min-h-screen bg-white">
+        <RunningText /> {/* Add RunningText component */}
+        <GlobalBanner
+          title={t.title}
+          subtitle={t.subtitle}
+          height="h-[160px] sm:h-[200px] md:h-[280px] lg:h-[320px]"
+          showBreadcrumb={true}
+        />
+        <Container className="py-12">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4CAF50] mx-auto mb-4"></div>
+              <p className="text-gray-500">{t.loading}</p>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && photoAlbums.length === 0) {
+    return (
+      <div className="min-h-screen bg-white">
+        <RunningText /> {/* Add RunningText component */}
+        <GlobalBanner
+          title={t.title}
+          subtitle={t.subtitle}
+          height="h-[160px] sm:h-[200px] md:h-[280px] lg:h-[320px]"
+          showBreadcrumb={true}
+        />
+        <Container className="py-12">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <Image size={28} className="text-red-400" />
+            </div>
+            <p className="text-red-500 text-sm mb-1">{t.error}</p>
+            <p className="text-gray-400 text-xs mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#2E7D32] transition-colors"
+            >
+              {t.retry}
+            </button>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   // Grid View Component for Albums
   const AlbumGridView = () => (
@@ -512,8 +450,11 @@ const NewsPhotos = () => {
           <div className="relative h-56 overflow-hidden bg-gray-100">
             <img
               src={album.coverImage}
-              alt={album.title.km}
+              alt={album.title[currentLang]}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              onError={(e) => {
+                e.target.src = "https://placehold.co/400x300/4CAF50/white?text=No+Image";
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
@@ -521,7 +462,7 @@ const NewsPhotos = () => {
             <div className="absolute top-3 right-3">
               <span className="px-2.5 py-1.5 bg-black/60 backdrop-blur-sm text-white text-xs rounded-lg flex items-center gap-1">
                 <Image size={12} />
-                {album.images.length}
+                {album.imageCount}
               </span>
             </div>
 
@@ -593,13 +534,16 @@ const NewsPhotos = () => {
           <div className="relative md:w-64 h-48 md:h-auto overflow-hidden bg-gray-100 flex-shrink-0">
             <img
               src={album.coverImage}
-              alt={album.title.km}
+              alt={album.title[currentLang]}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              onError={(e) => {
+                e.target.src = "https://placehold.co/400x300/4CAF50/white?text=No+Image";
+              }}
             />
             <div className="absolute top-3 right-3">
               <span className="px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-xs rounded-lg flex items-center gap-1">
                 <Image size={12} />
-                {album.images.length}
+                {album.imageCount}
               </span>
             </div>
           </div>
@@ -721,92 +665,10 @@ const NewsPhotos = () => {
     );
   };
 
-  function runningText() {
-    function logo() {
-      return (
-        <img
-          src={ImageLogo}
-          style={{
-            height: "20px",
-            width: "20px",
-            objectFit: "cover",
-            display: "inline",
-          }}
-        />
-      );
-    }
-    return (
-      <>
-        <div
-          className="
-            running-text-bar
-            sticky
-            top-[72px]
-            md:top-[140px]
-            w-full
-            z-40
-            overflow-hidden
-          bg-gradient-to-r from-[#2E7D32]/80 to-[#4CAF50]/80
-            shadow-lg
-          "
-        >
-          <div className="animate-marquee whitespace-nowrap py-2 md:py-3">
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} អនុក្រឹត្យ ស្តីពី
-              ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយផលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
-              ក្នុងព្រះណាចក្រកម្ពុជា
-            </span>
-
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
-            </span>
-
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} LAW ON EXPROPRIATION
-            </span>
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} អនុក្រឹត្យ ស្តីពី
-              ការដាក់ឱ្យប្រើប្រាស់ស្តង់ដានីតិវិធីប្រតិបត្តិសម្រាប់ការងារដោះស្រាយភលប៉ះពាល់ដោយសារគម្រោងអភិវឌ្ឍន៍ដែលទទួលបានហិរញ្ញប្បទានពីដៃគូអភិវឌ្ឍន៍
-              ក្នុងព្រះណាចក្រកម្ពុជា •
-            </span>
-
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} ច្បាប់ស្តីពី អស្សាមិករណ៍
-            </span>
-
-            <span className="text-white text-xs md:text-sm lg:text-base font-medium mx-4">
-              {logo()} LAW ON EXPROPRIATION
-            </span>
-          </div>
-        </div>
-
-        <style jsx>{`
-          @keyframes marquee {
-            0% {
-              transform: translateX(0);
-            }
-            100% {
-              transform: translateX(-50%);
-            }
-          }
-
-          .animate-marquee {
-            animation: marquee 30s linear infinite;
-            display: inline-block;
-          }
-
-          .animate-marquee:hover {
-            animation-play-state: paused;
-          }
-        `}</style>
-      </>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
-      {/* Running Text Bar */}
-      {runningText()}
+      {/* Running Text Bar - Using the RunningText component like LegalPage */}
+      <RunningText />
 
       {/* Global Banner */}
       <GlobalBanner
@@ -1061,6 +923,9 @@ const NewsPhotos = () => {
                     src={img}
                     alt={`${selectedAlbum.title[currentLang]} - ${idx + 1}`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    onError={(e) => {
+                      e.target.src = "https://placehold.co/400x400/4CAF50/white?text=No+Image";
+                    }}
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Eye size={24} className="text-white" />
@@ -1143,21 +1008,32 @@ const NewsPhotos = () => {
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
         }
-
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
+        
+        .line-clamp-1 {
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
-        .animate-marquee {
-          animation: marquee 40s linear infinite;
-          display: inline-block;
+        
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
-        .animate-marquee:hover {
-          animation-play-state: paused;
+        
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>
