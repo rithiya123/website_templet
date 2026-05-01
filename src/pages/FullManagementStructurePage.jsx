@@ -231,13 +231,13 @@ const FullManagementStructurePage = () => {
       {/* Organization Chart Section */}
       <Container className="py-8">
         <div className="max-w-6xl mx-auto">
-          {/* Section Header */}
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-              {extractTitle(articleContent)}
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#4CAF50] to-[#2E7D32] rounded-full mx-auto mb-4"></div>
-          </div>
+        
+        <div className="text-center mb-10">
+          <h2 className="text-xl md:text-xl font-normal text-gray-900 mb-3">
+            {extractTitle(articleContent)}
+          </h2>
+         
+        </div>
 
           {/* Toolbar - Aligned to Right */}
           <div className="flex items-center justify-end gap-2 mb-6">

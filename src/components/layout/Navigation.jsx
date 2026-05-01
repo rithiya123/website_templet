@@ -8,12 +8,13 @@ import {
   Mic, Briefcase, UserCheck, Calendar, Image, Video, 
   FileBadge, FileJson, FileSpreadsheet, FileCode, 
   ChartBar, PieChart, TrendingUp, ClipboardList,
-  Building, Target, Heart, MessageCircle
+  Building, Target, Heart, MessageCircle, Languages
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../ui/Logo.jsx';
 import { useHeader } from '../../hooks/useHeader';
 import { useFooterEmail } from '../../hooks/useFooterEmail';
+import LanguageSwitcher from '../shared/LanguageSwitcher.jsx';
 
 const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const navigate = useNavigate();
@@ -706,6 +707,17 @@ const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }) => {
             </div>
 
             <div className="p-5 pb-24">
+              {/* Language Switcher for Mobile */}
+              <div className="mb-6 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <Languages size={16} className="text-[#4CAF50]" />
+                  <span className="text-xs font-medium text-gray-600">
+                    {currentLang === 'km' ? 'ជ្រើសរើសភាសា' : 'Select Language'}
+                  </span>
+                </div>
+                <LanguageSwitcher variant="mobile" className="justify-start" />
+              </div>
+
               <div className="space-y-1">
                 {menuItems.map((item) => {
                   const isActive = isItemActive(item);

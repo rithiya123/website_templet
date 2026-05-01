@@ -32,6 +32,35 @@ const LanguageSwitcher = ({ variant = 'topbar', className = '' }) => {
     { code: 'en', name: 'English', short: 'ENG', flag: flags.en }
   ];
 
+  // Mobile variant (for mobile menu)
+  if (variant === 'mobile') {
+    return (
+      <div className={`flex items-center gap-3 ${className}`}>
+        {languages.map((lang) => (
+          <button
+            key={lang.code}
+            onClick={() => changeLanguage(lang.code)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 flex-1 justify-center ${
+              currentLang === lang.code
+                ? 'bg-gradient-to-r from-[#4CAF50] to-[#2E7D32] text-white shadow-md'
+                : 'bg-white border border-gray-200 text-gray-700 hover:border-[#4CAF50] hover:shadow-sm'
+            }`}
+          >
+            <img 
+              src={lang.flag} 
+              alt={lang.name}
+              className="w-5 h-5 object-cover rounded-sm"
+            />
+            <span className="text-sm font-medium">{lang.name}</span>
+            {currentLang === lang.code && (
+              <Check size={14} className="ml-1" />
+            )}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   // Top bar variant (only used in header top bar)
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
