@@ -487,7 +487,7 @@ const NewsPhotos = () => {
             {/* Stats */}
             <div className="flex items-center justify-between pt-3 border-t border-gray-100">
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-1 text-xs text-gray-500">
+                {/* <div className="flex items-center space-x-1 text-xs text-gray-500">
                   <Eye size={12} />
                   <span>{album.views}</span>
                 </div>
@@ -508,7 +508,7 @@ const NewsPhotos = () => {
                 >
                   <Share2 size={12} />
                   <span>{album.shares || 0}</span>
-                </button>
+                </button> */}
               </div>
               <span className="text-xs text-[#4CAF50] font-medium flex items-center group-hover:translate-x-1 transition-transform">
                 {t.viewPhotos}
@@ -563,7 +563,7 @@ const NewsPhotos = () => {
                   <CalendarIcon size={12} />
                   <span>{album.date}</span>
                 </div>
-                <div className="flex items-center space-x-1 text-xs text-gray-500">
+                {/* <div className="flex items-center space-x-1 text-xs text-gray-500">
                   <Eye size={12} />
                   <span>{album.views}</span>
                 </div>
@@ -584,7 +584,7 @@ const NewsPhotos = () => {
                 >
                   <Share2 size={12} />
                   <span>{album.shares || 0}</span>
-                </button>
+                </button> */}
               </div>
               <span className="text-xs text-[#4CAF50] font-medium flex items-center group-hover:translate-x-1 transition-transform">
                 {t.viewPhotos}
@@ -880,13 +880,13 @@ const NewsPhotos = () => {
                   <CalendarIcon size={14} />
                   <span>{selectedAlbum.date}</span>
                 </div>
-                <div className="flex items-center space-x-1">
+                {/* <div className="flex items-center space-x-1">
                   <Eye size={14} />
                   <span>
                     {selectedAlbum.views} {t.views}
                   </span>
-                </div>
-                <button
+                </div> */}
+                {/* <button
                   onClick={(e) => handleToggleLike(selectedAlbum.id, e)}
                   className={`flex items-center space-x-1 transition-colors ${
                     selectedAlbum.userLiked 
@@ -907,7 +907,7 @@ const NewsPhotos = () => {
                   <span>
                     {selectedAlbum.shares || 0} {t.shares}
                   </span>
-                </button>
+                </button> */}
               </div>
             </div>
 

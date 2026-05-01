@@ -317,14 +317,14 @@ const Speech = () => {
               <Calendar size={12} className="text-[#4CAF50]" />
               {formatDate(speech.date)}
             </span>
-            <span className="flex items-center gap-1.5">
+            {/* <span className="flex items-center gap-1.5">
               <User size={12} className="text-[#4CAF50]" />
               {t.by} {speech.author}
             </span>
             <span className="flex items-center gap-1.5">
               <Clock size={12} className="text-[#4CAF50]" />
               {speech.readTime} {t.minRead}
-            </span>
+            </span> */}
           </div>
           
           <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-[#2E7D32] transition-colors line-clamp-2">
@@ -570,7 +570,7 @@ const Speech = () => {
                   <Calendar size={14} />
                   {formatDate(selectedSpeech.date)}
                 </span>
-                <span className="flex items-center gap-1.5">
+                {/* <span className="flex items-center gap-1.5">
                   <User size={14} />
                   {selectedSpeech.author}
                 </span>
@@ -581,7 +581,7 @@ const Speech = () => {
                 <span className="flex items-center gap-1.5">
                   <Clock size={14} />
                   {selectedSpeech.readTime} {t.minRead}
-                </span>
+                </span> */}
               </div>
             </div>
 

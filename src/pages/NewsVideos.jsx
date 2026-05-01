@@ -501,7 +501,7 @@ const VideoGridCard = ({ video, onClick, isLiked, onLikeToggle, onShare, t, curr
             <CalendarDays size={12} className="mr-1" />
             <span>{video.date}</span>
           </div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <button
               onClick={(e) => onLikeToggle(video.id, e)}
               className={`flex items-center gap-1 text-xs transition-colors ${
@@ -516,7 +516,7 @@ const VideoGridCard = ({ video, onClick, isLiked, onLikeToggle, onShare, t, curr
             >
               <span>{video.shares}</span>
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
@@ -596,7 +596,7 @@ const VideoListCard = ({ video, onClick, isLiked, onLikeToggle, onShare, t, curr
           <CalendarDays size={12} className="mr-1" />
           <span>{video.date}</span>
         </div>
-        <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
+        {/* <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
           <div className="flex items-center gap-1 text-xs text-gray-500">
             <Eye size={12} />
             <span>{video.views} {t.views}</span>
@@ -615,7 +615,7 @@ const VideoListCard = ({ video, onClick, isLiked, onLikeToggle, onShare, t, curr
           >
             <span>{video.shares} {t.shares}</span>
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

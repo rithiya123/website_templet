@@ -380,7 +380,7 @@ const Footer = () => {
               {quickLinksList.map((link, index) => (
                 <li key={index}>
                   <Link to={link.path} className="group flex items-center text-sm text-green-200 hover:text-white transition-colors">
-                    <ChevronRight size={14} className="mr-2 text-[#4CAF50] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                    {/* <ChevronRight size={14} className="mr-2 text-[#4CAF50] group-hover:translate-x-1 transition-transform flex-shrink-0" /> */}
                     <span className="mr-2">{link.icon}</span>
                     <span className="break-words">{link.label}</span>
                   </Link>
@@ -395,7 +395,7 @@ const Footer = () => {
                 className="w-full flex items-center justify-between text-sm text-green-200 hover:text-white transition-colors group py-1"
               >
                 <div className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span>
+                  {/* <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span> */}
                   <Info size={12} className="mr-2 text-[#4CAF50]" />
                   <span className="font-medium">{t.about}</span>
                 </div>
@@ -409,7 +409,7 @@ const Footer = () => {
                   {aboutSubLinks.map((link, index) => (
                     <li key={index}>
                       <Link to={link.path} className="group flex items-center text-xs text-green-300 hover:text-white transition-colors">
-                        <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span>
+                        {/* <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span> */}
                         <span className="mr-2">{link.icon}</span>
                         <span className="break-words">{link.label}</span>
                       </Link>
@@ -426,7 +426,7 @@ const Footer = () => {
                 className="w-full flex items-center justify-between text-sm text-green-200 hover:text-white transition-colors group py-1"
               >
                 <div className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span>
+                  {/* <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span> */}
                   <Newspaper size={12} className="mr-2 text-[#4CAF50]" />
                   <span className="font-medium">{t.news}</span>
                 </div>
@@ -440,7 +440,7 @@ const Footer = () => {
                   {newsSubLinks.map((link, index) => (
                     <li key={index}>
                       <Link to={link.path} className="group flex items-center text-xs text-green-300 hover:text-white transition-colors">
-                        <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span>
+                        {/* <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span> */}
                         <span className="mr-2">{link.icon}</span>
                         <span className="break-words">{link.label}</span>
                       </Link>
@@ -457,7 +457,7 @@ const Footer = () => {
                 className="w-full flex items-center justify-between text-sm text-green-200 hover:text-white transition-colors group py-1"
               >
                 <div className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span>
+                  {/* <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span> */}
                   <FolderTree size={12} className="mr-2 text-[#4CAF50]" />
                   <span className="font-medium">{t.documents}</span>
                 </div>
@@ -508,7 +508,7 @@ const Footer = () => {
                 className="w-full flex items-center justify-between text-sm text-green-200 hover:text-white transition-colors group py-1"
               >
                 <div className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span>
+                  {/* <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full mr-2"></span> */}
                   <PieChart size={12} className="mr-2 text-[#4CAF50]" />
                   <span className="font-medium">{t.reports}</span>
                 </div>
@@ -522,7 +522,7 @@ const Footer = () => {
                   {reportsSubLinks.map((link, index) => (
                     <li key={index}>
                       <Link to={link.path} className="group flex items-center text-xs text-green-300 hover:text-white transition-colors">
-                        <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span>
+                        {/* <span className="mr-2 text-[#4CAF50] group-hover:translate-x-0.5 transition-transform">•</span> */}
                         <span className="mr-2">{link.icon}</span>
                         <span className="break-words">{link.label}</span>
                       </Link>

@@ -679,7 +679,7 @@ const LegalPage = () => {
                       )}
 
                       <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mb-3">
-                        <span className="flex items-center gap-1">
+                        {/* <span className="flex items-center gap-1">
                           <Eye size={11} />
                           {doc.views} {t.views}
                         </span>
@@ -690,7 +690,7 @@ const LegalPage = () => {
                         <span className="flex items-center gap-1">
                           <Share2 size={11} />
                           {doc.shares} {t.shares}
-                        </span>
+                        </span> */}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">

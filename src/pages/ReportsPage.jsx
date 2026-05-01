@@ -235,8 +235,8 @@ const ReportsPage = () => {
 
   const translations = {
     km: {
-      title: reportType === 'drp' ? "របាយការណ៍ DRP" : reportType === 'ssmr' ? "របាយការណ៍ SSMR" : "របាយការណ៍",
-      subtitle: reportType === 'drp' ? "របាយការណ៍ DRP ទាំងអស់" : reportType === 'ssmr' ? "របាយការណ៍ SSMR ទាំងអស់" : "របាយការណ៍ SSMR និង DRP",
+      title: reportType === 'drp' ? "របាយការណ៍ Detailed Resettlement Plan" : reportType === 'ssmr' ? "របាយការណ៍ Social Safeguards Monitoring Report" : "របាយការណ៍",
+      subtitle: reportType === 'drp' ? "របាយការណ៍ Detailed Resettlement Plan ទាំងអស់" : reportType === 'ssmr' ? "របាយការណ៍ Social Safeguards Monitoring Report ទាំងអស់" : "របាយការណ៍ SSMR និង DRP",
       search: "ស្វែងរក...",
       sortBy: "តម្រៀប",
       sortLatest: "ថ្មីជាងគេ",
@@ -278,8 +278,8 @@ const ReportsPage = () => {
       loading: "កំពុងផ្ទុក..."
     },
     en: {
-      title: reportType === 'drp' ? "DRP Reports" : reportType === 'ssmr' ? "SSMR Reports" : "Reports",
-      subtitle: reportType === 'drp' ? "All DRP Reports" : reportType === 'ssmr' ? "All SSMR Reports" : "SSMR and DRP Reports",
+      title: reportType === 'drp' ? "Detailed Resettlement Plan Reports" : reportType === 'ssmr' ? "Social Safeguards Monitoring Report Reports" : "Reports",
+      subtitle: reportType === 'drp' ? "All Detailed Resettlement Plan Reports" : reportType === 'ssmr' ? "All SSMR Reports" : "SSMR and DRP Reports",
       search: "Search...",
       sortBy: "Sort",
       sortLatest: "Latest",
@@ -864,15 +864,15 @@ const ReportsPage = () => {
                           <div className="flex items-center text-xs text-gray-400 mb-2">
                             <Calendar size={12} className="mr-1" />
                             <span>{formatDate(report.date)}</span>
-                            <span className="mx-2">•</span>
-                            <span>{report.size}</span>
+                            {/* <span className="mx-2">•</span> */}
+                            {/* <span>{report.size}</span> */}
                           </div>
                           <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2 group-hover:text-[#2E7D32] transition-colors">
                             {title}
                           </h3>
                           <p className="text-xs text-gray-500 mb-2 line-clamp-2">{summary}</p>
                           <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400">
-                            <span className="flex items-center gap-1">
+                            {/* <span className="flex items-center gap-1">
                               <Eye size={11} />
                               {report.views} {t.views}
                             </span>
@@ -883,7 +883,7 @@ const ReportsPage = () => {
                             <span className="flex items-center gap-1">
                               <Share2 size={11} />
                               {report.shares} {t.shares}
-                            </span>
+                            </span> */}
                           </div>
                         </div>
 

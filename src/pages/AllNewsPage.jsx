@@ -219,7 +219,7 @@ const AllNewsPage = () => {
           item.liked ? "bg-red-50 border-red-200 text-red-500 font-medium" : "border-transparent text-gray-400 hover:bg-red-50 hover:border-red-200 hover:text-red-400"
         }`}
       >
-        <Heart size={13} className={item.liked ? "fill-red-500 text-red-500" : ""} />
+        {/* <Heart size={13} className={item.liked ? "fill-red-500 text-red-500" : ""} />
         <span>{item.likes || 0}</span>
       </button>
       <button
@@ -229,7 +229,7 @@ const AllNewsPage = () => {
         }`}
       >
         <Share2 size={13} />
-        <span>{item.shares || 0}</span>
+        <span>{item.shares || 0}</span> */}
       </button>
     </div>
   );
@@ -313,7 +313,7 @@ const AllNewsPage = () => {
             <div className="flex-1 p-5">
               <div className="flex items-center text-xs text-gray-500 mb-2 gap-3">
                 <span className="flex items-center gap-1"><Calendar size={12} />{formatDate(item.publishedDate)}</span>
-                <span className="flex items-center gap-1"><Eye size={12} />{item.views || 0}</span>
+                {/* <span className="flex items-center gap-1"><Eye size={12} />{item.views || 0}</span> */}
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2 leading-relaxed group-hover:text-[#2E7D32] transition-colors line-clamp-1">{title}</h3>
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">{summary}</p>
@@ -526,24 +526,24 @@ const AllNewsPage = () => {
               <span className="flex items-center gap-1.5 text-sm text-gray-500">
                 <Calendar size={16} className="text-[#4CAF50]" />{formatDate(selectedNews.publishedDate)}
               </span>
-              <span className="flex items-center gap-1.5 text-sm text-gray-500">
+              {/* <span className="flex items-center gap-1.5 text-sm text-gray-500">
                 <Eye size={16} className="text-[#4CAF50]" />{selectedNews.views || 0} {t.views}
-              </span>
+              </span> */}
               {/* Like */}
-              <button onClick={() => handleLike(selectedNews)}
+              {/* <button onClick={() => handleLike(selectedNews)}
                 className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-all duration-200 ${
                   selectedNews.liked ? "bg-red-50 border-red-200 text-red-500 font-medium" : "border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-400"
                 }`}>
                 <Heart size={16} className={selectedNews.liked ? "fill-red-500 text-red-500" : ""} />
                 {selectedNews.likes || 0} {t.likes}
-              </button>
+              </button> */}
               {/* Share */}
-              <button onClick={() => handleShare(selectedNews)}
+              {/* <button onClick={() => handleShare(selectedNews)}
                 className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-all duration-200 ${
                   selectedNews.shared ? "bg-green-50 border-green-200 text-green-600 font-medium" : "border-gray-200 text-gray-500 hover:bg-green-50 hover:border-green-200 hover:text-green-500"
                 }`}>
                 <Share2 size={16} />{selectedNews.shares || 0} {t.shares}
-              </button>
+              </button> */}
             </div>
 
             <div className="prose prose-sm max-w-none mb-12 text-gray-700">
@@ -591,13 +591,13 @@ const AllNewsPage = () => {
                         <div className="flex items-center justify-between">
                           <p className="text-xs text-gray-500 flex items-center gap-1"><Calendar size={10} />{formatDate(item.publishedDate)}</p>
                           <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <span className="flex items-center gap-0.5"><Eye size={10} />{item.views || 0}</span>
+                            {/* <span className="flex items-center gap-0.5"><Eye size={10} />{item.views || 0}</span>
                             <span className={`flex items-center gap-0.5 ${item.liked ? "text-red-400" : ""}`}>
                               <Heart size={10} className={item.liked ? "fill-red-400" : ""} />{item.likes || 0}
                             </span>
                             <span className={`flex items-center gap-0.5 ${item.shared ? "text-green-500" : ""}`}>
                               <Share2 size={10} />{item.shares || 0}
-                            </span>
+                            </span> */}
                           </div>
                         </div>
                       </div>

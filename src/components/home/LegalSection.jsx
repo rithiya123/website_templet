@@ -141,7 +141,7 @@ const LegalSection = () => {
 
   const translations = {
     km: {
-      title: 'ឯកសារច្បាប់',
+      title: 'ឯកសារពាក់ព័ន្ធ',
       subtitle: 'លិខិតបទដ្ឋានគតិយុត្ត និងឯកសារពាក់ព័ន្ធ',
       viewAll: 'មើលទាំងអស់',
       downloadKh: 'ទាញយកជាភាសាខ្មែរ',
@@ -169,7 +169,7 @@ const LegalSection = () => {
       views: 'ទស្សនា',
     },
     en: {
-      title: 'Legal Documents',
+      title: 'Related Documents',
       subtitle: 'Legal standards and related documents',
       viewAll: 'View All',
       downloadKh: 'Download in Khmer',
@@ -507,8 +507,8 @@ const LegalSection = () => {
                             </span>
                           )}
                           <span className="flex items-center gap-1">
-                            <Eye size={10} />
-                            {viewCount + (doc.views || 0)}
+                            {/* <Eye size={10} />
+                            {viewCount + (doc.views || 0)} */}
                           </span>
                         </div>
 
@@ -670,7 +670,7 @@ const LegalSection = () => {
                 </div>
 
                 {/* Stats Row */}
-                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                {/* <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Eye size={14} className="text-[#4CAF50]" />
                     <span className="text-sm text-gray-600">
@@ -689,7 +689,7 @@ const LegalSection = () => {
                       {t.shares}: {shareCounts[selectedDoc.id] || 0}
                     </span>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Download & View Section - NOW FOLLOWS TITLE LANGUAGE RULE */}
                 <div className="bg-[#4CAF50] bg-opacity-5 rounded-lg p-4 sm:p-6 border border-[#4CAF50] border-opacity-20">
