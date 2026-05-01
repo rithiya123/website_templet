@@ -50,6 +50,9 @@ const envConfig = {
         getAll: '/website-fronted/about-gs/speech',
         getById: (id) => `/website-fronted/about-gs/speech/${id}`,
       },
+      websiteBanner: {
+        get: '/website-fronted/website-banner',
+      },
     },
   };
   

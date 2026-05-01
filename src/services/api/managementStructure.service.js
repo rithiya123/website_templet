@@ -49,6 +49,8 @@ class ManagementStructureService {
       id: data._id || null,
       imageKh: data.url_image?.kh || '',
       imageEn: data.url_image?.en || '',
+      articleKh: data.article?.kh || '',
+      articleEn: data.article?.en || '',
       isActive: data.status ?? true,
       createdBy: data.created_by || null,
       updatedBy: data.updated_by || null,
